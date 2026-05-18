@@ -3,7 +3,19 @@ import { type Employee } from "@/types/hr";
 import { getRoster } from "@/lib/roster";
 import { computeScore, rankInSquad, tierOf } from "./score-engine";
 import { kudosReceived } from "./kudos-store";
-import { Award, Flame, Trophy, Heart, ShieldCheck, Star, Zap, Sparkles, Crown, Target, type LucideIcon } from "lucide-react";
+import {
+  Award,
+  Flame,
+  Trophy,
+  Heart,
+  ShieldCheck,
+  Star,
+  Zap,
+  Sparkles,
+  Crown,
+  Target,
+  type LucideIcon,
+} from "lucide-react";
 
 export type AchievementLevel = "bronze" | "silver" | "gold" | "platinum";
 
@@ -113,7 +125,10 @@ export function achievementsFor(emp: Employee): Achievement[] {
       description: "Top 1 in your squad ranking.",
       earned: rank.rank === 1,
       level: "platinum",
-      progress: rank.rank === 1 ? 100 : Math.max(0, Math.round(((rank.total - rank.rank) / Math.max(1, rank.total - 1)) * 100)),
+      progress:
+        rank.rank === 1
+          ? 100
+          : Math.max(0, Math.round(((rank.total - rank.rank) / Math.max(1, rank.total - 1)) * 100)),
       icon: Crown,
       basis: "rank",
     },
@@ -133,7 +148,12 @@ export function achievementsFor(emp: Employee): Achievement[] {
       description: "Attendance, performance, and consistency all ≥ 80.",
       earned: emp.attendance >= 80 && emp.performance >= 80 && emp.consistency >= 80,
       level: "platinum",
-      progress: Math.round((Math.min(emp.attendance, 100) + Math.min(emp.performance, 100) + Math.min(emp.consistency, 100)) / 3),
+      progress: Math.round(
+        (Math.min(emp.attendance, 100) +
+          Math.min(emp.performance, 100) +
+          Math.min(emp.consistency, 100)) /
+          3,
+      ),
       icon: Sparkles,
       basis: "performance",
     },
@@ -155,7 +175,10 @@ export function topGrowthAreas(emp: Employee): { label: string; value: number; t
   return areas
     .map((a) => ({ ...a, gap: a.target - a.value }))
     .sort((a, b) => b.gap - a.gap)
-    .map(({ gap, ...rest }) => { void gap; return rest; });
+    .map(({ gap, ...rest }) => {
+      void gap;
+      return rest;
+    });
 }
 
 export function leaderboardByEarned() {

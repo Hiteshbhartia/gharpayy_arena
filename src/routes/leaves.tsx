@@ -10,7 +10,9 @@ import { Plus, X, Check, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/leaves")({
   component: LeavesPage,
-  errorComponent: ({ error }) => <div className="p-6 text-sm text-destructive">{error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div className="p-6 text-sm text-destructive">{error.message}</div>
+  ),
   notFoundComponent: () => <div className="p-6 text-sm">Not found.</div>,
 });
 
@@ -36,18 +38,33 @@ function LeavesPage() {
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-[1100px] mx-auto">
       <header className="mb-5 flex items-end justify-between gap-3">
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">Time Off</div>
+          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">
+            Time Off
+          </div>
           <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight">Leaves</h1>
           <p className="text-muted-foreground text-sm mt-1">Apply, approve, plan ahead.</p>
         </div>
-        <button onClick={() => setOpen(true)} className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90">
+        <button
+          onClick={() => setOpen(true)}
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90"
+        >
           <Plus className="h-4 w-4" /> Apply
         </button>
       </header>
 
       <div className="mb-4 grid grid-cols-2 gap-1 bg-secondary p-1 rounded-md max-w-xs">
-        <button onClick={() => setTab("mine")} className={`text-xs font-medium py-1.5 rounded ${tab === "mine" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>My leaves</button>
-        <button onClick={() => setTab("queue")} className={`text-xs font-medium py-1.5 rounded ${tab === "queue" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>Approval queue</button>
+        <button
+          onClick={() => setTab("mine")}
+          className={`text-xs font-medium py-1.5 rounded ${tab === "mine" ? "bg-card shadow-sm" : "text-muted-foreground"}`}
+        >
+          My leaves
+        </button>
+        <button
+          onClick={() => setTab("queue")}
+          className={`text-xs font-medium py-1.5 rounded ${tab === "queue" ? "bg-card shadow-sm" : "text-muted-foreground"}`}
+        >
+          Approval queue
+        </button>
       </div>
 
       <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
@@ -55,21 +72,46 @@ function LeavesPage() {
           const emp = getRoster().find((e) => e.id === l.employeeId);
           const canReview = tab === "queue" && l.status === "pending";
           return (
-            <div key={l.id} className="px-4 md:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div
+              key={l.id}
+              className="px-4 md:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-3"
+            >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 {emp && <Avatar id={emp.id} size={36} />}
                 <div className="min-w-0">
-                  <div className="font-medium text-sm truncate">{emp?.name} <span className="text-muted-foreground font-normal">· {l.type}</span></div>
-                  <div className="text-[11px] text-muted-foreground truncate">{l.startDate}{l.endDate !== l.startDate ? ` → ${l.endDate}` : ""} · {l.reason}</div>
+                  <div className="font-medium text-sm truncate">
+                    {emp?.name}{" "}
+                    <span className="text-muted-foreground font-normal">· {l.type}</span>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground truncate">
+                    {l.startDate}
+                    {l.endDate !== l.startDate ? ` → ${l.endDate}` : ""} · {l.reason}
+                  </div>
                 </div>
               </div>
-              <span className={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded border self-start ${STATUS_TONE[l.status]}`}>{l.status}</span>
+              <span
+                className={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded border self-start ${STATUS_TONE[l.status]}`}
+              >
+                {l.status}
+              </span>
               {canReview && (
                 <div className="flex gap-2">
-                  <button onClick={() => { reviewLeave(l.id, actor.id, "approved"); toast.success("Approved"); }} className="text-xs px-3 py-1.5 rounded-md border border-success/40 text-success hover:bg-success/10 inline-flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      reviewLeave(l.id, actor.id, "approved");
+                      toast.success("Approved");
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-md border border-success/40 text-success hover:bg-success/10 inline-flex items-center gap-1"
+                  >
                     <Check className="h-3 w-3" /> Approve
                   </button>
-                  <button onClick={() => { reviewLeave(l.id, actor.id, "rejected"); toast("Rejected"); }} className="text-xs px-3 py-1.5 rounded-md border border-destructive/40 text-destructive hover:bg-destructive/10 inline-flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      reviewLeave(l.id, actor.id, "rejected");
+                      toast("Rejected");
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-md border border-destructive/40 text-destructive hover:bg-destructive/10 inline-flex items-center gap-1"
+                  >
                     <X className="h-3 w-3" /> Reject
                   </button>
                 </div>
@@ -100,38 +142,82 @@ function ApplyModal({ onClose }: { onClose: () => void }) {
   const ok = reason.trim().length >= 4 && start <= end;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-sidebar/50 backdrop-blur-sm flex items-end md:items-center justify-center px-2 md:px-4" onClick={onClose}>
-      <div className="bg-card border border-border rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-[100] bg-sidebar/50 backdrop-blur-sm flex items-end md:items-center justify-center px-2 md:px-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <div className="font-display font-semibold">Apply for leave</div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
         </div>
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Type</label>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              Type
+            </label>
             <div className="mt-1 grid grid-cols-5 gap-1">
               {(["Casual", "Sick", "Earned", "Unpaid", "WFH"] as LeaveType[]).map((t) => (
-                <button key={t} onClick={() => setType(t)} className={`text-[10px] py-2 rounded border font-mono uppercase tracking-widest ${type === t ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}>{t}</button>
+                <button
+                  key={t}
+                  onClick={() => setType(t)}
+                  className={`text-[10px] py-2 rounded border font-mono uppercase tracking-widest ${type === t ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}
+                >
+                  {t}
+                </button>
               ))}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">From</label>
-              <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="mt-1 w-full bg-background border border-border rounded-md p-2 text-sm" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                From
+              </label>
+              <input
+                type="date"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
+                className="mt-1 w-full bg-background border border-border rounded-md p-2 text-sm"
+              />
             </div>
             <div>
-              <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">To</label>
-              <input type="date" value={end} min={start} onChange={(e) => setEnd(e.target.value)} className="mt-1 w-full bg-background border border-border rounded-md p-2 text-sm" />
+              <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                To
+              </label>
+              <input
+                type="date"
+                value={end}
+                min={start}
+                onChange={(e) => setEnd(e.target.value)}
+                className="mt-1 w-full bg-background border border-border rounded-md p-2 text-sm"
+              />
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Reason</label>
-            <textarea value={reason} onChange={(e) => setReason(e.target.value)} className="mt-1 w-full h-20 resize-none bg-background border border-border rounded-md p-2.5 text-sm outline-none focus:border-primary" placeholder="Be specific. Helps your manager." />
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              Reason
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="mt-1 w-full h-20 resize-none bg-background border border-border rounded-md p-2.5 text-sm outline-none focus:border-primary"
+              placeholder="Be specific. Helps your manager."
+            />
           </div>
           <button
             onClick={() => {
-              applyLeave({ employeeId: actor.id, type, startDate: start, endDate: end, reason: reason.trim() });
+              applyLeave({
+                employeeId: actor.id,
+                type,
+                startDate: start,
+                endDate: end,
+                reason: reason.trim(),
+              });
               toast.success("Leave submitted", { description: "Your manager has been notified." });
               onClose();
             }}

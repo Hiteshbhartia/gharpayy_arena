@@ -6,7 +6,9 @@ import { Bell, Check } from "lucide-react";
 
 export const Route = createFileRoute("/inbox")({
   component: InboxPage,
-  errorComponent: ({ error }) => <div className="p-6 text-sm text-destructive">{error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div className="p-6 text-sm text-destructive">{error.message}</div>
+  ),
   notFoundComponent: () => <div className="p-6 text-sm">Not found.</div>,
 });
 
@@ -30,11 +32,18 @@ function InboxPage() {
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-[900px] mx-auto">
       <header className="mb-5 flex items-end justify-between gap-3">
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">Notifications</div>
+          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">
+            Notifications
+          </div>
           <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight">Inbox</h1>
-          <p className="text-muted-foreground text-sm mt-1">{unread} unread · everything in one place.</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {unread} unread · everything in one place.
+          </p>
         </div>
-        <button onClick={() => markAllRead(actor.id)} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+        <button
+          onClick={() => markAllRead(actor.id)}
+          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+        >
           <Check className="h-3 w-3" /> Mark all read
         </button>
       </header>
@@ -51,12 +60,20 @@ function InboxPage() {
               key={n.id}
               className={`px-4 md:px-5 py-3 transition-colors flex gap-3 ${!n.read ? "bg-primary/5" : ""}`}
             >
-              {n.fromId
-                ? <Avatar id={n.fromId} size={36} />
-                : <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center"><Bell className="h-4 w-4 text-muted-foreground" /></div>}
+              {n.fromId ? (
+                <Avatar id={n.fromId} size={36} />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
+                  <Bell className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded border ${badge.className}`}>{badge.label}</span>
+                  <span
+                    className={`text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded border ${badge.className}`}
+                  >
+                    {badge.label}
+                  </span>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(n.ts)}</span>
                   {!n.read && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
                 </div>
@@ -65,7 +82,10 @@ function InboxPage() {
                 <div className="mt-2 flex items-center gap-2">
                   {n.actionTo && (
                     <button
-                      onClick={() => { markRead(n.id); navigate({ to: n.actionTo! }); }}
+                      onClick={() => {
+                        markRead(n.id);
+                        navigate({ to: n.actionTo! });
+                      }}
                       className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                       {n.actionLabel ?? "Open"}

@@ -5,8 +5,20 @@ import { Avatar } from "./Avatar";
 import { Search } from "lucide-react";
 
 const STATIC_PAGES = [
-  { kind: "page" as const, id: "p1", label: "War Room", sub: "Live ops command bridge", to: "/war-room" },
-  { kind: "page" as const, id: "p2", label: "Calendar", sub: "All shifts, tours, tasks", to: "/calendar" },
+  {
+    kind: "page" as const,
+    id: "p1",
+    label: "War Room",
+    sub: "Live ops command bridge",
+    to: "/war-room",
+  },
+  {
+    kind: "page" as const,
+    id: "p2",
+    label: "Calendar",
+    sub: "All shifts, tours, tasks",
+    to: "/calendar",
+  },
   { kind: "page" as const, id: "p3", label: "Tasks", sub: "Personal Kanban", to: "/tasks" },
   { kind: "page" as const, id: "p4", label: "Kudos feed", sub: "Recognition wall", to: "/kudos" },
   { kind: "page" as const, id: "p5", label: "Score card", sub: "Your performance", to: "/score" },
@@ -54,7 +66,9 @@ export function CommandPalette({ open, onClose }: Props) {
   if (!open) return null;
 
   const filtered = q
-    ? results.filter((r) => (r.label + " " + (r.sub ?? "")).toLowerCase().includes(q.toLowerCase())).slice(0, 12)
+    ? results
+        .filter((r) => (r.label + " " + (r.sub ?? "")).toLowerCase().includes(q.toLowerCase()))
+        .slice(0, 12)
     : results.slice(0, 8);
 
   const Wrapper = "div" as const;
@@ -105,9 +119,13 @@ export function CommandPalette({ open, onClose }: Props) {
               )}
               <Wrapper className="min-w-0 flex-1">
                 <Wrapper className="font-medium text-sm truncate">{r.label}</Wrapper>
-                {r.sub && <Wrapper className="text-xs text-muted-foreground truncate">{r.sub}</Wrapper>}
+                {r.sub && (
+                  <Wrapper className="text-xs text-muted-foreground truncate">{r.sub}</Wrapper>
+                )}
               </Wrapper>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{r.kind}</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                {r.kind}
+              </span>
             </button>
           ))}
         </Wrapper>

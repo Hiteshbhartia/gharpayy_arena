@@ -48,7 +48,6 @@ export default defineConfig(({ mode }) => {
             outputPath: "/index",
             crawlLinks: false,
             retryCount: 2,
-            failOnError: true,
           },
         },
         prerender: {

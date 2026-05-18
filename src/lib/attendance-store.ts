@@ -24,11 +24,7 @@ export interface AttEvent {
   selfie: string | null; // data URL
 }
 
-export type LiveStatus =
-  | "Off"
-  | "Clocked In"
-  | "On Break"
-  | "In Field";
+export type LiveStatus = "Off" | "Clocked In" | "On Break" | "In Field";
 
 const KEY = "gp_attendance_events_v1";
 
@@ -62,7 +58,8 @@ function read(): AttEvent[] {
     return cache;
   }
   try {
-    cache = JSON.parse(localStorage.getItem(KEY) || "[]");
+    const parsed = JSON.parse(localStorage.getItem(KEY) || "[]");
+    cache = Array.isArray(parsed) ? parsed : [];
     return cache;
   } catch {
     cache = [];
@@ -140,12 +137,24 @@ export function liveStatusFor(employeeId: string): LiveStatus {
   let status: LiveStatus = "Off";
   for (const e of evs) {
     switch (e.kind) {
-      case "clock_in": status = "Clocked In"; break;
-      case "clock_out": status = "Off"; break;
-      case "break_start": status = "On Break"; break;
-      case "break_end": status = "Clocked In"; break;
-      case "field_start": status = "In Field"; break;
-      case "field_end": status = "Clocked In"; break;
+      case "clock_in":
+        status = "Clocked In";
+        break;
+      case "clock_out":
+        status = "Off";
+        break;
+      case "break_start":
+        status = "On Break";
+        break;
+      case "break_end":
+        status = "Clocked In";
+        break;
+      case "field_start":
+        status = "In Field";
+        break;
+      case "field_end":
+        status = "Clocked In";
+        break;
     }
   }
   return status;
@@ -250,7 +259,7 @@ export function getGeo(): Promise<GeoFix> {
           accuracy: pos.coords.accuracy,
         }),
       (err) => reject(err),
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
     );
   });
 }
@@ -259,7 +268,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string |
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
-      { headers: { Accept: "application/json" } }
+      { headers: { Accept: "application/json" } },
     );
     if (!res.ok) return null;
     const json = await res.json();

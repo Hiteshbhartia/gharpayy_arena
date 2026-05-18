@@ -2,9 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  PlaneTakeoff, ArrowUp, MessageCircle, Sparkles, Activity, Flame,
-  TrendingUp, AlertTriangle, Phone, MapPin, Target, IndianRupee, Send,
-  Loader2, Trophy, Building2, Calendar as CalIcon, CheckCircle2,
+  PlaneTakeoff,
+  ArrowUp,
+  MessageCircle,
+  Sparkles,
+  Activity,
+  Flame,
+  TrendingUp,
+  AlertTriangle,
+  Phone,
+  MapPin,
+  Target,
+  IndianRupee,
+  Send,
+  Loader2,
+  Trophy,
+  Building2,
+  Calendar as CalIcon,
+  CheckCircle2,
 } from "lucide-react";
 import { type Employee } from "@/types/hr";
 import { getRoster } from "@/lib/roster";
@@ -12,12 +27,23 @@ import { useAttendanceState } from "@/hooks/useAttendance";
 import { Avatar } from "@/components/Avatar";
 import { Progress } from "@/components/ui/progress";
 import {
-  useDailyUpdates, useRetroItems, useFeed,
-  submitDailyUpdate, todayUpdateFor,
-  addRetro, toggleRetroUpvote, addRetroComment,
-  postFeed, toggleFeedUpvote, addFeedComment,
-  todayRollup, getRawStores,
-  type RetroKind, type FeedKind, type RetroItem, type FeedEvent,
+  useDailyUpdates,
+  useRetroItems,
+  useFeed,
+  submitDailyUpdate,
+  todayUpdateFor,
+  addRetro,
+  toggleRetroUpvote,
+  addRetroComment,
+  postFeed,
+  toggleFeedUpvote,
+  addFeedComment,
+  todayRollup,
+  getRawStores,
+  type RetroKind,
+  type FeedKind,
+  type RetroItem,
+  type FeedEvent,
 } from "@/lib/fly-store";
 import { useTasks, createTask, setStatus as setTaskStatus } from "@/lib/task-store";
 import { generateDailySummary } from "@/lib/fly-ai.functions";
@@ -28,7 +54,11 @@ export const Route = createFileRoute("/fly")({
   head: () => ({
     meta: [
       { title: "Fly Board — Core Arena" },
-      { name: "description", content: "The daily execution board. Updates, retros, feed, and the day's brief — without the meetings." },
+      {
+        name: "description",
+        content:
+          "The daily execution board. Updates, retros, feed, and the day's brief — without the meetings.",
+      },
     ],
   }),
 });
@@ -36,11 +66,11 @@ export const Route = createFileRoute("/fly")({
 type Tab = "daily" | "retro" | "feed" | "summary" | "leadership" | "tasks";
 
 const TABS: { id: Tab; label: string; icon: typeof PlaneTakeoff }[] = [
-  { id: "daily",      label: "Daily Update", icon: CheckCircle2 },
-  { id: "retro",      label: "Start / Stop / Continue", icon: Activity },
-  { id: "feed",       label: "Team Feed", icon: Flame },
-  { id: "tasks",      label: "Action Items", icon: Target },
-  { id: "summary",    label: "Daily Brief", icon: Sparkles },
+  { id: "daily", label: "Daily Update", icon: CheckCircle2 },
+  { id: "retro", label: "Start / Stop / Continue", icon: Activity },
+  { id: "feed", label: "Team Feed", icon: Flame },
+  { id: "tasks", label: "Action Items", icon: Target },
+  { id: "summary", label: "Daily Brief", icon: Sparkles },
   { id: "leadership", label: "Leadership", icon: Trophy },
 ];
 
@@ -70,7 +100,8 @@ function FlyPage() {
           The daily execution board.
         </h1>
         <p className="text-muted-foreground mt-2 text-sm md:text-base max-w-2xl">
-          One screen, one rhythm. Updates, blockers, hot leads and the day's brief — without endless meetings or WhatsApp scroll.
+          One screen, one rhythm. Updates, blockers, hot leads and the day's brief — without endless
+          meetings or WhatsApp scroll.
         </p>
       </header>
 
@@ -137,14 +168,26 @@ function DailyTab({ actor }: { actor: Employee }) {
           <Icon className="h-3.5 w-3.5" /> {label}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => num(key, -1)} className="h-8 w-8 rounded-md border border-border hover:bg-secondary text-lg leading-none">−</button>
+          <button
+            onClick={() => num(key, -1)}
+            className="h-8 w-8 rounded-md border border-border hover:bg-secondary text-lg leading-none"
+          >
+            −
+          </button>
           <input
             type="number"
             value={form[key] as number}
-            onChange={(e) => setForm((f) => ({ ...f, [key]: Math.max(0, parseInt(e.target.value || "0", 10)) }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, [key]: Math.max(0, parseInt(e.target.value || "0", 10)) }))
+            }
             className="h-8 flex-1 text-center text-lg font-semibold bg-background border border-border rounded-md"
           />
-          <button onClick={() => num(key, 1)} className="h-8 w-8 rounded-md border border-border hover:bg-secondary text-lg leading-none">+</button>
+          <button
+            onClick={() => num(key, 1)}
+            className="h-8 w-8 rounded-md border border-border hover:bg-secondary text-lg leading-none"
+          >
+            +
+          </button>
         </div>
       </div>
     );
@@ -156,7 +199,9 @@ function DailyTab({ actor }: { actor: Employee }) {
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display text-xl font-semibold">Your update for today</h2>
           {existing && (
-            <span className="text-[10px] font-mono uppercase tracking-widest text-success">✓ Posted · editing</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-success">
+              ✓ Posted · editing
+            </span>
           )}
         </div>
         <div className="grid grid-cols-2 gap-3 mb-3">
@@ -223,7 +268,9 @@ function DailyTab({ actor }: { actor: Employee }) {
                 <div className="flex items-center gap-2 mb-2">
                   <Avatar id={u.authorId} size={28} />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate">{author?.name ?? "Unknown"}</div>
+                    <div className="text-sm font-semibold truncate">
+                      {author?.name ?? "Unknown"}
+                    </div>
                     <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                       {u.zone} · {ago(u.createdAt)}
                     </div>
@@ -265,8 +312,18 @@ function Stat({ n, l }: { n: number; l: string }) {
 }
 
 function Textarea({
-  label, icon: Icon, value, onChange, placeholder,
-}: { label: string; icon: typeof Phone; value: string; onChange: (v: string) => void; placeholder: string }) {
+  label,
+  icon: Icon,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  icon: typeof Phone;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
   return (
     <div className="mb-3">
       <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground mb-1.5">
@@ -287,28 +344,56 @@ function Textarea({
 function RetroTab({ actor }: { actor: Employee }) {
   const items = useRetroItems();
   const cols: { kind: RetroKind; title: string; color: string; placeholder: string }[] = [
-    { kind: "start",    title: "START",    color: "border-success/40 bg-success/5",       placeholder: "What should we start doing?" },
-    { kind: "stop",     title: "STOP",     color: "border-destructive/40 bg-destructive/5", placeholder: "What's hurting conversion?" },
-    { kind: "continue", title: "CONTINUE", color: "border-info/40 bg-info/5",             placeholder: "What's working — keep doing it." },
+    {
+      kind: "start",
+      title: "START",
+      color: "border-success/40 bg-success/5",
+      placeholder: "What should we start doing?",
+    },
+    {
+      kind: "stop",
+      title: "STOP",
+      color: "border-destructive/40 bg-destructive/5",
+      placeholder: "What's hurting conversion?",
+    },
+    {
+      kind: "continue",
+      title: "CONTINUE",
+      color: "border-info/40 bg-info/5",
+      placeholder: "What's working — keep doing it.",
+    },
   ];
   return (
     <div className="grid md:grid-cols-3 gap-4">
       {cols.map((col) => (
-        <RetroColumn key={col.kind} col={col} items={items.filter((i) => i.kind === col.kind)} actorId={actor.id} />
+        <RetroColumn
+          key={col.kind}
+          col={col}
+          items={items.filter((i) => i.kind === col.kind)}
+          actorId={actor.id}
+        />
       ))}
     </div>
   );
 }
 
 function RetroColumn({
-  col, items, actorId,
-}: { col: { kind: RetroKind; title: string; color: string; placeholder: string }; items: RetroItem[]; actorId: string }) {
+  col,
+  items,
+  actorId,
+}: {
+  col: { kind: RetroKind; title: string; color: string; placeholder: string };
+  items: RetroItem[];
+  actorId: string;
+}) {
   const [draft, setDraft] = useState("");
   return (
     <section className={`rounded-lg border-2 ${col.color} p-3`}>
       <h3 className="font-mono text-xs uppercase tracking-widest font-bold mb-3">{col.title}</h3>
       <div className="space-y-2 mb-3">
-        {items.length === 0 && <p className="text-xs text-muted-foreground italic">No items yet.</p>}
+        {items.length === 0 && (
+          <p className="text-xs text-muted-foreground italic">No items yet.</p>
+        )}
         {items.map((it) => (
           <RetroCard key={it.id} item={it} actorId={actorId} />
         ))}
@@ -327,7 +412,12 @@ function RetroColumn({
           className="flex-1 h-9 px-3 bg-background border border-border rounded-md text-sm"
         />
         <button
-          onClick={() => { if (draft.trim()) { addRetro(col.kind, actorId, draft); setDraft(""); } }}
+          onClick={() => {
+            if (draft.trim()) {
+              addRetro(col.kind, actorId, draft);
+              setDraft("");
+            }
+          }}
           className="h-9 px-3 bg-primary text-primary-foreground rounded-md text-sm font-medium"
         >
           Add
@@ -347,7 +437,9 @@ function RetroCard({ item, actorId }: { item: RetroItem; actorId: string }) {
         <button
           onClick={() => toggleRetroUpvote(item.id, actorId)}
           className={`shrink-0 flex flex-col items-center justify-center w-10 h-12 rounded border transition-colors ${
-            voted ? "bg-primary/15 border-primary/40 text-primary" : "border-border hover:border-primary/40"
+            voted
+              ? "bg-primary/15 border-primary/40 text-primary"
+              : "border-border hover:border-primary/40"
           }`}
         >
           <ArrowUp className="h-3.5 w-3.5" />
@@ -359,7 +451,10 @@ function RetroCard({ item, actorId }: { item: RetroItem; actorId: string }) {
             <Avatar id={item.authorId} size={14} />
             <span>{empName(item.authorId).split(" ")[0]}</span>
             <span>· {ago(item.createdAt)}</span>
-            <button onClick={() => setShowComments((v) => !v)} className="ml-auto inline-flex items-center gap-0.5 hover:text-foreground">
+            <button
+              onClick={() => setShowComments((v) => !v)}
+              className="ml-auto inline-flex items-center gap-0.5 hover:text-foreground"
+            >
               <MessageCircle className="h-3 w-3" /> {item.comments.length}
             </button>
           </div>
@@ -395,14 +490,17 @@ function RetroCard({ item, actorId }: { item: RetroItem; actorId: string }) {
 
 // =================== FEED TAB ===================
 const FEED_KIND_META: Record<FeedKind, { color: string; icon: typeof Flame }> = {
-  visit:    { color: "text-info border-info/30 bg-info/10",                   icon: MapPin },
-  lead:     { color: "text-warning border-warning/30 bg-warning/10",           icon: Flame },
-  blocker:  { color: "text-destructive border-destructive/30 bg-destructive/10", icon: AlertTriangle },
-  callback: { color: "text-primary border-primary/30 bg-primary/10",           icon: Phone },
-  booking:  { color: "text-success border-success/30 bg-success/10",           icon: IndianRupee },
-  issue:    { color: "text-destructive border-destructive/30 bg-destructive/10", icon: AlertTriangle },
-  win:      { color: "text-success border-success/30 bg-success/10",           icon: Trophy },
-  system:   { color: "text-muted-foreground border-border bg-secondary",       icon: Sparkles },
+  visit: { color: "text-info border-info/30 bg-info/10", icon: MapPin },
+  lead: { color: "text-warning border-warning/30 bg-warning/10", icon: Flame },
+  blocker: {
+    color: "text-destructive border-destructive/30 bg-destructive/10",
+    icon: AlertTriangle,
+  },
+  callback: { color: "text-primary border-primary/30 bg-primary/10", icon: Phone },
+  booking: { color: "text-success border-success/30 bg-success/10", icon: IndianRupee },
+  issue: { color: "text-destructive border-destructive/30 bg-destructive/10", icon: AlertTriangle },
+  win: { color: "text-success border-success/30 bg-success/10", icon: Trophy },
+  system: { color: "text-muted-foreground border-border bg-secondary", icon: Sparkles },
 };
 
 function FeedTab({ actor }: { actor: Employee }) {
@@ -428,7 +526,9 @@ function FeedTab({ actor }: { actor: Employee }) {
             className="h-8 px-2 bg-background border border-border rounded text-xs font-mono uppercase tracking-widest"
           >
             {(Object.keys(FEED_KIND_META) as FeedKind[]).map((k) => (
-              <option key={k} value={k}>{k}</option>
+              <option key={k} value={k}>
+                {k}
+              </option>
             ))}
           </select>
         </div>
@@ -440,14 +540,19 @@ function FeedTab({ actor }: { actor: Employee }) {
           className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm resize-none focus:outline-none focus:border-primary"
         />
         <div className="flex justify-end mt-2">
-          <button onClick={onPost} className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium">
+          <button
+            onClick={onPost}
+            className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium"
+          >
             <Send className="h-3.5 w-3.5" /> Post
           </button>
         </div>
       </div>
 
       <div className="space-y-3">
-        {feed.map((f) => <FeedCard key={f.id} ev={f} actorId={actor.id} />)}
+        {feed.map((f) => (
+          <FeedCard key={f.id} ev={f} actorId={actor.id} />
+        ))}
       </div>
     </div>
   );
@@ -466,11 +571,19 @@ function FeedCard({ ev, actorId }: { ev: FeedEvent; actorId: string }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold">{empName(ev.authorId)}</span>
-            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-mono uppercase tracking-widest ${meta.color}`}>
+            <span
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-mono uppercase tracking-widest ${meta.color}`}
+            >
               <Icon className="h-2.5 w-2.5" /> {ev.kind}
             </span>
-            {ev.zone && <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">· {ev.zone}</span>}
-            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground ml-auto">{ago(ev.ts)}</span>
+            {ev.zone && (
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                · {ev.zone}
+              </span>
+            )}
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground ml-auto">
+              {ago(ev.ts)}
+            </span>
           </div>
           <p className="text-sm mt-1.5">{ev.body}</p>
           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
@@ -480,7 +593,10 @@ function FeedCard({ ev, actorId }: { ev: FeedEvent; actorId: string }) {
             >
               <ArrowUp className="h-3.5 w-3.5" /> {ev.upvotes.length}
             </button>
-            <button onClick={() => setShowComments((v) => !v)} className="inline-flex items-center gap-1 hover:text-foreground">
+            <button
+              onClick={() => setShowComments((v) => !v)}
+              className="inline-flex items-center gap-1 hover:text-foreground"
+            >
               <MessageCircle className="h-3.5 w-3.5" /> {ev.comments.length}
             </button>
           </div>
@@ -518,10 +634,7 @@ function FeedCard({ ev, actorId }: { ev: FeedEvent; actorId: string }) {
 function ActionItemsTab({ actor }: { actor: Employee }) {
   const all = useTasks();
   // Show recent action items; treat "Fly" tasks as those whose title starts with [Fly] or just show all assigned
-  const items = useMemo(() =>
-    [...all].sort((a, b) => (a.dueAt - b.dueAt)).slice(0, 30),
-    [all],
-  );
+  const items = useMemo(() => [...all].sort((a, b) => a.dueAt - b.dueAt).slice(0, 30), [all]);
   const [title, setTitle] = useState("");
   const [assignee, setAssignee] = useState(actor.id);
   const [dueDays, setDueDays] = useState(1);
@@ -551,21 +664,41 @@ function ActionItemsTab({ actor }: { actor: Employee }) {
             placeholder="Fix WiFi at Oryn Girls"
             className="h-10 px-3 bg-background border border-border rounded-md text-sm"
           />
-          <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className="h-10 px-2 bg-background border border-border rounded-md text-sm">
-            {getRoster().map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+          <select
+            value={assignee}
+            onChange={(e) => setAssignee(e.target.value)}
+            className="h-10 px-2 bg-background border border-border rounded-md text-sm"
+          >
+            {getRoster().map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
+            ))}
           </select>
-          <select value={dueDays} onChange={(e) => setDueDays(parseInt(e.target.value))} className="h-10 px-2 bg-background border border-border rounded-md text-sm">
+          <select
+            value={dueDays}
+            onChange={(e) => setDueDays(parseInt(e.target.value))}
+            className="h-10 px-2 bg-background border border-border rounded-md text-sm"
+          >
             <option value={1}>Tomorrow</option>
             <option value={3}>3 days</option>
             <option value={7}>1 week</option>
           </select>
-          <button onClick={create} className="h-10 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium">Assign</button>
+          <button
+            onClick={create}
+            className="h-10 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium"
+          >
+            Assign
+          </button>
         </div>
       </div>
 
       <div className="space-y-2">
         {items.map((t) => (
-          <div key={t.id} className="flex items-center gap-3 rounded-md border border-border bg-card p-3">
+          <div
+            key={t.id}
+            className="flex items-center gap-3 rounded-md border border-border bg-card p-3"
+          >
             <button
               onClick={() => setTaskStatus(t.id, t.status === "done" ? "todo" : "done", actor.id)}
               className={`shrink-0 h-5 w-5 rounded border flex items-center justify-center ${
@@ -575,16 +708,26 @@ function ActionItemsTab({ actor }: { actor: Employee }) {
               {t.status === "done" && <CheckCircle2 className="h-3.5 w-3.5" />}
             </button>
             <div className="flex-1 min-w-0">
-              <div className={`text-sm font-medium ${t.status === "done" ? "line-through text-muted-foreground" : ""}`}>{t.title}</div>
+              <div
+                className={`text-sm font-medium ${t.status === "done" ? "line-through text-muted-foreground" : ""}`}
+              >
+                {t.title}
+              </div>
               <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                 {empName(t.assigneeId)} · due {new Date(t.dueAt).toLocaleDateString()}
               </div>
             </div>
-            <span className={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded border ${
-              t.status === "done" ? "border-success/40 text-success" :
-              t.status === "doing" ? "border-info/40 text-info" :
-              "border-border text-muted-foreground"
-            }`}>{t.status}</span>
+            <span
+              className={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded border ${
+                t.status === "done"
+                  ? "border-success/40 text-success"
+                  : t.status === "doing"
+                    ? "border-info/40 text-info"
+                    : "border-border text-muted-foreground"
+              }`}
+            >
+              {t.status}
+            </span>
           </div>
         ))}
         {items.length === 0 && (
@@ -601,11 +744,14 @@ function ActionItemsTab({ actor }: { actor: Employee }) {
 function SummaryTab() {
   const generate = useServerFn(generateDailySummary);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<Awaited<ReturnType<typeof generate>>["summary"] | null>(null);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof generate>>["summary"] | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   async function run() {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const roll = todayRollup();
       const raw = getRawStores();
@@ -616,9 +762,14 @@ function SummaryTab() {
         data: {
           totals: roll.totals,
           zones: roll.zones.map((z) => ({
-            zone: z.zone, calls: z.calls, visitsScheduled: z.visitsScheduled,
-            visitsCompleted: z.visitsCompleted, hotLeads: z.hotLeads,
-            bookings: z.bookings, blockers: z.blockers, contributors: z.contributors,
+            zone: z.zone,
+            calls: z.calls,
+            visitsScheduled: z.visitsScheduled,
+            visitsCompleted: z.visitsCompleted,
+            hotLeads: z.hotLeads,
+            bookings: z.bookings,
+            blockers: z.blockers,
+            contributors: z.contributors,
           })),
           topPerformer,
           submissions: roll.submissions,
@@ -627,7 +778,9 @@ function SummaryTab() {
             .filter((u) => u.blocker.trim())
             .map((u) => ({ author: empName(u.authorId), zone: u.zone, text: u.blocker })),
           retro: raw.retro.map((r) => ({ kind: r.kind, body: r.body, upvotes: r.upvotes.length })),
-          feed: raw.feed.slice(0, 15).map((f) => ({ kind: f.kind, author: empName(f.authorId), body: f.body })),
+          feed: raw.feed
+            .slice(0, 15)
+            .map((f) => ({ kind: f.kind, author: empName(f.authorId), body: f.body })),
         },
       });
       setResult(res.summary);
@@ -650,7 +803,10 @@ function SummaryTab() {
           </div>
           <div>
             <h2 className="font-display text-xl font-semibold">AI Daily Summary</h2>
-            <p className="text-xs text-muted-foreground">One-page summary for leadership — best zone, weak zone, top blocker, hot-lead risk, priorities.</p>
+            <p className="text-xs text-muted-foreground">
+              One-page summary for leadership — best zone, weak zone, top blocker, hot-lead risk,
+              priorities.
+            </p>
           </div>
         </div>
         <button
@@ -658,7 +814,11 @@ function SummaryTab() {
           disabled={loading}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium disabled:opacity-60"
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
           {loading ? "Reading today's board…" : "Generate today's summary"}
         </button>
         {error && <p className="text-xs text-destructive mt-3">{error}</p>}
@@ -668,19 +828,23 @@ function SummaryTab() {
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-5 space-y-4">
           <p className="font-display text-lg leading-snug">{result.oneLineForLeadership}</p>
           <div className="grid md:grid-cols-2 gap-3">
-            <SummaryCell label="Best zone"      value={result.bestZone}      tone="success" />
-            <SummaryCell label="Weak zone"      value={result.weakZone}      tone="warning" />
-            <SummaryCell label="Top performer"  value={result.topPerformer}  tone="info" />
-            <SummaryCell label="Top blocker"    value={result.topBlocker}    tone="destructive" />
-            <SummaryCell label="Hot-lead risk"  value={result.hotLeadRisk}   tone="warning" />
+            <SummaryCell label="Best zone" value={result.bestZone} tone="success" />
+            <SummaryCell label="Weak zone" value={result.weakZone} tone="warning" />
+            <SummaryCell label="Top performer" value={result.topPerformer} tone="info" />
+            <SummaryCell label="Top blocker" value={result.topBlocker} tone="destructive" />
+            <SummaryCell label="Hot-lead risk" value={result.hotLeadRisk} tone="warning" />
           </div>
           {result.priorities.length > 0 && (
             <div>
-              <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">Tomorrow's priorities</div>
+              <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                Tomorrow's priorities
+              </div>
               <ol className="space-y-1.5">
                 {result.priorities.map((p, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="shrink-0 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                    <span className="shrink-0 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                      {i + 1}
+                    </span>
                     <span>{p}</span>
                   </li>
                 ))}
@@ -693,7 +857,15 @@ function SummaryTab() {
   );
 }
 
-function SummaryCell({ label, value, tone }: { label: string; value: string; tone: "success" | "warning" | "info" | "destructive" }) {
+function SummaryCell({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "success" | "warning" | "info" | "destructive";
+}) {
   const toneCls = {
     success: "border-success/30 bg-success/5 text-success",
     warning: "border-warning/30 bg-warning/5 text-warning",
@@ -718,11 +890,16 @@ function LeadershipTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <KPI label="Calls today"    value={roll.totals.calls} icon={Phone}      tone="info" />
-        <KPI label="Visits done"    value={roll.totals.visitsCompleted} icon={MapPin}    tone="primary" />
-        <KPI label="Bookings"       value={roll.totals.bookings}        icon={IndianRupee} tone="success" />
-        <KPI label="Hot leads"      value={roll.totals.hotLeads}        icon={Flame}     tone="warning" />
-        <KPI label="Blockers"       value={roll.totals.blockers}        icon={AlertTriangle} tone="destructive" />
+        <KPI label="Calls today" value={roll.totals.calls} icon={Phone} tone="info" />
+        <KPI label="Visits done" value={roll.totals.visitsCompleted} icon={MapPin} tone="primary" />
+        <KPI label="Bookings" value={roll.totals.bookings} icon={IndianRupee} tone="success" />
+        <KPI label="Hot leads" value={roll.totals.hotLeads} icon={Flame} tone="warning" />
+        <KPI
+          label="Blockers"
+          value={roll.totals.blockers}
+          icon={AlertTriangle}
+          tone="destructive"
+        />
       </div>
 
       <div className="rounded-lg border border-border bg-card p-4">
@@ -732,15 +909,31 @@ function LeadershipTab() {
             {roll.submissions} of {roll.teamSize} reported
           </span>
         </div>
-        <Progress value={(roll.submissions / Math.max(1, roll.teamSize)) * 100} className="h-1.5 mb-4" />
+        <Progress
+          value={(roll.submissions / Math.max(1, roll.teamSize)) * 100}
+          className="h-1.5 mb-4"
+        />
         <div className="space-y-2">
-          {roll.zones.length === 0 && <p className="text-sm text-muted-foreground">No zone data yet today.</p>}
+          {roll.zones.length === 0 && (
+            <p className="text-sm text-muted-foreground">No zone data yet today.</p>
+          )}
           {roll.zones.map((z, i) => (
-            <div key={z.zone} className="grid grid-cols-[1fr_repeat(5,_minmax(0,40px))] gap-2 items-center py-1.5 border-b border-border last:border-0 text-sm">
+            <div
+              key={z.zone}
+              className="grid grid-cols-[1fr_repeat(5,_minmax(0,40px))] gap-2 items-center py-1.5 border-b border-border last:border-0 text-sm"
+            >
               <div className="flex items-center gap-2 min-w-0">
-                <span className={`shrink-0 inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold ${
-                  i === 0 ? "bg-success text-white" : i === roll.zones.length - 1 ? "bg-warning text-white" : "bg-secondary text-muted-foreground"
-                }`}>{i + 1}</span>
+                <span
+                  className={`shrink-0 inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold ${
+                    i === 0
+                      ? "bg-success text-white"
+                      : i === roll.zones.length - 1
+                        ? "bg-warning text-white"
+                        : "bg-secondary text-muted-foreground"
+                  }`}
+                >
+                  {i + 1}
+                </span>
                 <span className="font-medium truncate">{z.zone}</span>
               </div>
               <ZNum n={z.calls} />
@@ -751,21 +944,45 @@ function LeadershipTab() {
             </div>
           ))}
           <div className="grid grid-cols-[1fr_repeat(5,_minmax(0,40px))] gap-2 items-center pt-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
-            <span></span><span className="text-center">Calls</span><span className="text-center">Visits</span><span className="text-center">Hot</span><span className="text-center">Book</span><span className="text-center">Block</span>
+            <span></span>
+            <span className="text-center">Calls</span>
+            <span className="text-center">Visits</span>
+            <span className="text-center">Hot</span>
+            <span className="text-center">Book</span>
+            <span className="text-center">Block</span>
           </div>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <FeedCol title="Hot leads pending" items={hot} empty="No hot leads pending — well done." tone="warning" />
-        <FeedCol title="Major blockers" items={blockers} empty="No blockers flagged today." tone="destructive" />
+        <FeedCol
+          title="Hot leads pending"
+          items={hot}
+          empty="No hot leads pending — well done."
+          tone="warning"
+        />
+        <FeedCol
+          title="Major blockers"
+          items={blockers}
+          empty="No blockers flagged today."
+          tone="destructive"
+        />
       </div>
-
     </div>
   );
 }
 
-function KPI({ label, value, icon: Icon, tone }: { label: string; value: number; icon: typeof Phone; tone: "info" | "primary" | "success" | "warning" | "destructive" }) {
+function KPI({
+  label,
+  value,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: typeof Phone;
+  tone: "info" | "primary" | "success" | "warning" | "destructive";
+}) {
   const toneCls = {
     info: "text-info bg-info/10 border-info/30",
     primary: "text-primary bg-primary/10 border-primary/30",
@@ -775,26 +992,47 @@ function KPI({ label, value, icon: Icon, tone }: { label: string; value: number;
   }[tone];
   return (
     <div className="rounded-lg border border-border bg-card p-3">
-      <div className={`inline-flex items-center justify-center h-7 w-7 rounded-md border mb-2 ${toneCls}`}>
+      <div
+        className={`inline-flex items-center justify-center h-7 w-7 rounded-md border mb-2 ${toneCls}`}
+      >
         <Icon className="h-3.5 w-3.5" />
       </div>
       <div className="text-2xl font-display font-bold leading-none">{value}</div>
-      <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
+      <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
+        {label}
+      </div>
     </div>
   );
 }
 
 function ZNum({ n, bad }: { n: number; bad?: boolean }) {
   return (
-    <div className={`text-center font-mono text-sm ${bad ? "text-destructive font-semibold" : ""}`}>{n}</div>
+    <div className={`text-center font-mono text-sm ${bad ? "text-destructive font-semibold" : ""}`}>
+      {n}
+    </div>
   );
 }
 
-function FeedCol({ title, items, empty, tone }: { title: string; items: FeedEvent[]; empty: string; tone: "warning" | "destructive" }) {
-  const toneCls = tone === "warning" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive";
+function FeedCol({
+  title,
+  items,
+  empty,
+  tone,
+}: {
+  title: string;
+  items: FeedEvent[];
+  empty: string;
+  tone: "warning" | "destructive";
+}) {
+  const toneCls =
+    tone === "warning"
+      ? "border-warning/30 text-warning"
+      : "border-destructive/30 text-destructive";
   return (
     <section className="rounded-lg border border-border bg-card p-4">
-      <h3 className={`font-display text-base font-semibold mb-3 inline-flex items-center gap-1.5 ${toneCls.split(" ")[1]}`}>
+      <h3
+        className={`font-display text-base font-semibold mb-3 inline-flex items-center gap-1.5 ${toneCls.split(" ")[1]}`}
+      >
         <TrendingUp className="h-4 w-4" /> {title}
       </h3>
       {items.length === 0 && <p className="text-xs text-muted-foreground">{empty}</p>}

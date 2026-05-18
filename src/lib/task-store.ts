@@ -68,7 +68,8 @@ export function setStatus(id: string, status: TaskStatus, byId?: string) {
   if (status === "done") {
     const onTime = current.dueAt >= Date.now();
     const recipients = new Set<string>();
-    if (current.assignedById && current.assignedById !== current.assigneeId) recipients.add(current.assignedById);
+    if (current.assignedById && current.assignedById !== current.assigneeId)
+      recipients.add(current.assignedById);
     recipients.add(current.assigneeId);
     for (const toId of recipients) {
       const isOwner = toId === current.assigneeId;
@@ -84,7 +85,11 @@ export function setStatus(id: string, status: TaskStatus, byId?: string) {
         actionTo: isOwner ? "/score" : "/tasks",
       });
     }
-  } else if (status === "doing" && current.assignedById && current.assignedById !== current.assigneeId) {
+  } else if (
+    status === "doing" &&
+    current.assignedById &&
+    current.assignedById !== current.assigneeId
+  ) {
     pushNotification({
       kind: "task",
       toId: current.assignedById,
@@ -97,7 +102,9 @@ export function setStatus(id: string, status: TaskStatus, byId?: string) {
   }
 }
 
-export function createTask(input: Omit<AppTask, "id" | "createdAt" | "status"> & { status?: TaskStatus }) {
+export function createTask(
+  input: Omit<AppTask, "id" | "createdAt" | "status"> & { status?: TaskStatus },
+) {
   const next: AppTask = {
     ...input,
     id: crypto.randomUUID(),
@@ -108,7 +115,13 @@ export function createTask(input: Omit<AppTask, "id" | "createdAt" | "status"> &
     links: input.links ?? [],
     timeLogs: input.timeLogs ?? [],
     activity: [
-      { id: crypto.randomUUID(), kind: "created", byId: input.assignedById, detail: "Created task", ts: Date.now() },
+      {
+        id: crypto.randomUUID(),
+        kind: "created",
+        byId: input.assignedById,
+        detail: "Created task",
+        ts: Date.now(),
+      },
     ],
   };
   store.write([next, ...store.read()]);
@@ -146,7 +159,12 @@ export function toggleSubtask(taskId: string, subId: string, byId: string) {
     return {
       ...t,
       subtasks: subs,
-      activity: logActivity(t, byId, "subtask_toggle", `${target?.done ? "Checked" : "Unchecked"} "${target?.title}"`),
+      activity: logActivity(
+        t,
+        byId,
+        "subtask_toggle",
+        `${target?.done ? "Checked" : "Unchecked"} "${target?.title}"`,
+      ),
     };
   });
 }
@@ -166,7 +184,13 @@ export function subtaskProgress(t: AppTask): { done: number; total: number; pct:
   const list = t.subtasks ?? [];
   const total = list.length;
   const done = list.filter((s) => s.done).length;
-  const pct = total ? Math.round((done / total) * 100) : t.status === "done" ? 100 : t.status === "doing" ? 50 : 0;
+  const pct = total
+    ? Math.round((done / total) * 100)
+    : t.status === "done"
+      ? 100
+      : t.status === "doing"
+        ? 50
+        : 0;
   return { done, total, pct };
 }
 
@@ -204,7 +228,12 @@ export function addLink(taskId: string, link: Omit<TaskLink, "id">, byId: string
   patch(taskId, (t) => ({
     ...t,
     links: [...(t.links ?? []), l],
-    activity: logActivity(t, byId, l.kind === "file" ? "attachment_add" : "link_add", `Added ${l.kind === "file" ? "attachment" : "link"} "${l.label}"`),
+    activity: logActivity(
+      t,
+      byId,
+      l.kind === "file" ? "attachment_add" : "link_add",
+      `Added ${l.kind === "file" ? "attachment" : "link"} "${l.label}"`,
+    ),
   }));
 }
 

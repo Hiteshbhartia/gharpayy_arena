@@ -1,13 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
-  Map as MapIcon, Building2, Users, IndianRupee, TrendingUp, TrendingDown,
-  AlertTriangle, Phone, Target, Flame, CheckCircle2, ArrowRight,
+  Map as MapIcon,
+  Building2,
+  Users,
+  IndianRupee,
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  Phone,
+  Target,
+  Flame,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import { getRoster } from "@/lib/roster";
 import {
-  ZONES, PROPERTIES, propertiesOfZone, ticketsOfZone, inr, occPct,
-  type Zone, type Property,
+  ZONES,
+  PROPERTIES,
+  propertiesOfZone,
+  ticketsOfZone,
+  inr,
+  occPct,
+  type Zone,
+  type Property,
 } from "@/data/zones";
 import { useAttendanceState } from "@/hooks/useAttendance";
 import { tierOf } from "@/lib/permissions";
@@ -27,10 +43,7 @@ export const Route = createFileRoute("/zones")({
 function ZonesPage() {
   const { actor } = useAttendanceState();
   const tier = tierOf(actor);
-  const myZone = useMemo(
-    () => ZONES.find((z) => z.leaderId === actor.id) ?? ZONES[0],
-    [actor.id],
-  );
+  const myZone = useMemo(() => ZONES.find((z) => z.leaderId === actor.id) ?? ZONES[0], [actor.id]);
   const [selected, setSelected] = useState<Zone>(tier === "zone_leader" ? myZone : ZONES[0]);
   const rollup = todayRollup();
 
@@ -68,7 +81,9 @@ function ZonesPage() {
                   : "border-border bg-card hover:border-primary/30"
               }`}
             >
-              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{z.city}</div>
+              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                {z.city}
+              </div>
               <div className="font-display text-lg font-semibold mt-0.5">{z.name}</div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                 <span className="tabular-nums">{pct}% occ</span>
@@ -98,17 +113,73 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
   const revenue = props.reduce((s, p) => s + p.monthlyRevenue, 0);
   const vacancy = beds - occupied;
   const openTickets = tickets.filter((t) => t.status !== "Resolved").length;
-  const avgRating = (props.reduce((s, p) => s + p.rating, 0) / Math.max(1, props.length)).toFixed(1);
+  const avgRating = (props.reduce((s, p) => s + p.rating, 0) / Math.max(1, props.length)).toFixed(
+    1,
+  );
 
-  const KPIs: { label: string; value: string; sub: string; icon: React.ElementType; tone: string }[] = [
-    { label: "Occupancy",         value: `${Math.round((occupied/beds)*100)}%`, sub: `${occupied}/${beds} beds`, icon: Building2,   tone: "text-success" },
-    { label: "Monthly revenue",   value: inr(revenue),                          sub: `${props.length} properties`, icon: IndianRupee, tone: "text-primary" },
-    { label: "Vacancies",         value: String(vacancy),                       sub: `${Math.round((vacancy/beds)*100)}% of inventory`, icon: TrendingDown, tone: "text-warning" },
-    { label: "Open tickets",      value: String(openTickets),                   sub: `${tickets.length} total`, icon: AlertTriangle, tone: openTickets > 2 ? "text-destructive" : "text-muted-foreground" },
-    { label: "Avg property rating", value: `${avgRating} ★`,                    sub: "tenant reviews", icon: TrendingUp, tone: "text-info" },
-    { label: "Team in zone",      value: String(teamInZone.length),             sub: `${zone.pods} pods`, icon: Users,        tone: "text-foreground" },
-    { label: "Calls today",       value: String(todayCalls),                    sub: "all pods combined", icon: Phone,        tone: "text-primary" },
-    { label: "Hot leads today",   value: String(Math.max(3, Math.round(todayCalls / 12))), sub: "from Fly board", icon: Flame, tone: "text-warning" },
+  const KPIs: {
+    label: string;
+    value: string;
+    sub: string;
+    icon: React.ElementType;
+    tone: string;
+  }[] = [
+    {
+      label: "Occupancy",
+      value: `${Math.round((occupied / beds) * 100)}%`,
+      sub: `${occupied}/${beds} beds`,
+      icon: Building2,
+      tone: "text-success",
+    },
+    {
+      label: "Monthly revenue",
+      value: inr(revenue),
+      sub: `${props.length} properties`,
+      icon: IndianRupee,
+      tone: "text-primary",
+    },
+    {
+      label: "Vacancies",
+      value: String(vacancy),
+      sub: `${Math.round((vacancy / beds) * 100)}% of inventory`,
+      icon: TrendingDown,
+      tone: "text-warning",
+    },
+    {
+      label: "Open tickets",
+      value: String(openTickets),
+      sub: `${tickets.length} total`,
+      icon: AlertTriangle,
+      tone: openTickets > 2 ? "text-destructive" : "text-muted-foreground",
+    },
+    {
+      label: "Avg property rating",
+      value: `${avgRating} ★`,
+      sub: "tenant reviews",
+      icon: TrendingUp,
+      tone: "text-info",
+    },
+    {
+      label: "Team in zone",
+      value: String(teamInZone.length),
+      sub: `${zone.pods} pods`,
+      icon: Users,
+      tone: "text-foreground",
+    },
+    {
+      label: "Calls today",
+      value: String(todayCalls),
+      sub: "all pods combined",
+      icon: Phone,
+      tone: "text-primary",
+    },
+    {
+      label: "Hot leads today",
+      value: String(Math.max(3, Math.round(todayCalls / 12))),
+      sub: "from Fly board",
+      icon: Flame,
+      tone: "text-warning",
+    },
   ];
 
   return (
@@ -118,11 +189,18 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
         <section className="rounded-xl bg-card border border-border p-5 mb-6 flex items-center gap-4">
           <Avatar id={leader.id} size={48} />
           <div className="flex-1 min-w-0">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Zone Leader</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Zone Leader
+            </div>
             <div className="font-display text-lg font-semibold truncate">{leader.name}</div>
             <div className="text-xs text-muted-foreground truncate">{leader.bio}</div>
           </div>
-          <Link to="/one-on-ones" className="hidden md:inline-flex h-9 px-4 items-center rounded-md border border-border text-xs font-mono uppercase tracking-widest hover:bg-secondary">Open 1:1</Link>
+          <Link
+            to="/one-on-ones"
+            className="hidden md:inline-flex h-9 px-4 items-center rounded-md border border-border text-xs font-mono uppercase tracking-widest hover:bg-secondary"
+          >
+            Open 1:1
+          </Link>
         </section>
       )}
 
@@ -133,10 +211,14 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
           return (
             <div key={k.label} className="rounded-xl bg-card border border-border p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{k.label}</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  {k.label}
+                </span>
                 <Icon className={`h-4 w-4 ${k.tone}`} />
               </div>
-              <div className={`font-display text-2xl font-semibold tabular-nums ${k.tone}`}>{k.value}</div>
+              <div className={`font-display text-2xl font-semibold tabular-nums ${k.tone}`}>
+                {k.value}
+              </div>
               <div className="text-[11px] text-muted-foreground mt-0.5">{k.sub}</div>
             </div>
           );
@@ -148,7 +230,9 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
         <section className="rounded-xl bg-card border border-border overflow-hidden">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold">Properties</h2>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{props.length} active</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              {props.length} active
+            </span>
           </div>
           <div className="divide-y divide-border">
             {props.map((p) => (
@@ -162,23 +246,37 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
           <section className="rounded-xl bg-card border border-border overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <h2 className="font-display text-lg font-semibold">Open tickets</h2>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{openTickets} open</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                {openTickets} open
+              </span>
             </div>
-            {tickets.length === 0 && <div className="px-5 py-8 text-sm text-muted-foreground text-center">No tickets in this zone.</div>}
+            {tickets.length === 0 && (
+              <div className="px-5 py-8 text-sm text-muted-foreground text-center">
+                No tickets in this zone.
+              </div>
+            )}
             <div className="divide-y divide-border">
               {tickets.slice(0, 6).map((t) => {
                 const prop = PROPERTIES.find((p) => p.id === t.propertyId);
                 const tone =
-                  t.priority === "High" ? "text-destructive border-destructive/30 bg-destructive/10"
-                  : t.priority === "Med" ? "text-warning border-warning/30 bg-warning/10"
-                  : "text-muted-foreground border-border bg-secondary";
+                  t.priority === "High"
+                    ? "text-destructive border-destructive/30 bg-destructive/10"
+                    : t.priority === "Med"
+                      ? "text-warning border-warning/30 bg-warning/10"
+                      : "text-muted-foreground border-border bg-secondary";
                 return (
                   <div key={t.id} className="px-4 py-3">
                     <div className="flex items-start gap-2">
-                      <span className={`shrink-0 mt-0.5 text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded border ${tone}`}>{t.priority}</span>
+                      <span
+                        className={`shrink-0 mt-0.5 text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded border ${tone}`}
+                      >
+                        {t.priority}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium leading-snug">{t.title}</div>
-                        <div className="text-[11px] text-muted-foreground">{prop?.name} · {t.category} · {t.status}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {prop?.name} · {t.category} · {t.status}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -202,7 +300,11 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
                   <span className="text-xs font-mono tabular-nums">{e.performance}</span>
                 </div>
               ))}
-              {teamInZone.length === 0 && <div className="px-4 py-6 text-sm text-muted-foreground text-center">No teammates mapped to this zone yet.</div>}
+              {teamInZone.length === 0 && (
+                <div className="px-4 py-6 text-sm text-muted-foreground text-center">
+                  No teammates mapped to this zone yet.
+                </div>
+              )}
             </div>
           </section>
         </div>
@@ -212,14 +314,34 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
       <section className="mt-6 rounded-xl bg-sidebar text-sidebar-foreground border border-sidebar-border p-5">
         <div className="flex items-center gap-2 text-primary mb-2">
           <Target className="h-4 w-4" />
-          <span className="text-xs font-mono uppercase tracking-widest">Today's call · {zone.name}</span>
+          <span className="text-xs font-mono uppercase tracking-widest">
+            Today's call · {zone.name}
+          </span>
         </div>
         <p className="text-sm text-white leading-relaxed">
-          Close the {vacancy} vacant beds before month end. {openTickets > 0 && `${openTickets} open ticket${openTickets > 1 ? "s" : ""} blocking trust — resolve high-priority first.`} Revenue at <span className="text-primary font-semibold">{inr(revenue)}</span>/mo; ceiling is <span className="text-primary font-semibold">{inr(Math.round(revenue * (beds / occupied)))}</span> at full occupancy.
+          Close the {vacancy} vacant beds before month end.{" "}
+          {openTickets > 0 &&
+            `${openTickets} open ticket${openTickets > 1 ? "s" : ""} blocking trust — resolve high-priority first.`}{" "}
+          Revenue at <span className="text-primary font-semibold">{inr(revenue)}</span>/mo; ceiling
+          is{" "}
+          <span className="text-primary font-semibold">
+            {inr(Math.round(revenue * (beds / occupied)))}
+          </span>{" "}
+          at full occupancy.
         </p>
         <div className="mt-4 flex gap-2 flex-wrap">
-          <Link to="/fly" className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary text-primary-foreground text-xs font-mono uppercase tracking-widest">Open Fly Board <ArrowRight className="h-3 w-3" /></Link>
-          <Link to="/war-room" className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md border border-sidebar-border text-xs font-mono uppercase tracking-widest hover:bg-sidebar-hover/40">War Room</Link>
+          <Link
+            to="/fly"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary text-primary-foreground text-xs font-mono uppercase tracking-widest"
+          >
+            Open Fly Board <ArrowRight className="h-3 w-3" />
+          </Link>
+          <Link
+            to="/war-room"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md border border-sidebar-border text-xs font-mono uppercase tracking-widest hover:bg-sidebar-hover/40"
+          >
+            War Room
+          </Link>
         </div>
       </section>
     </>
@@ -228,7 +350,8 @@ function ZoneDashboard({ zone, todayCalls }: { zone: Zone; todayCalls: number })
 
 function PropertyRow({ p }: { p: Property }) {
   const pct = occPct(p);
-  const tone = pct >= 90 ? "bg-success" : pct >= 70 ? "bg-info" : pct >= 50 ? "bg-warning" : "bg-destructive";
+  const tone =
+    pct >= 90 ? "bg-success" : pct >= 70 ? "bg-info" : pct >= 50 ? "bg-warning" : "bg-destructive";
   return (
     <div className="px-4 md:px-5 py-3 flex items-center gap-3">
       <div className="h-10 w-10 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -236,10 +359,14 @@ function PropertyRow({ p }: { p: Property }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate">{p.name}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{p.type} · {p.address} · ★ {p.rating}</div>
+        <div className="text-[11px] text-muted-foreground truncate">
+          {p.type} · {p.address} · ★ {p.rating}
+        </div>
       </div>
       <div className="hidden md:block w-32">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Occupancy</div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          Occupancy
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
             <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
@@ -248,7 +375,9 @@ function PropertyRow({ p }: { p: Property }) {
         </div>
       </div>
       <div className="text-right hidden sm:block">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Revenue</div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+          Revenue
+        </div>
         <div className="text-sm font-semibold tabular-nums">{inr(p.monthlyRevenue)}</div>
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 # Gharpayy Arena — Connected HRMS for the Whole Team
 
 This isn't a tracker. It's an **Arena**: every person sees their mission, their score, their squad, and their next move — all in one place. Role-aware. Notification-driven. Calendar-native. AI-coached.
@@ -16,6 +15,7 @@ Admin · Sales Lead · Sales Agent · Flow Ops · TCM · HR · Owner · Coach (A
 ## What gets built
 
 ### 1. Arena Home (role-aware dashboard) — `/`
+
 The first thing every person sees when they open Gharpayy. Replaces the generic landing.
 
 - **"Today's Mission" hero** — 3 things this person must do today, generated from role + open tasks + pending tours/leads/leaves.
@@ -26,6 +26,7 @@ The first thing every person sees when they open Gharpayy. Replaces the generic 
 - **Recognition feed** — last 3 kudos given in the company. Makes it feel alive.
 
 ### 2. Unified Calendar — `/calendar`
+
 One calendar, every event type, color-coded.
 
 - Shifts (your shift block), breaks, holidays, leaves (yours + team), tours scheduled, tasks with due dates, 1:1s, town halls, birthdays, work anniversaries.
@@ -35,6 +36,7 @@ One calendar, every event type, color-coded.
 - Conflict detection: warns if you book over a shift break or a confirmed tour.
 
 ### 3. Notification Center — top-bar bell + `/inbox`
+
 Persistent, never miss anything.
 
 - **Inbox** style: unread count, grouped by type (Mentions, Approvals, Tasks, Attendance alerts, Kudos, Coach nudges, System).
@@ -45,9 +47,11 @@ Persistent, never miss anything.
 - Per-user preferences (mock UI): which event types push toast vs. just inbox.
 
 ### 4. Email-style digest preview — `/inbox/digests`
+
 Mock the actual emails the system would send so the user can see "what HR would receive at 9am" — daily standup digest, weekly score card, monthly attendance report. Each rendered as a real email card with subject + body + preview-in-modal.
 
 ### 5. People — `/people`
+
 Full directory replacing the thin "team" route.
 
 - Searchable grid with filters: role, zone, shift, status.
@@ -55,11 +59,13 @@ Full directory replacing the thin "team" route.
 - Quick actions visible only to managers/HR: assign task, send notice, give kudos, request 1:1.
 
 ### 6. Attendance — keep current `/attendance` + `/roster`, add layers
+
 - Roster gets a **map view tab** with live pins + selfies (already in the file).
 - Add **per-day report drawer**: timeline of events for that day, total work / break / field minutes, selfie strip across the day, late/early flags, anomalies highlighted.
 - Add **anomaly inbox** for HR: missed clock-out, no selfie, location outside zone — with one-click "Ask employee" that drops a message in their notification inbox.
 
 ### 7. Tasks & Workflows — `/tasks`
+
 Beyond a checkbox list — this is how work flows.
 
 - Personal Kanban (Todo / Doing / Done / Blocked).
@@ -69,12 +75,14 @@ Beyond a checkbox list — this is how work flows.
 - Recurring tasks (daily check-in, weekly report).
 
 ### 8. Leaves & Time Off — `/leaves`
+
 - Apply: type, dates, half-day, reason. See live balance and team conflicts.
 - Approval queue for managers with one-click approve/reject + note.
 - Team availability calendar showing who's out when.
 - Auto-notification + auto-calendar entry on approval.
 
 ### 9. Recognition / Kudos — `/kudos`
+
 The "feel worthy" layer.
 
 - Give kudos to anyone, pick a value tag (Hustle / Customer Love / Team Player / Above & Beyond / Bug Fixer), one line of why.
@@ -83,6 +91,7 @@ The "feel worthy" layer.
 - Auto-kudos from system: streak milestones (30-day on-time streak), score tier promotions.
 
 ### 10. Performance / Score Card — `/score`
+
 Each person's own page; managers see anyone they manage.
 
 - Composite score = attendance (40%) + tasks completed on time (30%) + kudos (15%) + role-specific KPI (15%, e.g., tours conducted for TCM, leads closed for Sales Agent).
@@ -92,6 +101,7 @@ Each person's own page; managers see anyone they manage.
 - Goals section: 2–3 active goals with progress bars.
 
 ### 11. War Room / Live Ops — `/war-room` (HR + Admin + Sales Lead + Flow Ops)
+
 The "command bridge" — wall-mountable.
 
 - Live leaderboard (A/B/C/D tiers).
@@ -100,11 +110,13 @@ The "command bridge" — wall-mountable.
 - Right rail: real-time event ticker (lead.assigned, tour.completed, payment.received) — even if mocked.
 
 ### 12. Coach (AI Command Center) — keep current `/command`, level it up
+
 - Pre-loaded prompt chips per role: "Who's at risk of missing target?", "Who deserves kudos this week?", "Draft a polite nudge for late check-ins".
 - Streams answers from Lovable AI Gateway with the master prompt as system prompt.
 - Coach also fires nudges into the notification inbox automatically (mocked schedule).
 
 ### 13. Settings & Preferences — `/settings`
+
 - Notification preferences per channel.
 - Calendar sync UI (mock — "Connect Google Calendar" button shows a confirm modal).
 - Quiet hours.
@@ -112,6 +124,7 @@ The "command bridge" — wall-mountable.
 - "Acting as" role switcher lives here too (in addition to the top-bar one).
 
 ### 14. Top-bar shell upgrades (every page)
+
 - Logo / "Gharpayy Arena" wordmark.
 - Global search (mocked — Ctrl+K opens a command palette: people, tasks, leads, calendar events).
 - Notification bell with live count.
@@ -120,6 +133,7 @@ The "command bridge" — wall-mountable.
 - Avatar → quick links to Profile, Score, Settings.
 
 ### 15. Sound + micro-interactions
+
 - Subtle "ding" on new toast notification (toggleable in settings).
 - Confetti burst when kudos received.
 - Status dot pulses when teammate goes live.
@@ -160,6 +174,7 @@ These aren't features — they're tone choices applied everywhere:
 14. Seed data expanded: kudos, tasks, leaves, calendar events, notifications, anomalies — populated for all 9 mock identities so every screen feels alive.
 
 **Deferred (call out, don't build yet):**
+
 - Real Google Calendar / email sending (currently mocked UI with realistic preview).
 - Real-time websockets (we simulate with intervals on seed data).
 - Backend persistence (still localStorage; same shape, easy to swap).

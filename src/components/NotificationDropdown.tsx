@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useNotifications, markRead, markAllRead, kindBadge, nameOf, unreadCount } from "@/lib/notification-store";
+import {
+  useNotifications,
+  markRead,
+  markAllRead,
+  kindBadge,
+  nameOf,
+  unreadCount,
+} from "@/lib/notification-store";
 import { useAttendanceState } from "@/hooks/useAttendance";
 import { Avatar } from "./Avatar";
 import { Bell, Check } from "lucide-react";
@@ -86,7 +93,9 @@ export function NotificationDropdown({ open, onClose }: Props) {
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded border ${badge.className}`}>
+                  <span
+                    className={`text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded border ${badge.className}`}
+                  >
                     {badge.label}
                   </span>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(n.ts)}</span>
@@ -100,7 +109,10 @@ export function NotificationDropdown({ open, onClose }: Props) {
         })}
       </div>
       <button
-        onClick={() => { navigate({ to: "/inbox" }); onClose(); }}
+        onClick={() => {
+          navigate({ to: "/inbox" });
+          onClose();
+        }}
         className="w-full px-4 py-3 text-center text-xs font-medium text-primary hover:bg-secondary/50 border-t border-border"
       >
         Open full inbox →

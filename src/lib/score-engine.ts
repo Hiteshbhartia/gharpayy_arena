@@ -19,14 +19,16 @@ export function computeScore(emp: Employee): ScoreBreakdown {
   const tasks = tasksFor(emp.id);
   const completed = tasks.filter((t) => t.status === "done");
   const onTime = completed.filter((t) => (t.completedAt ?? 0) <= t.dueAt).length;
-  const taskOnTime = completed.length > 0 ? Math.round((onTime / completed.length) * 100) : emp.taskCompletion;
+  const taskOnTime =
+    completed.length > 0 ? Math.round((onTime / completed.length) * 100) : emp.taskCompletion;
 
   const recent = kudosReceived(emp.id, Date.now() - 30 * D);
   const kudos = Math.min(100, recent.length * 25);
 
   // Role-specific KPI proxy
   let roleKpi = emp.performance;
-  if (emp.role === "Operator") roleKpi = Math.round(emp.conversion * 3 + (emp.callsToday / Math.max(1, emp.callTarget)) * 50);
+  if (emp.role === "Operator")
+    roleKpi = Math.round(emp.conversion * 3 + (emp.callsToday / Math.max(1, emp.callTarget)) * 50);
   else if (emp.role === "TCM") roleKpi = Math.round(emp.taskCompletion);
   else if (emp.role === "Floor Lead") roleKpi = Math.round(emp.performance);
   roleKpi = Math.max(0, Math.min(100, roleKpi));
@@ -39,8 +41,7 @@ export function squadOf(emp: Employee): Employee[] {
   // Same team OR people they manage / manager
   return getRoster().filter(
     (e) =>
-      e.id !== emp.id &&
-      (e.team === emp.team || e.managerId === emp.id || e.id === emp.managerId)
+      e.id !== emp.id && (e.team === emp.team || e.managerId === emp.id || e.id === emp.managerId),
   );
 }
 

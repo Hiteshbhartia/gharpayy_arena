@@ -7,16 +7,16 @@ import { useEvents } from "@/lib/event-bus";
 
 const toneClass: Record<string, string> = {
   urgent: "border-destructive/30 bg-destructive/5",
-  warn:   "border-warning/30 bg-warning/5",
-  info:   "border-info/30 bg-info/5",
-  neutral:"border-border bg-card",
+  warn: "border-warning/30 bg-warning/5",
+  info: "border-info/30 bg-info/5",
+  neutral: "border-border bg-card",
 };
 
 const dotClass: Record<string, string> = {
   urgent: "bg-destructive",
-  warn:   "bg-warning",
-  info:   "bg-info",
-  neutral:"bg-muted-foreground",
+  warn: "bg-warning",
+  info: "bg-info",
+  neutral: "bg-muted-foreground",
 };
 
 export function MissionBrief({ actor }: { actor: Employee }) {
@@ -31,8 +31,12 @@ export function MissionBrief({ actor }: { actor: Employee }) {
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{TIER_MISSION_LABEL[tier]}</div>
-            <h2 className="font-display text-lg font-semibold leading-tight">What demands you right now</h2>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              {TIER_MISSION_LABEL[tier]}
+            </div>
+            <h2 className="font-display text-lg font-semibold leading-tight">
+              What demands you right now
+            </h2>
           </div>
         </div>
         <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
@@ -54,9 +58,13 @@ export function MissionBrief({ actor }: { actor: Employee }) {
               >
                 <span className={`h-2 w-2 rounded-full shrink-0 ${dotClass[it.tone]}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{it.kicker}</div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    {it.kicker}
+                  </div>
                   <div className="text-sm font-medium truncate">{it.title}</div>
-                  {it.body && <div className="text-xs text-muted-foreground truncate">{it.body}</div>}
+                  {it.body && (
+                    <div className="text-xs text-muted-foreground truncate">{it.body}</div>
+                  )}
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition shrink-0" />
               </Link>

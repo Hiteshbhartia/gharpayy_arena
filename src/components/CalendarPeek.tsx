@@ -9,7 +9,7 @@ function fmt(ts: number) {
 function dayLabel(ts: number) {
   const d = new Date(ts);
   const t = new Date();
-  const diff = Math.round((d.setHours(0,0,0,0) - new Date(t).setHours(0,0,0,0)) / 86400000);
+  const diff = Math.round((d.setHours(0, 0, 0, 0) - new Date(t).setHours(0, 0, 0, 0)) / 86400000);
   if (diff === 0) return "Today";
   if (diff === 1) return "Tomorrow";
   if (diff < 7) return new Date(ts).toLocaleDateString(undefined, { weekday: "long" });
@@ -65,17 +65,24 @@ export function CalendarPeek({ open, onClose }: Props) {
               <div className="text-sm font-semibold">{fmt(e.startAt)}</div>
             </div>
             <div className="min-w-0 flex-1">
-              <div className={`inline-block text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border mb-1 ${eventColor(e.type)}`}>
+              <div
+                className={`inline-block text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border mb-1 ${eventColor(e.type)}`}
+              >
                 {e.type}
               </div>
               <div className="font-medium text-sm truncate">{e.title}</div>
-              {e.location && <div className="text-xs text-muted-foreground truncate">{e.location}</div>}
+              {e.location && (
+                <div className="text-xs text-muted-foreground truncate">{e.location}</div>
+              )}
             </div>
           </div>
         ))}
       </div>
       <button
-        onClick={() => { navigate({ to: "/calendar" }); onClose(); }}
+        onClick={() => {
+          navigate({ to: "/calendar" });
+          onClose();
+        }}
         className="w-full px-4 py-3 text-center text-xs font-medium text-primary hover:bg-secondary/50 border-t border-border"
       >
         Open calendar →

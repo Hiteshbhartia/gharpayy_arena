@@ -41,9 +41,12 @@ type AuthContextValue = {
   isLoading: boolean;
   apiEnabled: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (input: { email: string; password: string; name: string; employeeId?: string }) => Promise<
-    "authenticated" | "pending_approval"
-  >;
+  signup: (input: {
+    email: string;
+    password: string;
+    name: string;
+    employeeId?: string;
+  }) => Promise<"authenticated" | "pending_approval">;
   logout: () => void;
   clearError: () => void;
   refreshSession: () => Promise<void>;
@@ -88,7 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const bootstrap = useCallback(async () => {
     if (!apiEnabled) {
-      setError("VITE_API_URL is not configured. Set it to your Arena API base (e.g. http://localhost:4000/api).");
+      setError(
+        "VITE_API_URL is not configured. Set it to your Arena API base (e.g. http://localhost:4000/api).",
+      );
       setStatus("unauthenticated");
       return;
     }
@@ -214,7 +219,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       employees,
       dataReady,
       error,
-      isLoading: status === "loading" || actionLoading || (status === "authenticated" && !dataReady),
+      isLoading:
+        status === "loading" || actionLoading || (status === "authenticated" && !dataReady),
       apiEnabled,
       login,
       signup,

@@ -27,7 +27,11 @@ export const Route = createFileRoute("/roster")({
       },
     ],
   }),
-  component: () => <RoleGate allow={["leadership", "hr", "leader"]}><RosterPage /></RoleGate>,
+  component: () => (
+    <RoleGate allow={["leadership", "hr", "leader"]}>
+      <RosterPage />
+    </RoleGate>
+  ),
 });
 
 function RosterPage() {
@@ -82,7 +86,11 @@ function RosterPage() {
             <div className="flex items-start gap-3">
               <Avatar className="h-12 w-12 shrink-0 border border-border">
                 <AvatarFallback className="bg-muted text-foreground font-medium">
-                  {emp.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+                  {emp.name
+                    .split(" ")
+                    .map((s) => s[0])
+                    .slice(0, 2)
+                    .join("")}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
@@ -110,7 +118,9 @@ function RosterPage() {
                     {lastEv.address && (
                       <div className="text-xs text-muted-foreground flex items-start gap-1.5">
                         <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                        <span className="truncate" title={lastEv.address}>{lastEv.address}</span>
+                        <span className="truncate" title={lastEv.address}>
+                          {lastEv.address}
+                        </span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 mt-2">
@@ -146,15 +156,23 @@ function RosterPage() {
   );
 }
 
-function Tile({ label, value, tone }: { label: string; value: number; tone: "success" | "warning" | "primary" | "muted" }) {
+function Tile({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "success" | "warning" | "primary" | "muted";
+}) {
   const cls =
     tone === "success"
       ? "border-success/30 bg-success/5 text-success"
       : tone === "warning"
-      ? "border-warning/30 bg-warning/5 text-warning"
-      : tone === "primary"
-      ? "border-primary/30 bg-primary/5 text-primary"
-      : "border-border bg-muted/30 text-muted-foreground";
+        ? "border-warning/30 bg-warning/5 text-warning"
+        : tone === "primary"
+          ? "border-primary/30 bg-primary/5 text-primary"
+          : "border-border bg-muted/30 text-muted-foreground";
   return (
     <Card className={`p-4 border ${cls}`}>
       <div className="text-[10px] uppercase tracking-widest font-mono">{label}</div>
@@ -177,12 +195,15 @@ function StatusBadge({ status }: { status: string }) {
     status === "Clocked In"
       ? "bg-success/15 text-success border-success/30"
       : status === "On Break"
-      ? "bg-warning/15 text-warning border-warning/30"
-      : status === "In Field"
-      ? "bg-primary/15 text-primary border-primary/30"
-      : "bg-muted text-muted-foreground border-border";
+        ? "bg-warning/15 text-warning border-warning/30"
+        : status === "In Field"
+          ? "bg-primary/15 text-primary border-primary/30"
+          : "bg-muted text-muted-foreground border-border";
   return (
-    <Badge variant="outline" className={`${tone} border font-mono text-[9px] uppercase tracking-widest shrink-0`}>
+    <Badge
+      variant="outline"
+      className={`${tone} border font-mono text-[9px] uppercase tracking-widest shrink-0`}
+    >
       {status}
     </Badge>
   );

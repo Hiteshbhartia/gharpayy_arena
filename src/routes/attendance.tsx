@@ -36,9 +36,9 @@ function AttendancePage() {
             Selfie + Geo Punch
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Every clock event captures a live front-camera selfie and high-accuracy GPS,
-            then resolves the address. Switch the "Acting as" user in the sidebar to
-            punch in for any teammate.
+            Every clock event captures a live front-camera selfie and high-accuracy GPS, then
+            resolves the address. Switch the "Acting as" user in the sidebar to punch in for any
+            teammate.
           </p>
         </div>
         <div className="flex gap-2 text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
@@ -62,9 +62,13 @@ function AttendancePage() {
               <dt className="text-muted-foreground">Work</dt>
               <dd className="text-right tabular-nums font-medium">{fmtDuration(summary.workMs)}</dd>
               <dt className="text-muted-foreground">Break</dt>
-              <dd className="text-right tabular-nums font-medium">{fmtDuration(summary.breakMs)}</dd>
+              <dd className="text-right tabular-nums font-medium">
+                {fmtDuration(summary.breakMs)}
+              </dd>
               <dt className="text-muted-foreground">Field</dt>
-              <dd className="text-right tabular-nums font-medium">{fmtDuration(summary.fieldMs)}</dd>
+              <dd className="text-right tabular-nums font-medium">
+                {fmtDuration(summary.fieldMs)}
+              </dd>
             </dl>
           </Card>
         </div>
@@ -85,7 +89,13 @@ function AttendancePage() {
   );
 }
 
-function Pill({ icon: Icon, children }: { icon: any; children: React.ReactNode }) {
+function Pill({
+  icon: Icon,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}) {
   return (
     <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded border border-border bg-card">
       <Icon className="h-3 w-3" />

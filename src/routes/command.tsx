@@ -6,7 +6,11 @@ import { getRoster } from "@/lib/roster";
 import { RoleGate } from "@/components/RoleGate";
 
 export const Route = createFileRoute("/command")({
-  component: () => <RoleGate allow={["leadership", "hr", "leader"]}><CommandCenter /></RoleGate>,
+  component: () => (
+    <RoleGate allow={["leadership", "hr", "leader"]}>
+      <CommandCenter />
+    </RoleGate>
+  ),
   head: () => ({ meta: [{ title: "Command Center — Gharpayy Core AI" }] }),
 });
 
@@ -76,13 +80,18 @@ function CommandCenter() {
           if (line.endsWith("\r")) line = line.slice(0, -1);
           if (!line.startsWith("data: ")) continue;
           const json = line.slice(6).trim();
-          if (json === "[DONE]") { done = true; break; }
+          if (json === "[DONE]") {
+            done = true;
+            break;
+          }
           try {
             const parsed = JSON.parse(json);
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) {
               assistantText += delta;
-              setMessages((p) => p.map((m, i) => i === p.length - 1 ? { ...m, content: assistantText } : m));
+              setMessages((p) =>
+                p.map((m, i) => (i === p.length - 1 ? { ...m, content: assistantText } : m)),
+              );
             }
           } catch {
             textBuffer = line + "\n" + textBuffer;
@@ -91,7 +100,10 @@ function CommandCenter() {
         }
       }
     } catch (e) {
-      setMessages((p) => [...p, { role: "assistant", content: `⚠️ ${e instanceof Error ? e.message : "Unknown error"}` }]);
+      setMessages((p) => [
+        ...p,
+        { role: "assistant", content: `⚠️ ${e instanceof Error ? e.message : "Unknown error"}` },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -106,7 +118,9 @@ function CommandCenter() {
           </div>
           <div>
             <h1 className="font-display text-lg font-semibold">Command Center</h1>
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Central operating intelligence · live snapshot loaded</p>
+            <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
+              Central operating intelligence · live snapshot loaded
+            </p>
           </div>
         </div>
       </header>
@@ -116,7 +130,9 @@ function CommandCenter() {
           {messages.length === 0 && (
             <div className="text-center py-12">
               <div className="font-display text-2xl font-semibold mb-2">Ask the brain.</div>
-              <p className="text-muted-foreground text-sm mb-8">Direct. Measurable. Actionable. No fluff.</p>
+              <p className="text-muted-foreground text-sm mb-8">
+                Direct. Measurable. Actionable. No fluff.
+              </p>
               <div className="grid grid-cols-2 gap-3 max-w-2xl mx-auto">
                 {SUGGESTIONS.map((s) => (
                   <button
@@ -133,12 +149,16 @@ function CommandCenter() {
 
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[80%] rounded-xl px-4 py-3 text-sm ${
-                m.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card border border-border"
-              }`}>
-                <pre className="whitespace-pre-wrap font-sans leading-relaxed">{m.content || (loading ? "…" : "")}</pre>
+              <div
+                className={`max-w-[80%] rounded-xl px-4 py-3 text-sm ${
+                  m.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border"
+                }`}
+              >
+                <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+                  {m.content || (loading ? "…" : "")}
+                </pre>
               </div>
             </div>
           ))}
@@ -147,7 +167,10 @@ function CommandCenter() {
 
       <div className="border-t border-border bg-card px-8 py-4">
         <form
-          onSubmit={(e) => { e.preventDefault(); send(input); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
           className="max-w-3xl mx-auto flex gap-2"
         >
           <input

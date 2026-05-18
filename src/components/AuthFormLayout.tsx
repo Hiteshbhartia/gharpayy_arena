@@ -21,13 +21,17 @@ export function AuthFormLayout({
           </div>
           <div>
             <div className="font-display font-semibold text-lg tracking-[0.18em]">GHARPAYY</div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Core Arena</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Core Arena
+            </div>
           </div>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
           <div className="mb-6">
-            <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">Account</div>
+            <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">
+              Account
+            </div>
             <h1 className="font-display text-2xl font-semibold tracking-tight">{title}</h1>
             <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
           </div>

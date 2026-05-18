@@ -98,7 +98,11 @@ export function createOneOnOne(input: {
     toId: input.reportId,
     fromId: input.managerId,
     title: `${nameOf(input.managerId)} scheduled a 1:1 with you`,
-    body: new Date(input.scheduledAt).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" }),
+    body: new Date(input.scheduledAt).toLocaleString([], {
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
     actionLabel: "Open",
     actionTo: "/one-on-ones",
   });
@@ -107,13 +111,16 @@ export function createOneOnOne(input: {
 
 export function updateOneOnOne(id: string, patch: Partial<OneOnOne>) {
   store.write(
-    store.read().map((o) =>
-      o.id === id ? { ...o, ...patch, updatedAt: Date.now() } : o,
-    ),
+    store.read().map((o) => (o.id === id ? { ...o, ...patch, updatedAt: Date.now() } : o)),
   );
 }
 
-export function completeOneOnOne(id: string, sentiment: OneOnOneSentiment, notes: string, privateNotes: string) {
+export function completeOneOnOne(
+  id: string,
+  sentiment: OneOnOneSentiment,
+  notes: string,
+  privateNotes: string,
+) {
   updateOneOnOne(id, { status: "completed", sentiment, notes, privateNotes });
 }
 
@@ -134,9 +141,13 @@ export function toggleActionItem(oneOnOneId: string, itemId: string) {
 
 export function sentimentColor(s?: OneOnOneSentiment): string {
   switch (s) {
-    case "green": return "bg-success/15 text-success border-success/30";
-    case "amber": return "bg-warning/15 text-warning border-warning/30";
-    case "red": return "bg-destructive/10 text-destructive border-destructive/20";
-    default: return "bg-muted text-muted-foreground border-border";
+    case "green":
+      return "bg-success/15 text-success border-success/30";
+    case "amber":
+      return "bg-warning/15 text-warning border-warning/30";
+    case "red":
+      return "bg-destructive/10 text-destructive border-destructive/20";
+    default:
+      return "bg-muted text-muted-foreground border-border";
   }
 }

@@ -26,8 +26,8 @@ export type ArenaEventKind =
 export interface ArenaEvent {
   id: string;
   kind: ArenaEventKind;
-  actorId: string;          // who did it
-  targetId?: string;        // who it's about / who owns the follow-up
+  actorId: string; // who did it
+  targetId?: string; // who it's about / who owns the follow-up
   zone?: string;
   property?: string;
   title: string;

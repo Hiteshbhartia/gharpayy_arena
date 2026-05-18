@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Star, Phone, Mail, MapPin, Briefcase, IndianRupee, Calendar, Sparkles } from "lucide-react";
+import {
+  Plus,
+  Star,
+  Phone,
+  Mail,
+  MapPin,
+  Briefcase,
+  IndianRupee,
+  Calendar,
+  Sparkles,
+} from "lucide-react";
 import {
   useCandidates,
   moveCandidate,
@@ -40,11 +50,20 @@ export const Route = createFileRoute("/recruiting")({
     ],
   }),
   component: RecruitingPage,
-  errorComponent: ({ error }) => <div className="p-6 text-sm text-destructive">{error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div className="p-6 text-sm text-destructive">{error.message}</div>
+  ),
   notFoundComponent: () => <div className="p-6 text-sm">Not found.</div>,
 });
 
-const SOURCES: CandidateSource[] = ["Referral", "LinkedIn", "Naukri", "Walk-in", "Inbound", "Agency"];
+const SOURCES: CandidateSource[] = [
+  "Referral",
+  "LinkedIn",
+  "Naukri",
+  "Walk-in",
+  "Inbound",
+  "Agency",
+];
 const ROLES: Role[] = ["Operator", "Floor Lead", "TCM", "Flow Ops", "HR", "Coach", "Recruiter"];
 
 function RecruitingPage() {
@@ -64,12 +83,20 @@ function Body() {
   const [stageFilter, setStageFilter] = useState<CandidateStage | "active">("active");
 
   const visible = useMemo(() => {
-    if (stageFilter === "active") return candidates.filter((c) => c.stage !== "rejected" && c.stage !== "hired");
+    if (stageFilter === "active")
+      return candidates.filter((c) => c.stage !== "rejected" && c.stage !== "hired");
     return candidates.filter((c) => c.stage === stageFilter);
   }, [candidates, stageFilter]);
 
   const byStage = useMemo(() => {
-    const map: Record<CandidateStage, Candidate[]> = { applied: [], screen: [], interview: [], offer: [], hired: [], rejected: [] };
+    const map: Record<CandidateStage, Candidate[]> = {
+      applied: [],
+      screen: [],
+      interview: [],
+      offer: [],
+      hired: [],
+      rejected: [],
+    };
     for (const c of visible) map[c.stage].push(c);
     return map;
   }, [visible]);
@@ -80,9 +107,15 @@ function Body() {
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-[1500px] mx-auto">
       <header className="mb-5 flex items-end justify-between gap-3 flex-wrap">
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">Talent Funnel</div>
-          <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight">Recruiting Pipeline</h1>
-          <p className="text-muted-foreground text-sm mt-1">Source → Screen → Interview → Offer → Hired. Move fast, stay specific.</p>
+          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">
+            Talent Funnel
+          </div>
+          <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight">
+            Recruiting Pipeline
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Source → Screen → Interview → Offer → Hired. Move fast, stay specific.
+          </p>
         </div>
         <button
           onClick={() => setComposerOpen(true)}
@@ -117,7 +150,8 @@ function Body() {
                   : "bg-card border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              {s === "active" ? "Active" : CAND_STAGE_LABEL[s]} <span className="ml-1 opacity-70">{count}</span>
+              {s === "active" ? "Active" : CAND_STAGE_LABEL[s]}{" "}
+              <span className="ml-1 opacity-70">{count}</span>
             </button>
           );
         })}
@@ -126,10 +160,17 @@ function Body() {
       {/* Kanban */}
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {CAND_STAGE_ORDER.map((stage) => (
-          <div key={stage} className="rounded-xl bg-muted/40 border border-border p-2 min-h-[120px]">
+          <div
+            key={stage}
+            className="rounded-xl bg-muted/40 border border-border p-2 min-h-[120px]"
+          >
             <div className="flex items-center justify-between mb-2 px-1">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{CAND_STAGE_LABEL[stage]}</span>
-              <span className="text-[10px] font-mono text-muted-foreground">{byStage[stage].length}</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                {CAND_STAGE_LABEL[stage]}
+              </span>
+              <span className="text-[10px] font-mono text-muted-foreground">
+                {byStage[stage].length}
+              </span>
             </div>
             <div className="space-y-2">
               {byStage[stage].map((c) => (
@@ -149,16 +190,40 @@ function Body() {
   );
 }
 
-function Stat({ label, value, accent, good }: { label: string; value: number; accent?: boolean; good?: boolean }) {
+function Stat({
+  label,
+  value,
+  accent,
+  good,
+}: {
+  label: string;
+  value: number;
+  accent?: boolean;
+  good?: boolean;
+}) {
   return (
     <div className="rounded-xl bg-card border border-border p-3">
-      <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className={`font-display text-2xl font-semibold mt-0.5 ${accent ? "text-primary" : good ? "text-success" : ""}`}>{value}</div>
+      <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className={`font-display text-2xl font-semibold mt-0.5 ${accent ? "text-primary" : good ? "text-success" : ""}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }
 
-function CandidateCard({ c, onOpen, actorId }: { c: Candidate; onOpen: () => void; actorId: string }) {
+function CandidateCard({
+  c,
+  onOpen,
+  actorId,
+}: {
+  c: Candidate;
+  onOpen: () => void;
+  actorId: string;
+}) {
   function nextStage() {
     const idx = CAND_STAGE_ORDER.indexOf(c.stage);
     const next = CAND_STAGE_ORDER[idx + 1];
@@ -171,7 +236,9 @@ function CandidateCard({ c, onOpen, actorId }: { c: Candidate; onOpen: () => voi
           <Avatar name={c.name} size={32} />
           <div className="min-w-0 flex-1">
             <div className="font-medium text-sm truncate">{c.name}</div>
-            <div className="text-[11px] text-muted-foreground truncate">{c.roleApplied} · {c.source}</div>
+            <div className="text-[11px] text-muted-foreground truncate">
+              {c.roleApplied} · {c.source}
+            </div>
           </div>
           <div className="flex items-center gap-0.5">
             {Array.from({ length: c.rating }).map((_, i) => (
@@ -225,66 +292,136 @@ function ComposerModal({ onClose, actorId }: { onClose: () => void; actorId: str
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-card rounded-2xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto p-5" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card rounded-2xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="font-display text-lg font-semibold mb-3">Add candidate</h2>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Name">
-            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm" />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm"
+            />
           </Field>
           <Field label="Phone">
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm" />
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm"
+            />
           </Field>
           <Field label="Email" full>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm" />
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm"
+            />
           </Field>
           <Field label="Role">
             <Select value={roleApplied} onValueChange={(v) => setRoleApplied(v as Role)}>
-              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                {ROLES.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
           <Field label="Source">
             <Select value={source} onValueChange={(v) => setSource(v as CandidateSource)}>
-              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {SOURCES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                {SOURCES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
           <Field label="Expected (₹/mo)">
-            <input type="number" value={expectedSalary} onChange={(e) => setExpectedSalary(e.target.value)} className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm" />
+            <input
+              type="number"
+              value={expectedSalary}
+              onChange={(e) => setExpectedSalary(e.target.value)}
+              className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm"
+            />
           </Field>
           <Field label="City">
-            <input value={city} onChange={(e) => setCity(e.target.value)} className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm" />
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm"
+            />
           </Field>
           <Field label="Experience" full>
-            <input value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="e.g. 2 yrs · NoBroker" className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm" />
+            <input
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+              placeholder="e.g. 2 yrs · NoBroker"
+              className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm"
+            />
           </Field>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-4 py-2 text-sm rounded-md hover:bg-secondary">Cancel</button>
-          <button onClick={submit} disabled={!name.trim()} className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground font-medium disabled:opacity-50">Add to pipeline</button>
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-md hover:bg-secondary">
+            Cancel
+          </button>
+          <button
+            onClick={submit}
+            disabled={!name.trim()}
+            className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground font-medium disabled:opacity-50"
+          >
+            Add to pipeline
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function Field({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
+function Field({
+  label,
+  children,
+  full,
+}: {
+  label: string;
+  children: React.ReactNode;
+  full?: boolean;
+}) {
   return (
     <div className={full ? "col-span-2" : ""}>
-      <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{label}</label>
+      <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+        {label}
+      </label>
       <div className="mt-1">{children}</div>
     </div>
   );
 }
 
-function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => void; actorId: string }) {
+function DetailModal({
+  c,
+  onClose,
+  actorId,
+}: {
+  c: Candidate;
+  onClose: () => void;
+  actorId: string;
+}) {
   const [note, setNote] = useState("");
   const [rejectMode, setRejectMode] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
@@ -296,14 +433,22 @@ function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => voi
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-card rounded-2xl border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card rounded-2xl border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-start gap-3 mb-4">
           <Avatar name={c.name} size={48} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="font-display text-xl font-semibold">{c.name}</h2>
-              <span className={`text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border ${stageColor(c.stage)}`}>
+              <span
+                className={`text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border ${stageColor(c.stage)}`}
+              >
                 {CAND_STAGE_LABEL[c.stage]}
               </span>
             </div>
@@ -321,24 +466,40 @@ function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => voi
         <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
           <Info icon={<Phone className="h-3.5 w-3.5" />} label="Phone" value={c.phone} />
           <Info icon={<Mail className="h-3.5 w-3.5" />} label="Email" value={c.email} />
-          <Info icon={<Briefcase className="h-3.5 w-3.5" />} label="Experience" value={c.experience} />
+          <Info
+            icon={<Briefcase className="h-3.5 w-3.5" />}
+            label="Experience"
+            value={c.experience}
+          />
           <Info icon={<MapPin className="h-3.5 w-3.5" />} label="City" value={c.city} />
-          <Info icon={<IndianRupee className="h-3.5 w-3.5" />} label="Expected" value={`₹${c.expectedSalary.toLocaleString("en-IN")}/mo`} />
+          <Info
+            icon={<IndianRupee className="h-3.5 w-3.5" />}
+            label="Expected"
+            value={`₹${c.expectedSalary.toLocaleString("en-IN")}/mo`}
+          />
           {c.nextStepLabel && (
-            <Info icon={<Calendar className="h-3.5 w-3.5" />} label="Next step" value={`${c.nextStepLabel}${c.nextStepAt ? ` · ${new Date(c.nextStepAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}` : ""}`} />
+            <Info
+              icon={<Calendar className="h-3.5 w-3.5" />}
+              label="Next step"
+              value={`${c.nextStepLabel}${c.nextStepAt ? ` · ${new Date(c.nextStepAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}` : ""}`}
+            />
           )}
         </div>
 
         {/* Stage controls */}
         <section className="mb-4">
-          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">Move to stage</div>
+          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">
+            Move to stage
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {CAND_STAGE_ORDER.filter((s) => s !== "rejected").map((s) => (
               <button
                 key={s}
                 onClick={() => moveCandidate(c.id, s, actorId)}
                 className={`px-2.5 py-1 rounded-md text-xs font-medium border ${
-                  c.stage === s ? stageColor(s) : "border-border text-muted-foreground hover:bg-secondary"
+                  c.stage === s
+                    ? stageColor(s)
+                    : "border-border text-muted-foreground hover:bg-secondary"
                 }`}
               >
                 {CAND_STAGE_LABEL[s]}
@@ -349,20 +510,31 @@ function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => voi
 
         {c.rejectReason && (
           <div className="mb-4 rounded-md bg-destructive/5 border border-destructive/20 p-3 text-sm">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-destructive mb-0.5">Rejected</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-destructive mb-0.5">
+              Rejected
+            </div>
             {c.rejectReason}
           </div>
         )}
 
         {/* Notes */}
         <section className="mb-4">
-          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">Notes</div>
+          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">
+            Notes
+          </div>
           <div className="space-y-2 mb-2">
-            {c.notes.length === 0 && <div className="text-xs text-muted-foreground">No notes yet.</div>}
+            {c.notes.length === 0 && (
+              <div className="text-xs text-muted-foreground">No notes yet.</div>
+            )}
             {c.notes.map((n) => (
               <div key={n.id} className="rounded-md bg-muted/50 border border-border p-2 text-sm">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
-                  {new Date(n.ts).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  {new Date(n.ts).toLocaleString([], {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
                 {n.body}
               </div>
@@ -376,7 +548,9 @@ function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => voi
               placeholder="Add a note (be specific — what changed your read?)"
               className="flex-1 h-9 px-3 rounded-md bg-background border border-input text-sm"
             />
-            <button onClick={add} className="px-3 h-9 rounded-md bg-secondary text-sm font-medium">Add</button>
+            <button onClick={add} className="px-3 h-9 rounded-md bg-secondary text-sm font-medium">
+              Add
+            </button>
           </div>
         </section>
 
@@ -384,13 +558,18 @@ function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => voi
         <section className="mb-2 pt-3 border-t border-border">
           {!rejectMode ? (
             c.stage !== "rejected" && (
-              <button onClick={() => setRejectMode(true)} className="text-xs text-destructive hover:underline">
+              <button
+                onClick={() => setRejectMode(true)}
+                className="text-xs text-destructive hover:underline"
+              >
                 Reject candidate
               </button>
             )
           ) : (
             <div className="space-y-2">
-              <div className="text-xs font-mono uppercase tracking-widest text-destructive">Rejection reason</div>
+              <div className="text-xs font-mono uppercase tracking-widest text-destructive">
+                Rejection reason
+              </div>
               <input
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
@@ -398,9 +577,19 @@ function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => voi
                 className="w-full h-9 px-3 rounded-md bg-background border border-input text-sm"
               />
               <div className="flex gap-2 justify-end">
-                <button onClick={() => setRejectMode(false)} className="px-3 py-1.5 text-xs rounded-md hover:bg-secondary">Cancel</button>
                 <button
-                  onClick={() => { if (rejectReason.trim()) { rejectCandidate(c.id, rejectReason.trim(), actorId); onClose(); } }}
+                  onClick={() => setRejectMode(false)}
+                  className="px-3 py-1.5 text-xs rounded-md hover:bg-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (rejectReason.trim()) {
+                      rejectCandidate(c.id, rejectReason.trim(), actorId);
+                      onClose();
+                    }
+                  }}
                   className="px-3 py-1.5 text-xs rounded-md bg-destructive text-destructive-foreground font-medium"
                 >
                   Confirm reject
@@ -414,7 +603,9 @@ function DetailModal({ c, onClose, actorId }: { c: Candidate; onClose: () => voi
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground inline-flex items-center gap-1">
             <Sparkles className="h-3 w-3 text-primary" /> Fit-score coming soon
           </div>
-          <button onClick={onClose} className="px-4 py-2 text-sm rounded-md hover:bg-secondary">Close</button>
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-md hover:bg-secondary">
+            Close
+          </button>
         </div>
       </div>
     </div>

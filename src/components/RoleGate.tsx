@@ -19,9 +19,13 @@ export function RoleGate({ allow, children }: { allow: Tier[]; children: React.R
         </div>
         <h1 className="font-display text-xl font-semibold mb-2">Not your arena — yet</h1>
         <p className="text-sm text-muted-foreground mb-5">
-          This view is for: {allow.map((t) => TIER_LABEL[t]).join(", ")}. Your role focuses on a different surface, and that's intentional. Go own your day.
+          This view is for: {allow.map((t) => TIER_LABEL[t]).join(", ")}. Your role focuses on a
+          different surface, and that's intentional. Go own your day.
         </p>
-        <Link to="/" className="inline-flex items-center justify-center h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium">
+        <Link
+          to="/"
+          className="inline-flex items-center justify-center h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium"
+        >
           Back to Home
         </Link>
       </div>

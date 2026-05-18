@@ -10,8 +10,8 @@ import { recentEvents } from "./event-bus";
 
 export type MissionItem = {
   id: string;
-  weight: number;           // higher = more urgent
-  kicker: string;           // small label, e.g. "SLA · 12m left"
+  weight: number; // higher = more urgent
+  kicker: string; // small label, e.g. "SLA · 12m left"
   title: string;
   body?: string;
   to: string;
@@ -44,7 +44,8 @@ export function missionFor(actor: Employee): MissionItem[] {
       items.push({
         id: `task-soon-${t.id}`,
         weight: 70 + (t.priority === "urgent" ? 15 : 0),
-        kicker: t.priority === "urgent" ? "Urgent" : `Due in ${Math.round((t.dueAt - now) / 60000)}m`,
+        kicker:
+          t.priority === "urgent" ? "Urgent" : `Due in ${Math.round((t.dueAt - now) / 60000)}m`,
         title: t.title,
         body: t.relatedTo,
         to: "/tasks",
@@ -69,7 +70,9 @@ export function missionFor(actor: Employee): MissionItem[] {
         tone: "urgent",
       });
     }
-    const assigned = tasksAssignedBy(actor.id).filter((t) => t.status !== "done").slice(0, 3);
+    const assigned = tasksAssignedBy(actor.id)
+      .filter((t) => t.status !== "done")
+      .slice(0, 3);
     for (const t of assigned) {
       items.push({
         id: `as-${t.id}`,
@@ -85,9 +88,13 @@ export function missionFor(actor: Employee): MissionItem[] {
 
   if (tier === "zone_leader" || tier === "leader") {
     // Blockers from this zone
-    for (const e of events.filter(
-      (x) => x.kind === "blocker.raised" && (!actor.zone || x.zone === actor.zone || actor.zone === "All"),
-    ).slice(0, 4)) {
+    for (const e of events
+      .filter(
+        (x) =>
+          x.kind === "blocker.raised" &&
+          (!actor.zone || x.zone === actor.zone || actor.zone === "All"),
+      )
+      .slice(0, 4)) {
       items.push({
         id: `blk-${e.id}`,
         weight: 85,
@@ -115,17 +122,23 @@ export function missionFor(actor: Employee): MissionItem[] {
     for (const e of events.filter((x) => x.kind === "leave.requested").slice(0, 5)) {
       items.push({
         id: `lv-${e.id}`,
-        weight: 70, kicker: "Leave · pending",
-        title: e.title, body: e.body,
-        to: "/leaves", tone: "warn",
+        weight: 70,
+        kicker: "Leave · pending",
+        title: e.title,
+        body: e.body,
+        to: "/leaves",
+        tone: "warn",
       });
     }
     for (const e of events.filter((x) => x.kind === "attendance.late").slice(0, 3)) {
       items.push({
         id: `at-${e.id}`,
-        weight: 50, kicker: "Attendance",
-        title: e.title, body: e.body,
-        to: "/attendance", tone: "info",
+        weight: 50,
+        kicker: "Attendance",
+        title: e.title,
+        body: e.body,
+        to: "/attendance",
+        tone: "info",
       });
     }
   }
@@ -133,22 +146,27 @@ export function missionFor(actor: Employee): MissionItem[] {
   if (tier === "recruiter") {
     items.push({
       id: "rec-board",
-      weight: 60, kicker: "Funnel",
+      weight: 60,
+      kicker: "Funnel",
       title: "Review today's pipeline",
       body: "Source → screen → seal — move every card one stage.",
-      to: "/recruiting", tone: "info",
+      to: "/recruiting",
+      tone: "info",
     });
   }
 
   if (tier === "partner") {
-    for (const e of events.filter(
-      (x) => x.kind === "partner.ticket.opened" && x.actorId === actor.id,
-    ).slice(0, 3)) {
+    for (const e of events
+      .filter((x) => x.kind === "partner.ticket.opened" && x.actorId === actor.id)
+      .slice(0, 3)) {
       items.push({
         id: `mt-${e.id}`,
-        weight: 60, kicker: "Your request · in queue",
-        title: e.title, body: e.body,
-        to: "/partner", tone: "info",
+        weight: 60,
+        kicker: "Your request · in queue",
+        title: e.title,
+        body: e.body,
+        to: "/partner",
+        tone: "info",
       });
     }
   }

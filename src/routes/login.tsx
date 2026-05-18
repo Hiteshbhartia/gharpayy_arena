@@ -49,7 +49,8 @@ function LoginPage() {
     >
       {!apiEnabled && (
         <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          Set <code className="font-mono text-xs">VITE_API_URL</code> (e.g. http://localhost:4000/api) and restart the dev server.
+          Set <code className="font-mono text-xs">VITE_API_URL</code> (e.g.
+          http://localhost:4000/api) and restart the dev server.
         </p>
       )}
 
@@ -80,7 +81,10 @@ function LoginPage() {
         </div>
 
         {error && (
-          <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+          <p
+            className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            role="alert"
+          >
             {error}
           </p>
         )}

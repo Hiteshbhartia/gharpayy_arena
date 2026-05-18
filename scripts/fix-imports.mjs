@@ -22,9 +22,7 @@ function walk(dir) {
       if (needsTeam && !c.includes("@/lib/team-metrics")) {
         const m = c.match(/^import .+ from ["']@\/types\/hr["'];?\n/m);
         if (m) {
-          const insert =
-            m[0] +
-            'import { teamSummary, tierFor } from "@/lib/team-metrics";\n';
+          const insert = m[0] + 'import { teamSummary, tierFor } from "@/lib/team-metrics";\n';
           c = c.replace(m[0], insert);
         } else {
           c = 'import { teamSummary, tierFor } from "@/lib/team-metrics";\n' + c;

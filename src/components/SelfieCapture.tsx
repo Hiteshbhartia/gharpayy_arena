@@ -43,8 +43,8 @@ export function SelfieCapture({ open, title, subtitle, onClose, onCapture }: Pro
           await videoRef.current.play();
           setReady(true);
         }
-      } catch (e: any) {
-        setError(e?.message || "Camera permission denied");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Camera permission denied");
       } finally {
         setStarting(false);
       }

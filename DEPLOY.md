@@ -43,20 +43,25 @@ The frontend (this Lovable app) keeps running on Lovable hosting and just **call
 You have two options:
 
 ### Option A: clone from GitHub (recommended)
+
 After you publish this Lovable project to GitHub, on the VPS:
+
 ```bash
 git clone https://github.com/YOUR_USER/YOUR_REPO.git arena
 cd arena
 ```
 
 ### Option B: copy just the server folder + compose files
+
 You only need these files on the VPS — the React frontend doesn't run there:
+
 ```
 arena/
 ├── docker-compose.yml
 ├── Caddyfile
 └── server/        (the entire folder)
 ```
+
 Use `scp -r` or `rsync` to copy them.
 
 ---
@@ -70,13 +75,13 @@ nano .env
 
 **Fill in every `CHANGE_ME` value.** Critical ones:
 
-| Variable | What to set |
-|---|---|
-| `MONGO_INITDB_ROOT_PASSWORD` | A long random string. Use `openssl rand -base64 32` |
-| `MONGODB_URI` | Update the password to match the one above |
-| `JWT_SECRET` | `openssl rand -hex 64` |
-| `PUBLIC_DOMAIN` | Your domain, e.g. `arena.mycompany.com` |
-| `CORS_ORIGINS` | The URL of your Lovable frontend, e.g. `https://howtohr.lovable.app` |
+| Variable                     | What to set                                                          |
+| ---------------------------- | -------------------------------------------------------------------- |
+| `MONGO_INITDB_ROOT_PASSWORD` | A long random string. Use `openssl rand -base64 32`                  |
+| `MONGODB_URI`                | Update the password to match the one above                           |
+| `JWT_SECRET`                 | `openssl rand -hex 64`                                               |
+| `PUBLIC_DOMAIN`              | Your domain, e.g. `arena.mycompany.com`                              |
+| `CORS_ORIGINS`               | The URL of your Lovable frontend, e.g. `https://howtohr.lovable.app` |
 
 > ⚠️ The `.env` file is in `.gitignore`. **Never commit it.**
 
@@ -92,6 +97,7 @@ docker compose logs -f api
 You should see `[api] mongo connected` and `[api] listening on :4000`.
 
 Test it:
+
 ```bash
 curl https://YOUR_DOMAIN/api/health
 # → {"ok":true,"db":"connected","ts":...}
@@ -108,10 +114,12 @@ docker compose exec api node scripts/seed.js
 ```
 
 This:
+
 - Inserts the demo employees (`e1`–`e15`).
 - If no users exist, creates an admin: `admin@arena.local` / `ChangeMe123!`.
 
 **Log in immediately and change the password.** You can override the bootstrap creds:
+
 ```bash
 docker compose exec -e SEED_ADMIN_EMAIL=you@yourco.com -e SEED_ADMIN_PASSWORD='YourStrongPass!' api node scripts/seed.js
 ```
@@ -135,6 +143,7 @@ Then **republish** the project. The frontend's API client (already scaffolded in
 ## Maintenance
 
 ### Backups (do this!)
+
 ```bash
 # Daily Mongo dump to /root/backups
 docker compose exec -T mongo mongodump --archive --gzip \
@@ -142,9 +151,11 @@ docker compose exec -T mongo mongodump --archive --gzip \
   --authenticationDatabase admin \
   > /root/backups/arena-$(date +%F).archive.gz
 ```
+
 Add to crontab. Test restores periodically.
 
 ### Update the app
+
 ```bash
 git pull
 docker compose build api
@@ -152,6 +163,7 @@ docker compose up -d
 ```
 
 ### Logs
+
 ```bash
 docker compose logs -f api      # API logs
 docker compose logs -f caddy    # SSL / proxy logs
@@ -159,6 +171,7 @@ docker compose logs -f mongo    # DB logs
 ```
 
 ### Resource use
+
 The whole stack runs comfortably on **1 vCPU / 2 GB RAM**. For >50 active users add RAM.
 
 ---
@@ -180,13 +193,14 @@ The whole stack runs comfortably on **1 vCPU / 2 GB RAM**. For >50 active users 
 
 **"Connection refused" from frontend** → Check `CORS_ORIGINS` in `.env` includes your frontend URL exactly.
 
-**SSL cert never arrives** → Caddy needs DNS pointing at the VPS *before* port 80/443 are reachable. Run `dig YOUR_DOMAIN +short` — must return your VPS IP.
+**SSL cert never arrives** → Caddy needs DNS pointing at the VPS _before_ port 80/443 are reachable. Run `dig YOUR_DOMAIN +short` — must return your VPS IP.
 
 **`MONGODB_URI missing`** → You ran `docker compose up` without an `.env` file in the project root.
 
 **Login returns 403 "pending approval"** → Only the **first** signup is auto-approved (becomes admin). Subsequent users need an admin to call `POST /api/auth/approve/:userId`. Round 2 will add a UI for this.
 
 **Need to wipe everything and start over**:
+
 ```bash
 docker compose down -v   # ⚠️ deletes the mongo volume
 docker compose up -d

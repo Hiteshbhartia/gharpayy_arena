@@ -64,11 +64,17 @@ export const KUDO_TAGS: KudoTag[] = [
 
 export function tagColor(tag: KudoTag): string {
   switch (tag) {
-    case "Hustle": return "bg-primary/15 text-primary border-primary/30";
-    case "Customer Love": return "bg-warning/15 text-warning border-warning/30";
-    case "Team Player": return "bg-info/15 text-info border-info/30";
-    case "Above & Beyond": return "bg-success/15 text-success border-success/30";
-    case "Bug Fixer": return "bg-accent text-accent-foreground border-border";
-    case "Streak Hero": return "bg-destructive/10 text-destructive border-destructive/20";
+    case "Hustle":
+      return "bg-primary/15 text-primary border-primary/30";
+    case "Customer Love":
+      return "bg-warning/15 text-warning border-warning/30";
+    case "Team Player":
+      return "bg-info/15 text-info border-info/30";
+    case "Above & Beyond":
+      return "bg-success/15 text-success border-success/30";
+    case "Bug Fixer":
+      return "bg-accent text-accent-foreground border-border";
+    case "Streak Hero":
+      return "bg-destructive/10 text-destructive border-destructive/20";
   }
 }

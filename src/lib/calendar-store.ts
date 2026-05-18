@@ -40,8 +40,10 @@ export function useCalendarEvents(): CalEvent[] {
     const leaveEvents: CalEvent[] = leaves
       .filter((l) => l.status !== "rejected")
       .map((l) => {
-        const start = new Date(l.startDate); start.setHours(0, 0, 0, 0);
-        const end = new Date(l.endDate); end.setHours(23, 59, 0, 0);
+        const start = new Date(l.startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(l.endDate);
+        end.setHours(23, 59, 0, 0);
         const emp = getRoster().find((e) => e.id === l.employeeId);
         return {
           id: `l-${l.id}`,
@@ -65,14 +67,23 @@ export function addCalendarEvent(ev: Omit<CalEvent, "id">) {
 
 export function eventColor(type: CalEventType): string {
   switch (type) {
-    case "shift": return "bg-muted text-muted-foreground border-border";
-    case "tour": return "bg-primary/15 text-primary border-primary/30";
-    case "task": return "bg-info/15 text-info border-info/30";
-    case "leave": return "bg-warning/15 text-warning border-warning/30";
-    case "holiday": return "bg-destructive/10 text-destructive border-destructive/20";
-    case "birthday": return "bg-accent text-accent-foreground border-border";
-    case "1:1": return "bg-success/15 text-success border-success/30";
-    case "town_hall": return "bg-primary/15 text-primary border-primary/30";
-    case "anniversary": return "bg-success/15 text-success border-success/30";
+    case "shift":
+      return "bg-muted text-muted-foreground border-border";
+    case "tour":
+      return "bg-primary/15 text-primary border-primary/30";
+    case "task":
+      return "bg-info/15 text-info border-info/30";
+    case "leave":
+      return "bg-warning/15 text-warning border-warning/30";
+    case "holiday":
+      return "bg-destructive/10 text-destructive border-destructive/20";
+    case "birthday":
+      return "bg-accent text-accent-foreground border-border";
+    case "1:1":
+      return "bg-success/15 text-success border-success/30";
+    case "town_hall":
+      return "bg-primary/15 text-primary border-primary/30";
+    case "anniversary":
+      return "bg-success/15 text-success border-success/30";
   }
 }

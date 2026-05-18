@@ -86,7 +86,7 @@ Return ONLY the JSON, no prose.`;
       const text = await res.text();
       throw new Error(`AI gateway error ${res.status}: ${text.slice(0, 400)}`);
     }
-    const json = await res.json() as { choices?: { message?: { content?: string } }[] };
+    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const raw = json.choices?.[0]?.message?.content ?? "{}";
 
     let parsed: SummaryOut;

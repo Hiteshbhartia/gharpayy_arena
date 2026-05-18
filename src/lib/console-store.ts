@@ -110,8 +110,13 @@ function ensureDay(actorId: string): DayState {
   let day = findDay(state, date, actorId);
   if (!day) {
     day = {
-      date, actorId,
-      kpis: {}, sprints: {}, windowsSent: {}, eod: {}, decisions: [],
+      date,
+      actorId,
+      kpis: {},
+      sprints: {},
+      windowsSent: {},
+      eod: {},
+      decisions: [],
     };
     store.write({ days: [day, ...state.days] });
     syncDay(day);
@@ -123,7 +128,13 @@ function patchDay(actorId: string, fn: (d: DayState) => DayState) {
   const date = todayKey();
   const state = store.read();
   const day = findDay(state, date, actorId) ?? {
-    date, actorId, kpis: {}, sprints: {}, windowsSent: {}, eod: {}, decisions: [],
+    date,
+    actorId,
+    kpis: {},
+    sprints: {},
+    windowsSent: {},
+    eod: {},
+    decisions: [],
   };
   const next = fn(day);
   const others = state.days.filter((d) => !(d.date === date && d.actorId === actorId));
@@ -138,9 +149,17 @@ export function useConsoleDay(actorId: string): DayState {
     store.getServerSnapshot,
   );
   const date = todayKey();
-  return findDay(state, date, actorId) ?? {
-    date, actorId, kpis: {}, sprints: {}, windowsSent: {}, eod: {}, decisions: [],
-  };
+  return (
+    findDay(state, date, actorId) ?? {
+      date,
+      actorId,
+      kpis: {},
+      sprints: {},
+      windowsSent: {},
+      eod: {},
+      decisions: [],
+    }
+  );
 }
 
 // ---- Mutations ----
@@ -155,21 +174,24 @@ export function bumpKpi(actorId: string, kpiId: string, delta: number) {
 export function setKpi(actorId: string, kpiId: string, value: number) {
   ensureDay(actorId);
   patchDay(actorId, (d) => ({
-    ...d, kpis: { ...d.kpis, [kpiId]: Math.max(0, value) },
+    ...d,
+    kpis: { ...d.kpis, [kpiId]: Math.max(0, value) },
   }));
 }
 
 export function toggleSprint(actorId: string, sprintId: string) {
   ensureDay(actorId);
   patchDay(actorId, (d) => ({
-    ...d, sprints: { ...d.sprints, [sprintId]: !d.sprints[sprintId] },
+    ...d,
+    sprints: { ...d.sprints, [sprintId]: !d.sprints[sprintId] },
   }));
 }
 
 export function markWindowSent(actorId: string, windowId: string) {
   ensureDay(actorId);
   patchDay(actorId, (d) => ({
-    ...d, windowsSent: { ...d.windowsSent, [windowId]: Date.now() },
+    ...d,
+    windowsSent: { ...d.windowsSent, [windowId]: Date.now() },
   }));
 }
 
@@ -229,12 +251,17 @@ export function dayHealth(actorId: string): { score: number; label: string } {
   let hit = 0;
   pb.kpis.forEach((k) => {
     const v = day.kpis[k.id] ?? 0;
-    if (k.kind === "boolean") { if (v >= 1) hit++; }
-    else if (k.kind === "percent") { if (v >= k.target) hit++; }
-    else { if (v >= k.target) hit++; }
+    if (k.kind === "boolean") {
+      if (v >= 1) hit++;
+    } else if (k.kind === "percent") {
+      if (v >= k.target) hit++;
+    } else {
+      if (v >= k.target) hit++;
+    }
   });
   const score = Math.round((hit / pb.kpis.length) * 100);
-  const label = score >= 90 ? "On fire" : score >= 70 ? "On track" : score >= 40 ? "Behind" : "Red zone";
+  const label =
+    score >= 90 ? "On fire" : score >= 70 ? "On track" : score >= 40 ? "Behind" : "Red zone";
   return { score, label };
 }
 

@@ -67,60 +67,218 @@ const hoursAgo = (h: number) => Date.now() - h * 3600 * 1000;
 
 const SEED_UPDATES: DailyUpdate[] = [
   {
-    id: "u1", authorId: "e3", date: today(),
-    connectedCalls: 22, visitsScheduled: 6, visitsCompleted: 4,
-    hotLeads: 3, bookings: 1,
+    id: "u1",
+    authorId: "e3",
+    date: today(),
+    connectedCalls: 22,
+    visitsScheduled: 6,
+    visitsCompleted: 4,
+    hotLeads: 3,
+    bookings: 1,
     blocker: "Owner not picking up at Brook Luxe — token pending",
     propertyIssue: "WiFi flaky at Aeris Boys block B",
     tomorrowPriority: "Close Brook Luxe token + visit 2 Whitefield parents",
-    zone: "Whitefield", createdAt: hoursAgo(2),
+    zone: "Whitefield",
+    createdAt: hoursAgo(2),
   },
   {
-    id: "u2", authorId: "e6", date: today(),
-    connectedCalls: 0, visitsScheduled: 5, visitsCompleted: 5,
-    hotLeads: 2, bookings: 0,
+    id: "u2",
+    authorId: "e6",
+    date: today(),
+    connectedCalls: 0,
+    visitsScheduled: 5,
+    visitsCompleted: 5,
+    hotLeads: 2,
+    bookings: 0,
     blocker: "Cab cancelled for 4pm slot, rebooked but visit slipped 40m",
     propertyIssue: "Geyser dead at Oryn Girls room 304",
     tomorrowPriority: "First batch of 3 morning tours back-to-back",
-    zone: "Bandra", createdAt: hoursAgo(3),
+    zone: "Bandra",
+    createdAt: hoursAgo(3),
   },
   {
-    id: "u3", authorId: "e7", date: today(),
-    connectedCalls: 31, visitsScheduled: 4, visitsCompleted: 3,
-    hotLeads: 4, bookings: 2,
+    id: "u3",
+    authorId: "e7",
+    date: today(),
+    connectedCalls: 31,
+    visitsScheduled: 4,
+    visitsCompleted: 3,
+    hotLeads: 4,
+    bookings: 2,
     blocker: "Two parents want callback after 9pm — outside shift",
     propertyIssue: "",
     tomorrowPriority: "Parent callbacks 9–10pm + reassign cold leads",
-    zone: "Andheri", createdAt: hoursAgo(1),
+    zone: "Andheri",
+    createdAt: hoursAgo(1),
   },
   {
-    id: "u4", authorId: "e5", date: today(),
-    connectedCalls: 12, visitsScheduled: 2, visitsCompleted: 1,
-    hotLeads: 1, bookings: 0,
+    id: "u4",
+    authorId: "e5",
+    date: today(),
+    connectedCalls: 12,
+    visitsScheduled: 2,
+    visitsCompleted: 1,
+    hotLeads: 1,
+    bookings: 0,
     blocker: "Struggling with parent objections on deposit",
     propertyIssue: "",
     tomorrowPriority: "Shadow Karan on 3 calls + reattempt Bellandur lead",
-    zone: "Andheri", createdAt: hoursAgo(5),
+    zone: "Andheri",
+    createdAt: hoursAgo(5),
   },
 ];
 
 const SEED_RETRO: RetroItem[] = [
-  { id: "r1", kind: "start", authorId: "e2", body: "Faster parent callbacks — within 15 min of enquiry", createdAt: hoursAgo(20), upvotes: ["e3","e6","e7","e4"], comments: [{id:"rc1",authorId:"e4",body:"Agreed. Will set SLA timer.",ts:hoursAgo(18)}] },
-  { id: "r2", kind: "start", authorId: "e4", body: "Evening 7–9pm follow-up batch for working parents", createdAt: hoursAgo(15), upvotes: ["e2","e3"], comments: [] },
-  { id: "r3", kind: "stop", authorId: "e6", body: "Delayed visit confirmations — losing 1 in 4", createdAt: hoursAgo(22), upvotes: ["e2","e3","e5","e7","e4"], comments: [{id:"rc2",authorId:"e2",body:"Confirm within 30 min, no exceptions.",ts:hoursAgo(21)}] },
-  { id: "r4", kind: "stop", authorId: "e7", body: "Showing rooms that are already booked / on hold", createdAt: hoursAgo(10), upvotes: ["e6","e2","e5"], comments: [] },
-  { id: "r5", kind: "continue", authorId: "e2", body: "Brook Luxe conversion script — 38% close rate this week", createdAt: hoursAgo(12), upvotes: ["e3","e7","e4","e6"], comments: [] },
-  { id: "r6", kind: "continue", authorId: "e3", body: "Quick WhatsApp follow-up with photos within 5 min of visit", createdAt: hoursAgo(8), upvotes: ["e6","e7"], comments: [] },
+  {
+    id: "r1",
+    kind: "start",
+    authorId: "e2",
+    body: "Faster parent callbacks — within 15 min of enquiry",
+    createdAt: hoursAgo(20),
+    upvotes: ["e3", "e6", "e7", "e4"],
+    comments: [
+      { id: "rc1", authorId: "e4", body: "Agreed. Will set SLA timer.", ts: hoursAgo(18) },
+    ],
+  },
+  {
+    id: "r2",
+    kind: "start",
+    authorId: "e4",
+    body: "Evening 7–9pm follow-up batch for working parents",
+    createdAt: hoursAgo(15),
+    upvotes: ["e2", "e3"],
+    comments: [],
+  },
+  {
+    id: "r3",
+    kind: "stop",
+    authorId: "e6",
+    body: "Delayed visit confirmations — losing 1 in 4",
+    createdAt: hoursAgo(22),
+    upvotes: ["e2", "e3", "e5", "e7", "e4"],
+    comments: [
+      {
+        id: "rc2",
+        authorId: "e2",
+        body: "Confirm within 30 min, no exceptions.",
+        ts: hoursAgo(21),
+      },
+    ],
+  },
+  {
+    id: "r4",
+    kind: "stop",
+    authorId: "e7",
+    body: "Showing rooms that are already booked / on hold",
+    createdAt: hoursAgo(10),
+    upvotes: ["e6", "e2", "e5"],
+    comments: [],
+  },
+  {
+    id: "r5",
+    kind: "continue",
+    authorId: "e2",
+    body: "Brook Luxe conversion script — 38% close rate this week",
+    createdAt: hoursAgo(12),
+    upvotes: ["e3", "e7", "e4", "e6"],
+    comments: [],
+  },
+  {
+    id: "r6",
+    kind: "continue",
+    authorId: "e3",
+    body: "Quick WhatsApp follow-up with photos within 5 min of visit",
+    createdAt: hoursAgo(8),
+    upvotes: ["e6", "e7"],
+    comments: [],
+  },
 ];
 
 const SEED_FEED: FeedEvent[] = [
-  { id: "f1", kind: "visit",    authorId: "e6", zone: "Whitefield",  property: "Brook Luxe",    body: "3 visits completed at Brook Luxe — 2 strong intents", ts: hoursAgo(1.5), upvotes: ["e2","e7"], comments: [] },
-  { id: "f2", kind: "lead",     authorId: "e3", zone: "Whitefield",  property: "Brook Luxe",    body: "Hot lead pending token — parent wants call before EOD", ts: hoursAgo(2),   upvotes: ["e2"], comments: [{id:"fc1",authorId:"e2",body:"Take it. I'll back you up.",ts:hoursAgo(1.8)}] },
-  { id: "f3", kind: "issue",    authorId: "e6", zone: "Bandra",      property: "Aeris Boys",    body: "WiFi issue raised at Aeris Boys — 6 tenants complaining", ts: hoursAgo(3),   upvotes: ["e4","e2","e7","e3"], comments: [] },
-  { id: "f4", kind: "callback", authorId: "e7", zone: "Andheri",     property: "Bellandur Hub", body: "Parent callback requested for Bellandur lead", ts: hoursAgo(0.5), upvotes: [], comments: [] },
-  { id: "f5", kind: "booking",  authorId: "e7", zone: "Andheri",     property: "Aeris Boys",    body: "Booking confirmed — token received ₹15k", ts: hoursAgo(4),   upvotes: ["e2","e4","e6","e3","e5"], comments: [] },
-  { id: "f6", kind: "win",      authorId: "e2", zone: "All",                                    body: "Team crossed 12 visits before lunch — best Tuesday this month", ts: hoursAgo(5),   upvotes: ["e3","e7","e6","e4","e5"], comments: [] },
-  { id: "f7", kind: "blocker",  authorId: "e5", zone: "Andheri",                                body: "Stuck on deposit objection on 2 calls back-to-back — need script help", ts: hoursAgo(6),   upvotes: ["e2"], comments: [{id:"fc2",authorId:"e2",body:"Use the 'split-pay' line. I'll DM the script.",ts:hoursAgo(5.5)}] },
+  {
+    id: "f1",
+    kind: "visit",
+    authorId: "e6",
+    zone: "Whitefield",
+    property: "Brook Luxe",
+    body: "3 visits completed at Brook Luxe — 2 strong intents",
+    ts: hoursAgo(1.5),
+    upvotes: ["e2", "e7"],
+    comments: [],
+  },
+  {
+    id: "f2",
+    kind: "lead",
+    authorId: "e3",
+    zone: "Whitefield",
+    property: "Brook Luxe",
+    body: "Hot lead pending token — parent wants call before EOD",
+    ts: hoursAgo(2),
+    upvotes: ["e2"],
+    comments: [
+      { id: "fc1", authorId: "e2", body: "Take it. I'll back you up.", ts: hoursAgo(1.8) },
+    ],
+  },
+  {
+    id: "f3",
+    kind: "issue",
+    authorId: "e6",
+    zone: "Bandra",
+    property: "Aeris Boys",
+    body: "WiFi issue raised at Aeris Boys — 6 tenants complaining",
+    ts: hoursAgo(3),
+    upvotes: ["e4", "e2", "e7", "e3"],
+    comments: [],
+  },
+  {
+    id: "f4",
+    kind: "callback",
+    authorId: "e7",
+    zone: "Andheri",
+    property: "Bellandur Hub",
+    body: "Parent callback requested for Bellandur lead",
+    ts: hoursAgo(0.5),
+    upvotes: [],
+    comments: [],
+  },
+  {
+    id: "f5",
+    kind: "booking",
+    authorId: "e7",
+    zone: "Andheri",
+    property: "Aeris Boys",
+    body: "Booking confirmed — token received ₹15k",
+    ts: hoursAgo(4),
+    upvotes: ["e2", "e4", "e6", "e3", "e5"],
+    comments: [],
+  },
+  {
+    id: "f6",
+    kind: "win",
+    authorId: "e2",
+    zone: "All",
+    body: "Team crossed 12 visits before lunch — best Tuesday this month",
+    ts: hoursAgo(5),
+    upvotes: ["e3", "e7", "e6", "e4", "e5"],
+    comments: [],
+  },
+  {
+    id: "f7",
+    kind: "blocker",
+    authorId: "e5",
+    zone: "Andheri",
+    body: "Stuck on deposit objection on 2 calls back-to-back — need script help",
+    ts: hoursAgo(6),
+    upvotes: ["e2"],
+    comments: [
+      {
+        id: "fc2",
+        authorId: "e2",
+        body: "Use the 'split-pay' line. I'll DM the script.",
+        ts: hoursAgo(5.5),
+      },
+    ],
+  },
 ];
 
 const updateStore = createApiListStore<DailyUpdate>({
@@ -187,7 +345,9 @@ export function useFeed(): FeedEvent[] {
 
 // ---------- Daily updates ----------
 
-export function submitDailyUpdate(input: Omit<DailyUpdate, "id" | "createdAt" | "date"> & { date?: string }): DailyUpdate {
+export function submitDailyUpdate(
+  input: Omit<DailyUpdate, "id" | "createdAt" | "date"> & { date?: string },
+): DailyUpdate {
   const next: DailyUpdate = {
     ...input,
     id: crypto.randomUUID(),
@@ -201,19 +361,50 @@ export function submitDailyUpdate(input: Omit<DailyUpdate, "id" | "createdAt" | 
   const zone = input.zone || author?.zone || "All";
   const events: FeedEvent[] = [];
   if (input.visitsCompleted > 0) {
-    events.push(mkFeed({ kind: "visit", authorId: input.authorId, zone, body: `${input.visitsCompleted} visits completed in ${zone}` }));
+    events.push(
+      mkFeed({
+        kind: "visit",
+        authorId: input.authorId,
+        zone,
+        body: `${input.visitsCompleted} visits completed in ${zone}`,
+      }),
+    );
   }
   if (input.hotLeads > 0) {
-    events.push(mkFeed({ kind: "lead", authorId: input.authorId, zone, body: `${input.hotLeads} hot lead${input.hotLeads > 1 ? "s" : ""} flagged` }));
+    events.push(
+      mkFeed({
+        kind: "lead",
+        authorId: input.authorId,
+        zone,
+        body: `${input.hotLeads} hot lead${input.hotLeads > 1 ? "s" : ""} flagged`,
+      }),
+    );
   }
   if (input.bookings > 0) {
-    events.push(mkFeed({ kind: "booking", authorId: input.authorId, zone, body: `${input.bookings} booking${input.bookings > 1 ? "s" : ""} closed today` }));
+    events.push(
+      mkFeed({
+        kind: "booking",
+        authorId: input.authorId,
+        zone,
+        body: `${input.bookings} booking${input.bookings > 1 ? "s" : ""} closed today`,
+      }),
+    );
   }
   if (input.blocker.trim()) {
-    events.push(mkFeed({ kind: "blocker", authorId: input.authorId, zone, body: input.blocker.trim() }));
+    events.push(
+      mkFeed({ kind: "blocker", authorId: input.authorId, zone, body: input.blocker.trim() }),
+    );
   }
   if (input.propertyIssue.trim()) {
-    events.push(mkFeed({ kind: "issue", authorId: input.authorId, zone, property: input.propertyIssue.split(" ")[0], body: input.propertyIssue.trim() }));
+    events.push(
+      mkFeed({
+        kind: "issue",
+        authorId: input.authorId,
+        zone,
+        property: input.propertyIssue.split(" ")[0],
+        body: input.propertyIssue.trim(),
+      }),
+    );
   }
   if (events.length) feedStore.write([...events, ...feedStore.read()]);
 
@@ -290,9 +481,12 @@ export function addRetro(kind: RetroKind, authorId: string, body: string) {
   if (!text) return;
   const next: RetroItem = {
     id: crypto.randomUUID(),
-    kind, authorId, body: text,
+    kind,
+    authorId,
+    body: text,
     createdAt: Date.now(),
-    upvotes: [], comments: [],
+    upvotes: [],
+    comments: [],
   };
   retroStore.write([next, ...retroStore.read()]);
 }
@@ -302,7 +496,10 @@ export function toggleRetroUpvote(id: string, employeeId: string) {
     retroStore.read().map((r) => {
       if (r.id !== id) return r;
       const has = r.upvotes.includes(employeeId);
-      return { ...r, upvotes: has ? r.upvotes.filter((u) => u !== employeeId) : [...r.upvotes, employeeId] };
+      return {
+        ...r,
+        upvotes: has ? r.upvotes.filter((u) => u !== employeeId) : [...r.upvotes, employeeId],
+      };
     }),
   );
 }
@@ -310,13 +507,15 @@ export function toggleRetroUpvote(id: string, employeeId: string) {
 export function addRetroComment(id: string, authorId: string, body: string) {
   const text = body.trim();
   if (!text) return;
-  retroStore.write(
-    retroStore.read().map((r) =>
-      r.id === id
-        ? { ...r, comments: [...r.comments, { id: crypto.randomUUID(), authorId, body: text, ts: Date.now() }] }
-        : r,
-    ),
-  );
+  const list = retroStore.read();
+  const next = list.map((r) => {
+    if (r.id !== id) return r;
+    return {
+      ...r,
+      comments: [...r.comments, { id: crypto.randomUUID(), authorId, body: text, ts: Date.now() }],
+    };
+  });
+  retroStore.write(next);
 }
 
 // ---------- Feed ----------
@@ -330,7 +529,10 @@ export function toggleFeedUpvote(id: string, employeeId: string) {
     feedStore.read().map((f) => {
       if (f.id !== id) return f;
       const has = f.upvotes.includes(employeeId);
-      return { ...f, upvotes: has ? f.upvotes.filter((u) => u !== employeeId) : [...f.upvotes, employeeId] };
+      return {
+        ...f,
+        upvotes: has ? f.upvotes.filter((u) => u !== employeeId) : [...f.upvotes, employeeId],
+      };
     }),
   );
 }
@@ -338,13 +540,15 @@ export function toggleFeedUpvote(id: string, employeeId: string) {
 export function addFeedComment(id: string, authorId: string, body: string) {
   const text = body.trim();
   if (!text) return;
-  feedStore.write(
-    feedStore.read().map((f) =>
-      f.id === id
-        ? { ...f, comments: [...f.comments, { id: crypto.randomUUID(), authorId, body: text, ts: Date.now() }] }
-        : f,
-    ),
-  );
+  const list = feedStore.read();
+  const next = list.map((f) => {
+    if (f.id !== id) return f;
+    return {
+      ...f,
+      comments: [...f.comments, { id: crypto.randomUUID(), authorId, body: text, ts: Date.now() }],
+    };
+  });
+  feedStore.write(next);
 }
 
 // ---------- Leadership rollups ----------
@@ -380,8 +584,14 @@ export function todayRollup() {
   for (const u of updates) {
     const z = u.zone || "Unzoned";
     const cur = byZone.get(z) ?? {
-      zone: z, calls: 0, visitsScheduled: 0, visitsCompleted: 0,
-      hotLeads: 0, bookings: 0, blockers: 0, contributors: 0,
+      zone: z,
+      calls: 0,
+      visitsScheduled: 0,
+      visitsCompleted: 0,
+      hotLeads: 0,
+      bookings: 0,
+      blockers: 0,
+      contributors: 0,
     };
     cur.calls += u.connectedCalls;
     cur.visitsScheduled += u.visitsScheduled;
@@ -392,7 +602,9 @@ export function todayRollup() {
     cur.contributors += 1;
     byZone.set(z, cur);
   }
-  const zones = [...byZone.values()].sort((a, b) => (b.bookings - a.bookings) || (b.visitsCompleted - a.visitsCompleted));
+  const zones = [...byZone.values()].sort(
+    (a, b) => b.bookings - a.bookings || b.visitsCompleted - a.visitsCompleted,
+  );
 
   // Score per contributor for "top performer"
   const scored = updates.map((u) => ({

@@ -26,7 +26,13 @@ export function useLeaves(): AppLeave[] {
   );
 }
 
-export function applyLeave(input: { employeeId: string; type: LeaveType; startDate: string; endDate: string; reason: string }) {
+export function applyLeave(input: {
+  employeeId: string;
+  type: LeaveType;
+  startDate: string;
+  endDate: string;
+  reason: string;
+}) {
   const next: AppLeave = {
     ...input,
     id: crypto.randomUUID(),
@@ -53,9 +59,11 @@ export function applyLeave(input: { employeeId: string; type: LeaveType; startDa
 
 export function reviewLeave(id: string, by: string, decision: LeaveStatus, note?: string) {
   store.write(
-    store.read().map((l) =>
-      l.id === id ? { ...l, status: decision, reviewedById: by, reviewNote: note } : l
-    )
+    store
+      .read()
+      .map((l) =>
+        l.id === id ? { ...l, status: decision, reviewedById: by, reviewNote: note } : l,
+      ),
   );
   const leave = store.read().find((l) => l.id === id);
   if (leave) {

@@ -34,7 +34,9 @@ function SignupPage() {
         navigate({ to: "/", replace: true });
         return;
       }
-      setPendingMessage("Account created. An admin must approve your access before you can sign in.");
+      setPendingMessage(
+        "Account created. An admin must approve your access before you can sign in.",
+      );
     } catch {
       // error in context
     }
@@ -52,12 +54,16 @@ function SignupPage() {
     >
       {!apiEnabled && (
         <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          Set <code className="font-mono text-xs">VITE_API_URL</code> (e.g. http://localhost:4000/api) and restart the dev server.
+          Set <code className="font-mono text-xs">VITE_API_URL</code> (e.g.
+          http://localhost:4000/api) and restart the dev server.
         </p>
       )}
 
       {pendingMessage ? (
-        <p className="rounded-md border border-primary/30 bg-primary/10 px-3 py-3 text-sm text-foreground" role="status">
+        <p
+          className="rounded-md border border-primary/30 bg-primary/10 px-3 py-3 text-sm text-foreground"
+          role="status"
+        >
           {pendingMessage}
         </p>
       ) : (
@@ -98,7 +104,10 @@ function SignupPage() {
           </div>
 
           {error && (
-            <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+            <p
+              className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              role="alert"
+            >
               {error}
             </p>
           )}

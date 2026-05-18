@@ -1,13 +1,40 @@
 import { AttEvent, fmtTime } from "@/lib/attendance-store";
 import { Coffee, LogIn, LogOut, MapPin, Navigation2 } from "lucide-react";
 
-const META: Record<AttEvent["kind"], { label: string; icon: any; tone: string }> = {
-  clock_in: { label: "Clocked In", icon: LogIn, tone: "text-success border-success/40 bg-success/10" },
-  clock_out: { label: "Clocked Out", icon: LogOut, tone: "text-destructive border-destructive/40 bg-destructive/10" },
-  break_start: { label: "Break Started", icon: Coffee, tone: "text-warning border-warning/40 bg-warning/10" },
-  break_end: { label: "Break Ended", icon: Coffee, tone: "text-foreground border-border bg-muted/40" },
-  field_start: { label: "Field Visit Started", icon: Navigation2, tone: "text-primary border-primary/40 bg-primary/10" },
-  field_end: { label: "Field Visit Ended", icon: Navigation2, tone: "text-foreground border-border bg-muted/40" },
+const META: Record<
+  AttEvent["kind"],
+  { label: string; icon: React.ComponentType<{ className?: string }>; tone: string }
+> = {
+  clock_in: {
+    label: "Clocked In",
+    icon: LogIn,
+    tone: "text-success border-success/40 bg-success/10",
+  },
+  clock_out: {
+    label: "Clocked Out",
+    icon: LogOut,
+    tone: "text-destructive border-destructive/40 bg-destructive/10",
+  },
+  break_start: {
+    label: "Break Started",
+    icon: Coffee,
+    tone: "text-warning border-warning/40 bg-warning/10",
+  },
+  break_end: {
+    label: "Break Ended",
+    icon: Coffee,
+    tone: "text-foreground border-border bg-muted/40",
+  },
+  field_start: {
+    label: "Field Visit Started",
+    icon: Navigation2,
+    tone: "text-primary border-primary/40 bg-primary/10",
+  },
+  field_end: {
+    label: "Field Visit Ended",
+    icon: Navigation2,
+    tone: "text-foreground border-border bg-muted/40",
+  },
 };
 
 export function EventTimeline({ events }: { events: AttEvent[] }) {
@@ -26,18 +53,24 @@ export function EventTimeline({ events }: { events: AttEvent[] }) {
         const Icon = m.icon;
         return (
           <li key={e.id} className="flex gap-3 items-start">
-            <div className={`shrink-0 h-10 w-10 rounded-full border flex items-center justify-center ${m.tone}`}>
+            <div
+              className={`shrink-0 h-10 w-10 rounded-full border flex items-center justify-center ${m.tone}`}
+            >
               <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0 rounded-md bg-card border border-border p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="font-medium text-sm">{m.label}</div>
-                <div className="text-xs text-muted-foreground font-mono tabular-nums">{fmtTime(e.ts)}</div>
+                <div className="text-xs text-muted-foreground font-mono tabular-nums">
+                  {fmtTime(e.ts)}
+                </div>
               </div>
               {e.address && (
                 <div className="mt-1 text-xs text-muted-foreground flex items-start gap-1">
                   <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                  <span className="truncate" title={e.address}>{e.address}</span>
+                  <span className="truncate" title={e.address}>
+                    {e.address}
+                  </span>
                 </div>
               )}
               {e.lat !== null && e.lng !== null && (

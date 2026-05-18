@@ -12,7 +12,7 @@ export interface DayScore {
   performance: number;
   consistency: number;
   conversion: number; // output→win conversion %
-  output: number;     // raw activity output (calls/tours/tasks)
+  output: number; // raw activity output (calls/tours/tasks)
   total: number;
   events: number;
   tasksDone: number;
@@ -42,7 +42,8 @@ export function lastNDays(emp: Employee, n = 14): DayScore[] {
 
     const events = getEventsFor(emp.id, key);
     const tasksDone = allTasks.filter(
-      (t) => t.status === "done" && (t.completedAt ?? 0) >= dayStart && (t.completedAt ?? 0) < dayEnd
+      (t) =>
+        t.status === "done" && (t.completedAt ?? 0) >= dayStart && (t.completedAt ?? 0) < dayEnd,
     ).length;
     const kudos = allKudos.filter((k) => k.ts >= dayStart && k.ts < dayEnd).length;
 
@@ -52,11 +53,12 @@ export function lastNDays(emp: Employee, n = 14): DayScore[] {
     const wobble = seededDelta(emp.id + key, i, 12) - 6;
 
     const isWeekend = dt.getDay() === 0 || dt.getDay() === 6;
-    const attendance = events.length > 0
-      ? Math.max(0, Math.min(100, baseAtt + wobble))
-      : isWeekend
-        ? Math.max(0, Math.min(100, baseAtt - 4 + wobble))
-        : Math.max(0, Math.min(100, baseAtt - 18 + wobble));
+    const attendance =
+      events.length > 0
+        ? Math.max(0, Math.min(100, baseAtt + wobble))
+        : isWeekend
+          ? Math.max(0, Math.min(100, baseAtt - 4 + wobble))
+          : Math.max(0, Math.min(100, baseAtt - 18 + wobble));
 
     const performance = Math.max(0, Math.min(100, basePerf + wobble + tasksDone * 4));
     const consistency = Math.max(0, Math.min(100, baseCons + Math.round(wobble / 2)));
@@ -66,19 +68,29 @@ export function lastNDays(emp: Employee, n = 14): DayScore[] {
       emp.role === "Operator"
         ? Math.round((emp.callsToday / Math.max(1, emp.callTarget)) * 100)
         : emp.role === "TCM"
-        ? emp.taskCompletion
-        : emp.performance;
-    const output = Math.max(0, Math.min(100, outputBase + wobble + tasksDone * 3 - (isWeekend ? 15 : 0)));
+          ? emp.taskCompletion
+          : emp.performance;
+    const output = Math.max(
+      0,
+      Math.min(100, outputBase + wobble + tasksDone * 3 - (isWeekend ? 15 : 0)),
+    );
 
     // Conversion: how much of that output translated into wins (deterministic but lively).
     const convBase = Math.round((emp.conversion ?? 18) * 2.6); // ~0–80 baseline
     const conversion = Math.max(
       0,
-      Math.min(100, convBase + Math.round(wobble * 0.8) + (tasksDone > 0 ? 6 : -3) - (isWeekend ? 8 : 0))
+      Math.min(
+        100,
+        convBase + Math.round(wobble * 0.8) + (tasksDone > 0 ? 6 : -3) - (isWeekend ? 8 : 0),
+      ),
     );
 
     const total = Math.round(
-      attendance * 0.35 + performance * 0.25 + conversion * 0.15 + consistency * 0.15 + Math.min(100, kudos * 25) * 0.1
+      attendance * 0.35 +
+        performance * 0.25 +
+        conversion * 0.15 +
+        consistency * 0.15 +
+        Math.min(100, kudos * 25) * 0.1,
     );
 
     out.push({

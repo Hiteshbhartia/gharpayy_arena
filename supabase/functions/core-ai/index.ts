@@ -66,11 +66,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          snapshotMsg,
-          ...messages,
-        ],
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, snapshotMsg, ...messages],
         stream: true,
       }),
     });
@@ -78,18 +74,21 @@ Deno.serve(async (req: Request) => {
     if (!resp.ok) {
       if (resp.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (resp.status === 402) {
         return new Response(JSON.stringify({ error: "Credits exhausted" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const t = await resp.text();
       console.error("AI gateway error:", resp.status, t);
       return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -99,7 +98,8 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     console.error("core-ai error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

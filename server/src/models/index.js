@@ -140,7 +140,17 @@ const CalEventSchema = new Schema(
     id: { type: String, required: true, unique: true },
     type: {
       type: String,
-      enum: ["shift", "tour", "task", "leave", "holiday", "birthday", "1:1", "town_hall", "anniversary"],
+      enum: [
+        "shift",
+        "tour",
+        "task",
+        "leave",
+        "holiday",
+        "birthday",
+        "1:1",
+        "town_hall",
+        "anniversary",
+      ],
       required: true,
     },
     title: String,

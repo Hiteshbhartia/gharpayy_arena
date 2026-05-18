@@ -145,16 +145,24 @@ export function TaskDetailSheet({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-1.5">
-                <span className={`text-[9px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border ${PRI_COLOR[task.priority]}`}>
+                <span
+                  className={`text-[9px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border ${PRI_COLOR[task.priority]}`}
+                >
                   {task.priority}
                 </span>
                 {task.relatedTo && (
-                  <span className="text-[11px] text-muted-foreground truncate">{task.relatedTo}</span>
+                  <span className="text-[11px] text-muted-foreground truncate">
+                    {task.relatedTo}
+                  </span>
                 )}
               </div>
-              <h2 className="font-display text-lg md:text-xl font-semibold leading-tight">{task.title}</h2>
+              <h2 className="font-display text-lg md:text-xl font-semibold leading-tight">
+                {task.title}
+              </h2>
               {task.description && (
-                <p className="text-sm text-muted-foreground mt-1.5 leading-snug">{task.description}</p>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-snug">
+                  {task.description}
+                </p>
               )}
             </div>
             <button
@@ -181,14 +189,25 @@ export function TaskDetailSheet({
               </div>
             )}
             <div className={`flex items-center gap-1 font-mono ${due.tone}`}>
-              {due.tone.includes("destructive") ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+              {due.tone.includes("destructive") ? (
+                <AlertTriangle className="h-3 w-3" />
+              ) : (
+                <Clock className="h-3 w-3" />
+              )}
               {due.text}
             </div>
             {(spent > 0 || timer) && (
               <div className="flex items-center gap-1 font-mono text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                <span>{formatDuration(spent)}{task.estimateMin ? ` / ${formatDuration(task.estimateMin * 60_000)}` : ""}</span>
-                {timer && <span className="ml-1 inline-flex items-center gap-1 text-info"><Loader2 className="h-3 w-3 animate-spin" /> running</span>}
+                <span>
+                  {formatDuration(spent)}
+                  {task.estimateMin ? ` / ${formatDuration(task.estimateMin * 60_000)}` : ""}
+                </span>
+                {timer && (
+                  <span className="ml-1 inline-flex items-center gap-1 text-info">
+                    <Loader2 className="h-3 w-3 animate-spin" /> running
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -198,10 +217,15 @@ export function TaskDetailSheet({
             <div className="mt-3">
               <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">
                 <span>Checklist</span>
-                <span>{prog.done}/{prog.total} · {prog.pct}%</span>
+                <span>
+                  {prog.done}/{prog.total} · {prog.pct}%
+                </span>
               </div>
               <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                <div className="h-full bg-success transition-all" style={{ width: `${prog.pct}%` }} />
+                <div
+                  className="h-full bg-success transition-all"
+                  style={{ width: `${prog.pct}%` }}
+                />
               </div>
             </div>
           )}
@@ -210,12 +234,14 @@ export function TaskDetailSheet({
         {/* Tabs */}
         <div className="px-2 md:px-4 pt-2 border-b border-border">
           <div className="flex gap-1 overflow-x-auto">
-            {([
-              ["checklist", "Checklist", prog.total],
-              ["comments", "Comments", task.comments?.length ?? 0],
-              ["files", "Files", task.links?.length ?? 0],
-              ["activity", "Activity", task.activity?.length ?? 0],
-            ] as Array<[Tab, string, number]>).map(([id, label, count]) => (
+            {(
+              [
+                ["checklist", "Checklist", prog.total],
+                ["comments", "Comments", task.comments?.length ?? 0],
+                ["files", "Files", task.links?.length ?? 0],
+                ["activity", "Activity", task.activity?.length ?? 0],
+              ] as Array<[Tab, string, number]>
+            ).map(([id, label, count]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -226,7 +252,9 @@ export function TaskDetailSheet({
                 }`}
               >
                 {label}
-                {count > 0 && <span className="ml-1.5 font-mono text-[10px] opacity-60">{count}</span>}
+                {count > 0 && (
+                  <span className="ml-1.5 font-mono text-[10px] opacity-60">{count}</span>
+                )}
               </button>
             ))}
           </div>
@@ -257,7 +285,11 @@ export function TaskDetailSheet({
                       <Circle className="h-5 w-5 text-muted-foreground" />
                     )}
                   </button>
-                  <span className={`flex-1 text-sm ${s.done ? "line-through text-muted-foreground" : ""}`}>{s.title}</span>
+                  <span
+                    className={`flex-1 text-sm ${s.done ? "line-through text-muted-foreground" : ""}`}
+                  >
+                    {s.title}
+                  </span>
                   <button
                     onClick={() => removeSubtask(task.id, s.id, actorId)}
                     className="opacity-0 group-hover:opacity-100 md:transition-opacity h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive"
@@ -284,8 +316,12 @@ export function TaskDetailSheet({
                     {author && <Avatar id={author.id} size={28} />}
                     <div className="flex-1 min-w-0 bg-background border border-border rounded-lg px-3 py-2">
                       <div className="flex items-center justify-between gap-2 mb-0.5">
-                        <span className="text-xs font-medium truncate">{author?.name ?? "Unknown"}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground shrink-0">{relTime(c.ts)}</span>
+                        <span className="text-xs font-medium truncate">
+                          {author?.name ?? "Unknown"}
+                        </span>
+                        <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+                          {relTime(c.ts)}
+                        </span>
                       </div>
                       <p className="text-sm leading-snug whitespace-pre-wrap">{c.body}</p>
                     </div>
@@ -303,13 +339,22 @@ export function TaskDetailSheet({
                 </div>
               )}
               {(task.links ?? []).map((l) => (
-                <div key={l.id} className="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-background border border-border">
+                <div
+                  key={l.id}
+                  className="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-background border border-border"
+                >
                   <div className="h-8 w-8 rounded-md bg-secondary inline-flex items-center justify-center shrink-0">
-                    {l.kind === "file" ? <Paperclip className="h-4 w-4 text-muted-foreground" /> : <Link2 className="h-4 w-4 text-muted-foreground" />}
+                    {l.kind === "file" ? (
+                      <Paperclip className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Link2 className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{l.label}</div>
-                    {l.url && <div className="text-[11px] text-muted-foreground truncate">{l.url}</div>}
+                    {l.url && (
+                      <div className="text-[11px] text-muted-foreground truncate">{l.url}</div>
+                    )}
                   </div>
                   <button
                     onClick={() => removeLink(task.id, l.id, actorId)}
@@ -338,8 +383,12 @@ export function TaskDetailSheet({
                       if (!linkLabel.trim()) return;
                       addLink(
                         task.id,
-                        { label: linkLabel.trim(), url: linkUrl.trim() || undefined, kind: linkUrl.trim() ? "url" : "doc" },
-                        actorId
+                        {
+                          label: linkLabel.trim(),
+                          url: linkUrl.trim() || undefined,
+                          kind: linkUrl.trim() ? "url" : "doc",
+                        },
+                        actorId,
                       );
                       setLinkLabel("");
                       setLinkUrl("");
@@ -364,14 +413,21 @@ export function TaskDetailSheet({
               {[...(task.activity ?? [])].reverse().map((a) => {
                 const author = getRoster().find((e) => e.id === a.byId);
                 return (
-                  <div key={a.id} className="flex items-start gap-2.5 px-3 py-2 rounded-lg bg-background border border-border">
+                  <div
+                    key={a.id}
+                    className="flex items-start gap-2.5 px-3 py-2 rounded-lg bg-background border border-border"
+                  >
                     <Activity className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="text-xs">
-                        <span className="font-medium">{author?.name.split(" ")[0] ?? "Someone"}</span>
+                        <span className="font-medium">
+                          {author?.name.split(" ")[0] ?? "Someone"}
+                        </span>
                         <span className="text-muted-foreground"> · {a.detail}</span>
                       </div>
-                      <div className="text-[10px] font-mono text-muted-foreground">{relTime(a.ts)}</div>
+                      <div className="text-[10px] font-mono text-muted-foreground">
+                        {relTime(a.ts)}
+                      </div>
                     </div>
                   </div>
                 );
@@ -459,8 +515,8 @@ export function TaskDetailSheet({
                       ? s === "done"
                         ? "bg-success text-success-foreground border-success"
                         : s === "doing"
-                        ? "bg-info text-info-foreground border-info"
-                        : "bg-secondary text-foreground border-border"
+                          ? "bg-info text-info-foreground border-info"
+                          : "bg-secondary text-foreground border-border"
                       : "border-border text-muted-foreground hover:border-primary/40"
                   }`}
                 >

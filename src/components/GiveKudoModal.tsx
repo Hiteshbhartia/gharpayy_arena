@@ -36,18 +36,28 @@ export function GiveKudoModal({ open, onClose, toId }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-sidebar/50 backdrop-blur-sm flex items-center justify-center px-4" onClick={onClose}>
-      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-[100] bg-sidebar/50 backdrop-blur-sm flex items-center justify-center px-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <div>
             <div className="font-display font-semibold text-lg">Cheer someone on</div>
             <div className="text-xs text-muted-foreground">Make their week. Be specific.</div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
         </div>
         <div className="p-5 space-y-4">
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">To</label>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              To
+            </label>
             <div className="mt-1 flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
               {others.map((e) => (
                 <button
@@ -66,7 +76,9 @@ export function GiveKudoModal({ open, onClose, toId }: Props) {
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">For</label>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              For
+            </label>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {KUDO_TAGS.map((t) => (
                 <button
@@ -84,7 +96,9 @@ export function GiveKudoModal({ open, onClose, toId }: Props) {
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Why</label>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              Why
+            </label>
             <textarea
               value={msg}
               onChange={(e) => setMsg(e.target.value)}

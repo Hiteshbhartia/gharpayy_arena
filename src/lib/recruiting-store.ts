@@ -61,9 +61,7 @@ export function moveCandidate(id: string, toStage: CandidateStage, byId: string)
   const cand = getCandidate(id);
   if (!cand) return;
   const fromStage = cand.stage;
-  store.write(
-    store.read().map((c) => (c.id === id ? { ...c, stage: toStage } : c)),
-  );
+  store.write(store.read().map((c) => (c.id === id ? { ...c, stage: toStage } : c)));
   if (fromStage !== toStage) {
     pushNotification({
       kind: "system",
@@ -77,7 +75,9 @@ export function moveCandidate(id: string, toStage: CandidateStage, byId: string)
   }
 }
 
-export function addCandidate(input: Omit<Candidate, "id" | "appliedAt" | "notes" | "stage"> & { stage?: CandidateStage }) {
+export function addCandidate(
+  input: Omit<Candidate, "id" | "appliedAt" | "notes" | "stage"> & { stage?: CandidateStage },
+) {
   const next: Candidate = {
     ...input,
     id: crypto.randomUUID(),
@@ -123,12 +123,18 @@ export function rejectCandidate(id: string, reason: string, byId: string) {
 
 export function stageColor(stage: CandidateStage): string {
   switch (stage) {
-    case "applied": return "bg-muted text-muted-foreground border-border";
-    case "screen": return "bg-info/15 text-info border-info/30";
-    case "interview": return "bg-primary/15 text-primary border-primary/30";
-    case "offer": return "bg-warning/15 text-warning border-warning/30";
-    case "hired": return "bg-success/15 text-success border-success/30";
-    case "rejected": return "bg-destructive/10 text-destructive border-destructive/20";
+    case "applied":
+      return "bg-muted text-muted-foreground border-border";
+    case "screen":
+      return "bg-info/15 text-info border-info/30";
+    case "interview":
+      return "bg-primary/15 text-primary border-primary/30";
+    case "offer":
+      return "bg-warning/15 text-warning border-warning/30";
+    case "hired":
+      return "bg-success/15 text-success border-success/30";
+    case "rejected":
+      return "bg-destructive/10 text-destructive border-destructive/20";
   }
 }
 

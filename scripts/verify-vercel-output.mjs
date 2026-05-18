@@ -11,7 +11,9 @@ function fail(message) {
 }
 
 if (!existsSync(indexPath) || !statSync(indexPath).isFile()) {
-  fail("dist/client/index.html is missing. SPA prerender did not run — check vite.config.ts tanstackStart.spa settings.");
+  fail(
+    "dist/client/index.html is missing. SPA prerender did not run — check vite.config.ts tanstackStart.spa settings.",
+  );
 }
 
 if (!existsSync(assetsDir) || !statSync(assetsDir).isDirectory()) {

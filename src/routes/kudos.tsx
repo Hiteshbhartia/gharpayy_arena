@@ -8,7 +8,9 @@ import { Heart, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/kudos")({
   component: KudosPage,
-  errorComponent: ({ error }) => <div className="p-6 text-sm text-destructive">{error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div className="p-6 text-sm text-destructive">{error.message}</div>
+  ),
   notFoundComponent: () => <div className="p-6 text-sm">Not found.</div>,
 });
 
@@ -30,11 +32,16 @@ function KudosPage() {
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-[900px] mx-auto">
       <header className="mb-5 flex items-end justify-between gap-3">
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">Recognition Wall</div>
+          <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">
+            Recognition Wall
+          </div>
           <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight">Kudos</h1>
           <p className="text-muted-foreground text-sm mt-1">Public, specific, generous.</p>
         </div>
-        <button onClick={() => setOpen(true)} className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90">
+        <button
+          onClick={() => setOpen(true)}
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90"
+        >
           <Plus className="h-4 w-4" /> Give kudo
         </button>
       </header>
@@ -50,8 +57,14 @@ function KudosPage() {
                   <span className="font-medium">{from?.name.split(" ")[0]}</span>
                   <Heart className="h-3 w-3 text-primary" />
                   <span className="font-medium">{to?.name.split(" ")[0]}</span>
-                  <span className={`text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border ${tagColor(k.tag)}`}>{k.tag}</span>
-                  <span className="ml-auto text-[10px] text-muted-foreground font-mono">{timeAgo(k.ts)}</span>
+                  <span
+                    className={`text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border ${tagColor(k.tag)}`}
+                  >
+                    {k.tag}
+                  </span>
+                  <span className="ml-auto text-[10px] text-muted-foreground font-mono">
+                    {timeAgo(k.ts)}
+                  </span>
                 </div>
                 <div className="mt-2 text-sm leading-relaxed">"{k.message}"</div>
               </div>

@@ -15,7 +15,9 @@ export const Route = createFileRoute("/people")({
       <PeoplePage />
     </RoleGate>
   ),
-  errorComponent: ({ error }) => <div className="p-6 text-sm text-destructive">{error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div className="p-6 text-sm text-destructive">{error.message}</div>
+  ),
   notFoundComponent: () => <div className="p-6 text-sm">Not found.</div>,
 });
 
@@ -48,7 +50,9 @@ function PeoplePage() {
   return (
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-[1200px] mx-auto">
       <header className="mb-5">
-        <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">Directory</div>
+        <div className="font-mono text-[11px] uppercase tracking-widest text-primary mb-1.5">
+          Directory
+        </div>
         <h1 className="font-display text-2xl md:text-4xl font-semibold tracking-tight">People</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Everyone in the Arena. {roster.length} people · synced from database.
@@ -94,7 +98,10 @@ function PeoplePage() {
                   ? "bg-primary"
                   : "bg-muted-foreground/40";
           return (
-            <div key={e.id} className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3">
+            <div
+              key={e.id}
+              className="rounded-2xl bg-card border border-border p-4 flex items-start gap-3"
+            >
               <Avatar id={e.id} size={44} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -108,7 +115,11 @@ function PeoplePage() {
                 <div className="text-xs text-muted-foreground truncate">
                   {e.role} · {e.team}
                 </div>
-                {e.bio && <div className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{e.bio}</div>}
+                {e.bio && (
+                  <div className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">
+                    {e.bio}
+                  </div>
+                )}
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                     <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />

@@ -12,7 +12,10 @@ import { asyncHandler } from "./async-handler.js";
  *
  * `filterFields` whitelist which query params can be used to filter list().
  */
-export function crudRouter(Model, { filterFields = [], sort = { createdAt: -1 }, allowDelete = true } = {}) {
+export function crudRouter(
+  Model,
+  { filterFields = [], sort = { createdAt: -1 }, allowDelete = true } = {},
+) {
   const router = Router();
   router.use(requireAuth);
 
@@ -60,7 +63,9 @@ export function crudRouter(Model, { filterFields = [], sort = { createdAt: -1 },
     asyncHandler(async (req, res) => {
       const payload = { ...req.body };
       if (!payload.id) {
-        payload.id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        payload.id =
+          globalThis.crypto?.randomUUID?.() ??
+          `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       }
       if (req.user?.id && !payload.createdById) payload.createdById = req.user.id;
       try {

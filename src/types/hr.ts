@@ -45,7 +45,13 @@ export interface Employee {
   birthdayMMDD?: string;
 }
 
-export type KudoTag = "Hustle" | "Customer Love" | "Team Player" | "Above & Beyond" | "Bug Fixer" | "Streak Hero";
+export type KudoTag =
+  | "Hustle"
+  | "Customer Love"
+  | "Team Player"
+  | "Above & Beyond"
+  | "Bug Fixer"
+  | "Streak Hero";
 
 export interface Kudo {
   id: string;
@@ -147,7 +153,16 @@ export interface AppLeave {
   reviewNote?: string;
 }
 
-export type CalEventType = "shift" | "tour" | "task" | "leave" | "holiday" | "birthday" | "1:1" | "town_hall" | "anniversary";
+export type CalEventType =
+  | "shift"
+  | "tour"
+  | "task"
+  | "leave"
+  | "holiday"
+  | "birthday"
+  | "1:1"
+  | "town_hall"
+  | "anniversary";
 
 export interface CalEvent {
   id: string;
@@ -257,4 +272,11 @@ export const CAND_STAGE_LABEL: Record<CandidateStage, string> = {
   rejected: "Rejected",
 };
 
-export const CAND_STAGE_ORDER: CandidateStage[] = ["applied", "screen", "interview", "offer", "hired", "rejected"];
+export const CAND_STAGE_ORDER: CandidateStage[] = [
+  "applied",
+  "screen",
+  "interview",
+  "offer",
+  "hired",
+  "rejected",
+];

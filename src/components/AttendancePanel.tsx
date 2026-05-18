@@ -60,7 +60,7 @@ export function AttendancePanel() {
       lng = fix.lng;
       accuracy = fix.accuracy;
       address = await reverseGeocode(fix.lat, fix.lng);
-    } catch (e: any) {
+    } catch {
       toast.warning("Location unavailable", {
         description: "Logged without geo. Enable location for full audit trail.",
       });
@@ -86,10 +86,10 @@ export function AttendancePanel() {
     status === "Clocked In"
       ? "bg-success/15 text-success border-success/30"
       : status === "On Break"
-      ? "bg-warning/15 text-warning border-warning/30"
-      : status === "In Field"
-      ? "bg-primary/15 text-primary border-primary/30"
-      : "bg-muted text-muted-foreground border-border";
+        ? "bg-warning/15 text-warning border-warning/30"
+        : status === "In Field"
+          ? "bg-primary/15 text-primary border-primary/30"
+          : "bg-muted text-muted-foreground border-border";
 
   return (
     <>
@@ -104,7 +104,10 @@ export function AttendancePanel() {
               {actor.team} · Shift {actor.shift} · {actor.appRole.toUpperCase()}
             </div>
           </div>
-          <Badge variant="outline" className={`${statusColor} border font-mono text-[10px] uppercase tracking-widest`}>
+          <Badge
+            variant="outline"
+            className={`${statusColor} border font-mono text-[10px] uppercase tracking-widest`}
+          >
             {status}
           </Badge>
         </div>
