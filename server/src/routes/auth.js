@@ -1,0 +1,201 @@
+import { Router } from "express";
+import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { User, Employee } from "../models/index.js";
+import { signToken, requireAuth } from "../middleware/auth.js";
+import { validate } from "../lib/validate.js";
+import { asyncHandler } from "../lib/async-handler.js";
+import { normalizeEmail, toHttpError, logAuth } from "../lib/errors.js";
+
+const router = Router();
+const BCRYPT_ROUNDS = 12;
+
+const emailField = z
+  .string()
+  .email()
+  .max(255)
+  .transform((v) => normalizeEmail(v));
+
+const SignupSchema = z.object({
+  email: emailField,
+  password: z.string().min(8).max(128),
+  name: z.string().min(1).max(100),
+  employeeId: z.string().min(1).max(50).optional(),
+});
+
+const LoginSchema = z.object({
+  email: emailField,
+  password: z.string().min(1).max(128),
+});
+
+async function hashPassword(plain) {
+  try {
+    return await bcrypt.hash(plain, BCRYPT_ROUNDS);
+  } catch (err) {
+    logAuth("hashPassword.failed", {}, err);
+    const e = new Error("Could not process password");
+    e.status = 500;
+    throw e;
+  }
+}
+
+async function verifyPassword(plain, passwordHash) {
+  if (!passwordHash) return false;
+  try {
+    return await bcrypt.compare(plain, passwordHash);
+  } catch (err) {
+    logAuth("verifyPassword.failed", {}, err);
+    const e = new Error("Could not verify password");
+    e.status = 500;
+    throw e;
+  }
+}
+
+async function maybeCreateEmployeeStub({ employeeId, name }) {
+  if (!employeeId) return;
+  try {
+    const emp = await Employee.findOne({ id: employeeId });
+    if (!emp) {
+      await Employee.create({
+        id: employeeId,
+        name,
+        role: "Operator",
+      });
+    }
+  } catch (err) {
+    // User account already exists; employee directory stub is optional.
+    logAuth("signup.employee_stub_skipped", { employeeId }, err);
+  }
+}
+
+router.post(
+  "/signup",
+  validate(SignupSchema),
+  asyncHandler(async (req, res) => {
+    const { email, password, name, employeeId } = req.body;
+
+    try {
+      const existing = await User.findOne({ email });
+      if (existing) {
+        logAuth("signup.duplicate", { email });
+        return res.status(409).json({ error: "Email already registered" });
+      }
+
+      const userCount = await User.countDocuments();
+      const isFirst = userCount === 0;
+
+      const passwordHash = await hashPassword(password);
+      const user = await User.create({
+        email,
+        passwordHash,
+        employeeId,
+        role: isFirst ? "admin" : "employee",
+        isApproved: isFirst,
+      });
+
+      await maybeCreateEmployeeStub({ employeeId, name });
+
+      if (!isFirst) {
+        logAuth("signup.pending_approval", { email, userId: String(user._id) });
+        return res.status(201).json({
+          message: "Account created. Awaiting admin approval before you can sign in.",
+        });
+      }
+
+      const token = signToken(user);
+      logAuth("signup.admin_bootstrapped", { email, userId: String(user._id) });
+      return res.status(201).json({ token, user: publicUser(user) });
+    } catch (err) {
+      logAuth("signup.error", { email }, err);
+      throw toHttpError(err);
+    }
+  }),
+);
+
+router.post(
+  "/login",
+  validate(LoginSchema),
+  asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        logAuth("login.failed", { email, reason: "unknown_email" });
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const ok = await verifyPassword(password, user.passwordHash);
+      if (!ok) {
+        logAuth("login.failed", { email, reason: "bad_password" });
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      if (!user.isApproved) {
+        logAuth("login.blocked", { email, reason: "pending_approval" });
+        return res.status(403).json({ error: "Account pending approval" });
+      }
+
+      const token = signToken(user);
+      logAuth("login.success", { email, userId: String(user._id) });
+      return res.json({ token, user: publicUser(user) });
+    } catch (err) {
+      logAuth("login.error", { email }, err);
+      throw toHttpError(err);
+    }
+  }),
+);
+
+router.get(
+  "/me",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: "Not found" });
+      }
+      return res.json({ user: publicUser(user) });
+    } catch (err) {
+      logAuth("me.error", { userId: req.user?.id }, err);
+      throw toHttpError(err);
+    }
+  }),
+);
+
+router.post(
+  "/approve/:userId",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Admin only" });
+      }
+      const u = await User.findByIdAndUpdate(
+        req.params.userId,
+        { isApproved: true },
+        { new: true },
+      );
+      if (!u) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      logAuth("approve.success", { userId: String(u._id), by: req.user.id });
+      return res.json({ user: publicUser(u) });
+    } catch (err) {
+      logAuth("approve.error", { userId: req.params.userId }, err);
+      throw toHttpError(err);
+    }
+  }),
+);
+
+function publicUser(u) {
+  return {
+    id: String(u._id),
+    email: u.email,
+    employeeId: u.employeeId ?? undefined,
+    role: u.role,
+    isApproved: u.isApproved,
+  };
+}
+
+export default router;
