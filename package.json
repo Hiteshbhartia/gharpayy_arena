@@ -3,11 +3,15 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/verify-vercel-output.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
+    "preview:static": "npx --yes serve dist/client -s -l 4173",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
