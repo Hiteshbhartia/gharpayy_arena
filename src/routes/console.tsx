@@ -44,6 +44,7 @@ import {
   exportEodText,
 } from "@/lib/console-store";
 import { Avatar } from "@/components/Avatar";
+import { TeamIntelligencePanel } from "@/components/TeamIntelligencePanel";
 
 export const Route = createFileRoute("/console")({
   component: ConsolePage,
@@ -93,7 +94,7 @@ function ConsolePage() {
     );
   }
 
-  return <ConsoleFor pb={pb} actorId={actor.id} actorName={actor.name} />;
+  return <ConsoleFor pb={pb} actorId={actor.id} actorName={actor.name} actor={actor} />;
 }
 
 function ConsoleFor({
@@ -104,6 +105,7 @@ function ConsoleFor({
   pb: RolePlaybook;
   actorId: string;
   actorName: string;
+  actor: ReturnType<typeof useAttendanceState>["actor"];
 }) {
   const day = useConsoleDay(actorId);
   const shield = shieldNow(actorId);
@@ -127,6 +129,7 @@ function ConsoleFor({
           <EodGenerator pb={pb} actorId={actorId} day={day} />
         </div>
       </div>
+      <TeamIntelligencePanel actor={actor} />
     </div>
   );
 }

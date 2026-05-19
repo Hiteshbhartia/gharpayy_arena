@@ -23,6 +23,7 @@ import pulseRoutes from "./routes/pulse.js";
 import flyRoutes from "./routes/fly.js";
 import migrateRoutes from "./routes/migrate.js";
 import workforceRoutes from "./routes/workforce.js";
+import operatorRoutes from "./routes/operator.js";
 import { toHttpError } from "./lib/errors.js";
 
 const app = express();
@@ -85,6 +86,7 @@ app.use("/api/pulse", pulseRoutes);
 app.use("/api/fly", flyRoutes);
 app.use("/api/migrate", migrateRoutes);
 app.use("/api/admin/workforce", workforceRoutes);
+app.use("/api/operator", operatorRoutes);
 
 // --- error handler ---
 app.use((err, req, res, _next) => {
