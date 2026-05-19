@@ -136,7 +136,10 @@ router.post(
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      const derivedStatus = (user.isApproved && (!user.status || user.status === "pending")) ? "active" : (user.status || "pending");
+      const derivedStatus =
+        user.isApproved && (!user.status || user.status === "pending")
+          ? "active"
+          : user.status || "pending";
       if (derivedStatus === "rejected") {
         logAuth("login.blocked", { email, reason: "rejected" });
         return res.status(403).json({ error: "Account request rejected" });
@@ -200,7 +203,8 @@ router.post(
 );
 
 function publicUser(u) {
-  const status = (u.isApproved && (!u.status || u.status === "pending")) ? "active" : (u.status || "pending");
+  const status =
+    u.isApproved && (!u.status || u.status === "pending") ? "active" : u.status || "pending";
   return {
     id: String(u._id),
     email: u.email,

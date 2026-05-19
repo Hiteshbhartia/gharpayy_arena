@@ -10,7 +10,15 @@
  */
 
 import { Router } from "express";
-import { Employee, Task, Leave, AttendanceEvent, Kudo } from "../models/index.js";
+import {
+  Employee,
+  Task,
+  Leave,
+  AttendanceEvent,
+  Kudo,
+  KpiDefinition,
+  KpiTarget,
+} from "../models/index.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { asyncHandler } from "../lib/async-handler.js";
 import { readProfile } from "../lib/workforce-access.js";
@@ -75,7 +83,7 @@ function computeMemberMetrics(emp, tasks, leaves, attEvents, kudos) {
 
   // Late arrival: clock_in ts that falls after the employee's shift start (approx 10am = 600min)
   const profile = readProfile(emp);
-  const shiftStart = profile.shift ? profile.shift.split(" - ")[0] ?? "10:00" : "10:00";
+  const shiftStart = profile.shift ? (profile.shift.split(" - ")[0] ?? "10:00") : "10:00";
   const [shH, shM] = shiftStart.split(":").map(Number);
   const shiftStartMin = (shH || 10) * 60 + (shM || 0) + 15; // 15-min grace
   const lateArrivals = clockIns.filter((ci) => {
@@ -98,9 +106,16 @@ function computeMemberMetrics(emp, tasks, leaves, attEvents, kudos) {
   let streak = 0;
   let prev = null;
   for (const day of uniqueDays.reverse()) {
-    if (!prev) { streak = 1; prev = day; continue; }
+    if (!prev) {
+      streak = 1;
+      prev = day;
+      continue;
+    }
     const diff = (new Date(prev) - new Date(day)) / 86400_000;
-    if (diff <= 2) { streak++; prev = day; } else break;
+    if (diff <= 2) {
+      streak++;
+      prev = day;
+    } else break;
   }
 
   const presence = profile.attendance ?? 85;
@@ -117,23 +132,31 @@ function computeMemberMetrics(emp, tasks, leaves, attEvents, kudos) {
     burnoutRisk >= 3 ? "high" : burnoutRisk >= 2 ? "medium" : burnoutRisk >= 1 ? "low" : "none";
 
   const engagementScore = Math.round(
-    (completionRate * 0.4 + presence * 0.4 + Math.min(100, recentKudos * 20) * 0.2),
+    completionRate * 0.4 + presence * 0.4 + Math.min(100, recentKudos * 20) * 0.2,
   );
 
   // Insight string derived from metrics
   const insights = [];
   if (punctualityPct !== null && punctualityPct < 75)
-    insights.push(`${emp.name}'s punctuality is at ${punctualityPct}% — late ${lateArrivals.length} time(s) this period.`);
+    insights.push(
+      `${emp.name}'s punctuality is at ${punctualityPct}% — late ${lateArrivals.length} time(s) this period.`,
+    );
   if (overdue > 0)
     insights.push(`${overdue} overdue task${overdue > 1 ? "s" : ""} assigned to ${emp.name}.`);
   if (recentKudos >= 2)
-    insights.push(`${emp.name} received ${recentKudos} kudos this month — strong recognition signal.`);
+    insights.push(
+      `${emp.name} received ${recentKudos} kudos this month — strong recognition signal.`,
+    );
   if (burnoutLabel === "high")
     insights.push(`${emp.name} shows high burnout indicators. Consider a 1:1 check-in.`);
   if (approvedLeaves >= 3)
-    insights.push(`${emp.name} has taken ${approvedLeaves} leaves this period — monitor attendance continuity.`);
+    insights.push(
+      `${emp.name} has taken ${approvedLeaves} leaves this period — monitor attendance continuity.`,
+    );
   if (completionRate >= 90 && total >= 5)
-    insights.push(`${emp.name} maintains ${completionRate}% task completion — top productivity signal.`);
+    insights.push(
+      `${emp.name} maintains ${completionRate}% task completion — top productivity signal.`,
+    );
 
   return {
     employeeId: emp.id,
@@ -169,20 +192,20 @@ router.get(
   asyncHandler(async (req, res) => {
     const { from } = dateRange(30);
 
-    const [allEmployees, tasks, leaves, attEvents, kudos] = await Promise.all([
+    const [allEmployees, tasks, leaves, attEvents, kudos, allKpis, allTargets] = await Promise.all([
       Employee.find({}).lean(),
       Task.find({ createdAt: { $gte: new Date(from).getTime() } }).lean(),
       Leave.find({ startDate: { $gte: from } }).lean(),
       AttendanceEvent.find({ ts: { $gte: new Date(from).getTime() } }).lean(),
       Kudo.find({ ts: { $gte: new Date(from).getTime() } }).lean(),
+      KpiDefinition.find({ active: true }).lean(),
+      KpiTarget.find({}).lean(),
     ]);
 
     const visibleIds = await resolveVisibleIds(req.user, allEmployees);
     const team = allEmployees.filter((e) => visibleIds.has(e.id));
 
-    const members = team.map((emp) =>
-      computeMemberMetrics(emp, tasks, leaves, attEvents, kudos),
-    );
+    const members = team.map((emp) => computeMemberMetrics(emp, tasks, leaves, attEvents, kudos));
 
     // ─── aggregate team health ───────────────────────────────────────────
     const total = members.length;
@@ -191,9 +214,7 @@ router.get(
     const leaveRisk = members.filter((m) => m.leaves.pending > 0).length;
     const burnoutHigh = members.filter((m) => m.burnoutRisk === "high").length;
     const interventionNeeded = members.filter((m) => m.needsIntervention);
-    const topPerformers = [...members]
-      .sort((a, b) => b.performance - a.performance)
-      .slice(0, 3);
+    const topPerformers = [...members].sort((a, b) => b.performance - a.performance).slice(0, 3);
 
     const avgEngagement =
       members.length > 0
@@ -201,9 +222,7 @@ router.get(
         : 0;
     const avgCompletion =
       members.length > 0
-        ? Math.round(
-            members.reduce((s, m) => s + m.tasks.completionRate, 0) / members.length,
-          )
+        ? Math.round(members.reduce((s, m) => s + m.tasks.completionRate, 0) / members.length)
         : 0;
     const avgPresence =
       members.length > 0
@@ -231,15 +250,23 @@ router.get(
     // Org-level insights
     const orgInsights = [];
     if (burnoutHigh >= 2)
-      orgInsights.push(`${burnoutHigh} team members show high burnout indicators — review workload distribution.`);
+      orgInsights.push(
+        `${burnoutHigh} team members show high burnout indicators — review workload distribution.`,
+      );
     if (late > total * 0.3 && total > 0)
-      orgInsights.push(`${late} of ${total} members had late arrivals this period — shift adherence needs attention.`);
+      orgInsights.push(
+        `${late} of ${total} members had late arrivals this period — shift adherence needs attention.`,
+      );
     if (avgCompletion < 60)
-      orgInsights.push(`Team task completion rate is ${avgCompletion}% — below healthy threshold of 70%.`);
+      orgInsights.push(
+        `Team task completion rate is ${avgCompletion}% — below healthy threshold of 70%.`,
+      );
     if (avgEngagement >= 80)
       orgInsights.push(`Strong team engagement score of ${avgEngagement}. Maintain momentum.`);
     if (leaveRisk > 0)
-      orgInsights.push(`${leaveRisk} pending leave request${leaveRisk > 1 ? "s" : ""} awaiting review.`);
+      orgInsights.push(
+        `${leaveRisk} pending leave request${leaveRisk > 1 ? "s" : ""} awaiting review.`,
+      );
 
     res.json({
       ok: true,
@@ -275,6 +302,8 @@ router.get(
       })),
       teamComparison,
       orgInsights,
+      kpiDefinitions: allKpis || [],
+      kpiTargets: allTargets || [],
     });
   }),
 );
@@ -286,17 +315,20 @@ router.get(
     const empId = req.params.id;
     const { from } = dateRange(60);
 
-    const [allEmployees, emp, tasks, leaves, attEvents, kudos] = await Promise.all([
-      Employee.find({}).lean(),
-      Employee.findOne({ id: empId }).lean(),
-      Task.find({ assigneeId: empId, createdAt: { $gte: new Date(from).getTime() } }).lean(),
-      Leave.find({ employeeId: empId, startDate: { $gte: from } }).lean(),
-      AttendanceEvent.find({
-        employeeId: empId,
-        ts: { $gte: new Date(from).getTime() },
-      }).lean(),
-      Kudo.find({ toId: empId, ts: { $gte: new Date(from).getTime() } }).lean(),
-    ]);
+    const [allEmployees, emp, tasks, leaves, attEvents, kudos, allKpis, allTargets] =
+      await Promise.all([
+        Employee.find({}).lean(),
+        Employee.findOne({ id: empId }).lean(),
+        Task.find({ assigneeId: empId, createdAt: { $gte: new Date(from).getTime() } }).lean(),
+        Leave.find({ employeeId: empId, startDate: { $gte: from } }).lean(),
+        AttendanceEvent.find({
+          employeeId: empId,
+          ts: { $gte: new Date(from).getTime() },
+        }).lean(),
+        Kudo.find({ toId: empId, ts: { $gte: new Date(from).getTime() } }).lean(),
+        KpiDefinition.find({ active: true }).lean(),
+        KpiTarget.find({}).lean(),
+      ]);
 
     if (!emp) return res.status(404).json({ error: "Employee not found" });
 
@@ -324,6 +356,15 @@ router.get(
       blocked: tasks.filter((t) => t.status === "blocked").length,
     };
 
+    // Filter targets matching this member
+    const memberTargets = (allTargets || []).filter((t) => {
+      if (t.scopeType === "org") return true;
+      if (t.scopeType === "zone" && t.scopeId === metrics.zone) return true;
+      if (t.scopeType === "team" && t.scopeId === metrics.team) return true;
+      if (t.scopeType === "individual" && t.scopeId === empId) return true;
+      return false;
+    });
+
     res.json({
       ok: true,
       generatedAt: Date.now(),
@@ -334,6 +375,8 @@ router.get(
         tasksByStatus,
         kudoHistory: safeArr(kudos).map((k) => ({ ts: k.ts, tag: k.tag })),
       },
+      kpiDefinitions: allKpis || [],
+      kpiTargets: memberTargets || [],
     });
   }),
 );

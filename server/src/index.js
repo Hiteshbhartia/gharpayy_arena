@@ -24,6 +24,7 @@ import flyRoutes from "./routes/fly.js";
 import migrateRoutes from "./routes/migrate.js";
 import workforceRoutes from "./routes/workforce.js";
 import operatorRoutes from "./routes/operator.js";
+import kpisRoutes from "./routes/kpis.js";
 import { toHttpError } from "./lib/errors.js";
 
 const app = express();
@@ -87,6 +88,7 @@ app.use("/api/fly", flyRoutes);
 app.use("/api/migrate", migrateRoutes);
 app.use("/api/admin/workforce", workforceRoutes);
 app.use("/api/operator", operatorRoutes);
+app.use("/api", kpisRoutes);
 
 // --- error handler ---
 app.use((err, req, res, _next) => {
@@ -163,12 +165,18 @@ function startHttpServer() {
 }
 
 import { runWorkforceMigrations } from "./lib/migrations.js";
+import { seedKpis } from "./lib/seed-kpis.js";
 
 mongoose
   .connect(MONGO)
   .then(async () => {
     console.log("[api] mongo connected");
     await runWorkforceMigrations();
+    try {
+      await seedKpis();
+    } catch (kpiErr) {
+      console.error("[api] kpi seeding failed:", kpiErr);
+    }
     startHttpServer();
   })
   .catch((err) => {

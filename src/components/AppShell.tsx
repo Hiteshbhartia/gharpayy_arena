@@ -32,6 +32,7 @@ import {
   Wallet,
   Radio,
   LogOut,
+  Target,
 } from "lucide-react";
 import { playbookFor } from "@/data/playbooks";
 import { shieldNow } from "@/lib/console-store";
@@ -133,6 +134,12 @@ const NAV: NavItem[] = [
     icon: UserCog,
     tiers: ["leadership"],
     adminOnly: true,
+  },
+  {
+    to: "/admin/kpis",
+    label: "KPI Governance",
+    icon: Target,
+    tiers: ["leadership", "zone_leader", "hr", "leader"],
   },
 ];
 

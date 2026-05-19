@@ -40,7 +40,9 @@ export function TeamIntelligencePanel({ actor }: { actor: Employee }) {
 function TeamIntelligenceContent() {
   const { data, loading, error, refresh } = useTeamIntelligence();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "members" | "comparison">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "members" | "comparison" | "governance">(
+    "overview",
+  );
 
   return (
     <section className="rounded-2xl border border-border bg-card overflow-hidden">
@@ -101,7 +103,7 @@ function TeamIntelligenceContent() {
         <>
           {/* Tabs */}
           <div className="flex border-b border-border">
-            {(["overview", "members", "comparison"] as const).map((tab) => (
+            {(["overview", "members", "comparison", "governance"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -126,6 +128,9 @@ function TeamIntelligenceContent() {
               />
             )}
             {activeTab === "comparison" && <ComparisonTab comparison={data.teamComparison} />}
+            {activeTab === "governance" && (
+              <GovernanceTab definitions={data.kpiDefinitions} targets={data.kpiTargets} />
+            )}
           </div>
         </>
       )}
@@ -491,6 +496,98 @@ function ComparisonTab({
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function GovernanceTab({ definitions, targets }: { definitions?: any[]; targets?: any[] }) {
+  const activeKpis = definitions || [];
+  const activeTargets = targets || [];
+
+  if (activeKpis.length === 0) {
+    return (
+      <div className="text-center py-6 text-sm text-muted-foreground">
+        No active KPI Definitions found in the system.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Activity className="h-4 w-4 text-primary" />
+        <span className="font-mono text-[10px] uppercase tracking-widest text-primary">
+          KPI Targets & Governance System
+        </span>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        {activeKpis.map((k) => {
+          const kpiTargets = activeTargets.filter((t) => t.kpiId === k.id);
+          return (
+            <div key={k.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">{k.name}</h3>
+                  <code className="text-[10px] font-mono text-muted-foreground">{k.slug}</code>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-primary/10 text-primary border border-primary/20">
+                  {k.frequency}
+                </span>
+              </div>
+
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {k.description || "No description provided."}
+              </p>
+
+              <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-2 border-t border-border/50">
+                <div>
+                  <span className="text-muted-foreground block text-[9px] uppercase tracking-widest">
+                    Category
+                  </span>
+                  <span className="font-medium text-foreground">{k.category || "General"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[9px] uppercase tracking-widest">
+                    Owner Tier
+                  </span>
+                  <span className="font-medium text-foreground capitalize">
+                    {k.ownerTier || "Any"}
+                  </span>
+                </div>
+              </div>
+
+              {kpiTargets.length > 0 ? (
+                <div className="space-y-1.5 pt-2 border-t border-border/50">
+                  <div className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+                    Target Thresholds
+                  </div>
+                  <div className="space-y-1">
+                    {kpiTargets.map((t) => (
+                      <div
+                        key={t.id}
+                        className="flex justify-between items-center text-xs font-mono"
+                      >
+                        <span className="text-muted-foreground capitalize">
+                          {t.scopeType} {t.scopeId ? `(${t.scopeId})` : ""}:
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {k.targetType === "min" ? "≥" : "≤"}
+                          {t.targetValue}{" "}
+                          {k.unit === "percent" ? "%" : k.unit === "currency" ? " INR" : k.unit}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 border-t border-border/50 text-[10px] italic text-muted-foreground">
+                  No targets configured for this definition.
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api-client";
+import type { KpiDefinition, KpiTarget } from "./kpi-governance-api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,8 @@ export interface TeamIntelligenceData {
   }[];
   teamComparison: TeamComparison[];
   orgInsights: string[];
+  kpiDefinitions?: KpiDefinition[];
+  kpiTargets?: KpiTarget[];
 }
 
 export interface MemberIntelligence {
@@ -100,6 +103,8 @@ export interface MemberIntelligence {
     tasksByStatus: { todo: number; doing: number; done: number; blocked: number };
     kudoHistory: { ts: number; tag: string }[];
   };
+  kpiDefinitions?: KpiDefinition[];
+  kpiTargets?: KpiTarget[];
 }
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
@@ -147,6 +152,8 @@ export function useTeamIntelligence() {
         interventionNeeded: Array.isArray(res.interventionNeeded) ? res.interventionNeeded : [],
         teamComparison: Array.isArray(res.teamComparison) ? res.teamComparison : [],
         orgInsights: Array.isArray(res.orgInsights) ? res.orgInsights : [],
+        kpiDefinitions: Array.isArray(res.kpiDefinitions) ? res.kpiDefinitions : [],
+        kpiTargets: Array.isArray(res.kpiTargets) ? res.kpiTargets : [],
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load team intelligence");

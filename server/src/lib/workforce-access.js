@@ -27,7 +27,8 @@ export function authRoleFromAppAccess(appRole, operationalRole = "") {
 
 export function publicAuthUser(u) {
   if (!u) return null;
-  const status = (u.isApproved && (!u.status || u.status === "pending")) ? "active" : (u.status || "pending");
+  const status =
+    u.isApproved && (!u.status || u.status === "pending") ? "active" : u.status || "pending";
   return {
     id: String(u._id),
     email: u.email,
@@ -41,7 +42,9 @@ export function publicAuthUser(u) {
 
 export function accountStatus(user) {
   if (!user) return "no_account";
-  return (user.isApproved && (!user.status || user.status === "pending")) ? "active" : (user.status || "pending");
+  return user.isApproved && (!user.status || user.status === "pending")
+    ? "active"
+    : user.status || "pending";
 }
 
 export function readProfile(emp) {

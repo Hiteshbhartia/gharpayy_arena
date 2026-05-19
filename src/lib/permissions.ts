@@ -115,3 +115,108 @@ export const CAP_LIST: { cap: Capability; label: string; group: string }[] = [
   { cap: "manage_roles", label: "Change role assignments", group: "Admin" },
   { cap: "view_payroll", label: "View payroll signals", group: "Admin" },
 ];
+
+export type ConsoleCapability =
+  | "submit_eod"
+  | "update_kpis"
+  | "manage_personal_sprint"
+  | "manage_comm_windows"
+  | "access_playbooks"
+  | "view_team_intelligence"
+  | "view_team_analytics"
+  | "view_comparative_analytics"
+  | "manage_workforce_interventions"
+  | "manage_org_health";
+
+export function hasConsoleCapability(
+  actor: Pick<Employee, "role" | "appRole">,
+  cap: ConsoleCapability,
+): boolean {
+  const tier = tierOf(actor);
+
+  // Admins have full access to all capabilities
+  if (tier === "leadership" || actor.appRole === "admin") {
+    return true;
+  }
+
+  const isOperator = ["Operator", "TCM", "Flow Ops"].includes(actor.role);
+
+  switch (cap) {
+    case "submit_eod":
+    case "update_kpis":
+    case "manage_personal_sprint":
+      // Employees, Operators, Leads, Recruiter, HR (except partners)
+      return tier !== "partner";
+
+    case "access_playbooks":
+      // Operators (teammates with Operator roles) and leaders/HR/recruiters who have playbooks
+      return tier !== "partner";
+
+    case "manage_comm_windows":
+      // Operators or Floor Leads / HR / Recruiters / Zone Leaders
+      return ["leader", "hr", "recruiter", "zone_leader"].includes(tier) || isOperator;
+
+    case "view_team_intelligence":
+    case "view_team_analytics":
+    case "view_comparative_analytics":
+    case "manage_workforce_interventions":
+      // Leadership tiers (Leads, HR, Zone Leaders, Admin)
+      return ["leader", "zone_leader", "hr"].includes(tier);
+
+    case "manage_org_health":
+      // HR
+      return tier === "hr";
+
+    default:
+      return false;
+  }
+}
+
+export type KpiCapability =
+  | "manage_kpi_definitions"
+  | "manage_org_kpi_targets"
+  | "manage_zone_kpi_targets"
+  | "manage_team_kpi_targets"
+  | "view_kpi_governance"
+  | "submit_kpi_values";
+
+export function hasKpiCapability(
+  actor: Pick<Employee, "role" | "appRole">,
+  cap: KpiCapability,
+): boolean {
+  const tier = tierOf(actor);
+
+  // Admin/Leadership appRole always has all capabilities
+  if (tier === "leadership" || actor.appRole === "admin") {
+    return true;
+  }
+
+  switch (cap) {
+    case "view_kpi_governance":
+      // Admin, HR, Zone Leader, Floor Lead (anyone in leadership/hr/zone_leader/leader)
+      return ["hr", "zone_leader", "leader"].includes(tier as any);
+
+    case "manage_kpi_definitions":
+      // Only Admin has this (already handled by the top check, so return false here)
+      return false;
+
+    case "manage_org_kpi_targets":
+      // Admin and HR Leadership
+      return tier === "hr";
+
+    case "manage_zone_kpi_targets":
+      // Admin, HR, and Zone Leaders
+      return ["zone_leader", "hr"].includes(tier as any);
+
+    case "manage_team_kpi_targets":
+      // Admin, HR, Zone Leaders, and Floor Leads
+      return ["leader", "zone_leader", "hr"].includes(tier as any);
+
+    case "submit_kpi_values":
+      // All authenticated roles except property partners
+      return tier !== "partner";
+
+    default:
+      return false;
+  }
+}

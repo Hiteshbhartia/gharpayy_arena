@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,6 +69,26 @@ export function AuthGate() {
           <p className="text-sm text-muted-foreground">
             Your account is pending approval from administration. You cannot access the dashboard
             until your profile is configured and approved.
+          </p>
+          <Button variant="outline" className="mt-4" onClick={() => logout()}>
+            Sign out
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (user?.status === "suspended" || user?.isSuspended) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="flex flex-col items-center gap-4 text-center max-w-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+            <ShieldAlert className="h-8 w-8 text-destructive" />
+          </div>
+          <h2 className="text-xl font-semibold tracking-tight">Account Suspended</h2>
+          <p className="text-sm text-muted-foreground">
+            Your account has been suspended by administration. You no longer have access to the
+            dashboard.
           </p>
           <Button variant="outline" className="mt-4" onClick={() => logout()}>
             Sign out

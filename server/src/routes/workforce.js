@@ -275,7 +275,8 @@ router.patch(
 
     let emp = await Employee.findOne({ id: u.employeeId });
     if (!emp) {
-      const empId = u.employeeId && !u.employeeId.startsWith("pending_") ? u.employeeId : newEmployeeId();
+      const empId =
+        u.employeeId && !u.employeeId.startsWith("pending_") ? u.employeeId : newEmployeeId();
       emp = await Employee.create({
         id: empId,
         name: u.name || u.email.split("@")[0],
