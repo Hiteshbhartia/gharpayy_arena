@@ -10,7 +10,8 @@
     "dev": "node --watch src/index.js",
     "dev:stable": "node src/index.js",
     "seed": "node scripts/seed.js",
-    "seed:test-accounts": "node scripts/seed-test-accounts.js"
+    "seed:test-accounts": "node scripts/seed-test-accounts.js",
+    "seed:demo-auth": "node scripts/seed-demo-auth-users.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

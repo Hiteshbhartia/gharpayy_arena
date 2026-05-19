@@ -30,6 +30,7 @@ import {
   Building2,
   Wallet,
   Radio,
+  LogOut,
 } from "lucide-react";
 import { playbookFor } from "@/data/playbooks";
 import { shieldNow } from "@/lib/console-store";
@@ -43,6 +44,7 @@ import { CalendarPeek } from "./CalendarPeek";
 import { CommandPalette } from "./CommandPalette";
 import { GiveKudoModal } from "./GiveKudoModal";
 import { Avatar } from "./Avatar";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; tiers: Tier[] };
@@ -131,7 +133,7 @@ export function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const { actor } = useAttendanceState();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const hasPlaybook = !!playbookFor(actor.id);
   const shield = hasPlaybook ? shieldNow(actor.id) : { active: false, label: "" };
   const status = liveStatusFor(actor.id);
@@ -254,6 +256,20 @@ export function AppShell() {
               {user.email}
             </div>
           )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 mt-1 -ml-1 px-2 py-0 gap-1.5 text-[11px] font-medium text-sidebar-foreground/90 hover:bg-sidebar-hover hover:text-white [&_svg]:size-3.5"
+            onClick={() => {
+              logout();
+              navigate({ to: "/login", replace: true });
+              setDrawerOpen(false);
+            }}
+          >
+            <LogOut className="shrink-0" />
+            Sign out
+          </Button>
         </div>
         <div className="flex items-center gap-2 mt-2 px-1 text-[10px] text-sidebar-foreground/70">
           <span className={`h-1.5 w-1.5 rounded-full ${statusDot}`} />
