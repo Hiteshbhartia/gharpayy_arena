@@ -21,6 +21,7 @@ import {
   Activity,
 } from "lucide-react";
 import { useAttendanceState } from "@/hooks/useAttendance";
+import { tierOf } from "@/lib/permissions";
 import {
   PLAYBOOKS,
   playbookFor,
@@ -69,8 +70,41 @@ function ConsolePage() {
   // tick referenced to avoid unused warnings; force re-render every 30s
   void tick;
 
+  if (actor.id === "loading") {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center text-muted-foreground gap-2">
+        <Activity className="h-5 w-5 animate-pulse text-primary" />
+        <span className="text-sm font-mono uppercase tracking-widest">Loading Console…</span>
+      </div>
+    );
+  }
+
   const pb = playbookFor(actor.id);
+  const tier = tierOf(actor);
+  const isLeadership = ["leadership", "zone_leader", "hr", "leader"].includes(tier);
+
   if (!pb) {
+    if (isLeadership) {
+      return (
+        <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto space-y-6">
+          <div className="rounded-xl border border-border bg-card p-5 flex items-center justify-between bg-gradient-to-r from-card to-secondary/20">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
+                <Activity className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-sm font-semibold text-foreground">Operator Console</h1>
+                <p className="text-xs text-muted-foreground">
+                  No operator playbook assigned for execution workflows.
+                </p>
+              </div>
+            </div>
+          </div>
+          <TeamIntelligencePanel actor={actor} />
+        </div>
+      );
+    }
+
     return (
       <div className="px-4 md:px-8 py-8 max-w-5xl mx-auto">
         <div className="rounded-xl border border-border bg-card p-8">
@@ -101,6 +135,7 @@ function ConsoleFor({
   pb,
   actorId,
   actorName,
+  actor,
 }: {
   pb: RolePlaybook;
   actorId: string;
