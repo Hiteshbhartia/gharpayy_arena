@@ -160,10 +160,13 @@ function startHttpServer() {
   return server;
 }
 
+import { runWorkforceMigrations } from "./lib/migrations.js";
+
 mongoose
   .connect(MONGO)
-  .then(() => {
+  .then(async () => {
     console.log("[api] mongo connected");
+    await runWorkforceMigrations();
     startHttpServer();
   })
   .catch((err) => {

@@ -135,12 +135,13 @@ router.post(
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      if (user.status === "rejected") {
+      const derivedStatus = (user.isApproved && (!user.status || user.status === "pending")) ? "active" : (user.status || "pending");
+      if (derivedStatus === "rejected") {
         logAuth("login.blocked", { email, reason: "rejected" });
         return res.status(403).json({ error: "Account request rejected" });
       }
 
-      if (user.isSuspended || user.status === "suspended") {
+      if (user.isSuspended || derivedStatus === "suspended") {
         logAuth("login.blocked", { email, reason: "suspended" });
         return res.status(403).json({ error: "Account suspended" });
       }
@@ -198,6 +199,7 @@ router.post(
 );
 
 function publicUser(u) {
+  const status = (u.isApproved && (!u.status || u.status === "pending")) ? "active" : (u.status || "pending");
   return {
     id: String(u._id),
     email: u.email,
@@ -205,7 +207,7 @@ function publicUser(u) {
     role: u.role,
     isApproved: u.isApproved,
     isSuspended: Boolean(u.isSuspended),
-    status: u.status || (u.isApproved ? "active" : "pending"),
+    status,
   };
 }
 
