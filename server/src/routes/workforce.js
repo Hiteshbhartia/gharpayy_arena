@@ -47,7 +47,7 @@ async function buildWorkforceRows() {
 
   const nameById = new Map(employees.map((e) => [e.id, e.name]));
 
-  return employees.map((emp) => {
+  const rows = employees.map((emp) => {
     const user = userByEmployeeId.get(emp.id) ?? null;
     const org = employeeOrgFields(emp);
     const managerName = org.managerId ? (nameById.get(org.managerId) ?? null) : null;
@@ -61,6 +61,32 @@ async function buildWorkforceRows() {
       approvalStatus: user ? (user.isApproved ? "approved" : "pending") : "none",
     };
   });
+
+  // Find pending users who don't have a linked Employee record yet
+  for (const u of users) {
+    const derivedStatus = accountStatus(u);
+    const isLinked = u.employeeId && nameById.has(u.employeeId);
+    if (derivedStatus === "pending" && !isLinked) {
+      rows.push({
+        employeeId: u.employeeId || `pending_${u._id}`,
+        name: u.name || u.email.split("@")[0],
+        operationalRole: "Operator",
+        appRole: "employee",
+        team: "HQ",
+        zone: "All",
+        managerId: null,
+        managerName: null,
+        experience: "New",
+        shift: "9:00 AM - 6:00 PM",
+        email: u.email,
+        user: publicAuthUser(u),
+        accountStatus: "pending",
+        approvalStatus: "pending",
+      });
+    }
+  }
+
+  return rows;
 }
 
 router.get(
@@ -247,8 +273,18 @@ router.patch(
       return res.status(400).json({ error: "Reporting manager is required for this role" });
     }
 
-    const emp = await Employee.findOne({ id: u.employeeId });
-    if (!emp) return res.status(404).json({ error: "Employee profile missing" });
+    let emp = await Employee.findOne({ id: u.employeeId });
+    if (!emp) {
+      const empId = u.employeeId && !u.employeeId.startsWith("pending_") ? u.employeeId : newEmployeeId();
+      emp = await Employee.create({
+        id: empId,
+        name: u.name || u.email.split("@")[0],
+        role: req.body.operationalRole,
+        email: u.email,
+      });
+      u.employeeId = empId;
+      await u.save();
+    }
 
     mergeEmployeeProfile(emp, req.body);
     await emp.save();

@@ -92,6 +92,7 @@ router.post(
         role: isFirst ? "admin" : "employee",
         isApproved: isFirst,
         status: isFirst ? "active" : "pending",
+        name,
       });
 
       await maybeCreateEmployeeStub({ employeeId, name });

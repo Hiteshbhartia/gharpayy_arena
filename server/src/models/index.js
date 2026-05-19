@@ -20,6 +20,7 @@ const UserSchema = new Schema(
       enum: ["pending", "configured", "active", "suspended", "rejected"],
       default: "pending",
     },
+    name: { type: String },
   },
   { timestamps: true },
 );
