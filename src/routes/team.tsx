@@ -105,7 +105,7 @@ function TeamPage() {
                 </div>
               </div>
 
-              {e.flags.length > 0 && (
+              {(e.flags ?? []).length > 0 && (
                 <div className="mt-3 pt-3 border-t border-border">
                   <div className="flex items-center gap-1 text-xs text-destructive mb-1.5">
                     <AlertTriangle className="h-3 w-3" />
@@ -114,7 +114,7 @@ function TeamPage() {
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {e.flags.map((f) => (
+                    {(e.flags ?? []).map((f) => (
                       <span
                         key={f}
                         className="text-[10px] px-2 py-0.5 rounded bg-destructive/10 text-destructive"

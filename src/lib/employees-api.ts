@@ -45,23 +45,7 @@ export function mapApiEmployee(record: ApiEmployeeRecord, user?: ApiUser | null)
     record.profile?.appRole ??
     (user?.employeeId === record.id ? appRoleFromApiUser(user.role) : "employee");
 
-  if (record.profile) {
-    return {
-      ...record.profile,
-      id: record.id,
-      name: record.name,
-      role,
-      appRole,
-      managerId: record.managerId ?? record.profile.managerId,
-      team: record.hubId ?? record.profile.team,
-    };
-  }
-
-  return {
-    id: record.id,
-    name: record.name,
-    role,
-    appRole,
+  const defaults: Omit<Employee, "id" | "name" | "role" | "appRole"> = {
     experience: "Mid",
     attendance: 85,
     performance: 70,
@@ -82,6 +66,27 @@ export function mapApiEmployee(record: ApiEmployeeRecord, user?: ApiUser | null)
     avatarSeed: record.name.split(" ")[0] ?? record.id,
     zone: record.hubId ?? "All",
     managerId: record.managerId ?? null,
+  };
+
+  if (record.profile) {
+    return {
+      ...defaults,
+      ...record.profile,
+      id: record.id,
+      name: record.name,
+      role,
+      appRole,
+      managerId: record.managerId ?? record.profile.managerId ?? null,
+      team: record.hubId ?? record.profile.team ?? "HQ",
+    };
+  }
+
+  return {
+    id: record.id,
+    name: record.name,
+    role,
+    appRole,
+    ...defaults,
   };
 }
 

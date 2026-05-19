@@ -128,7 +128,7 @@ function WarRoom() {
           </div>
           <div className="font-display text-lg font-semibold">{s.bottom?.name ?? "—"}</div>
           <div className="text-xs text-muted-foreground mb-3">
-            {s.bottom ? `${s.bottom.role} · ${s.bottom.flags.length} flags` : ""}
+            {s.bottom ? `${s.bottom.role} · ${(s.bottom.flags ?? []).length} flags` : ""}
           </div>
           {s.bottom && <ScoreBar value={s.bottom.performance} color="bg-destructive" />}
         </div>
@@ -163,10 +163,10 @@ function WarRoom() {
                 <div className="w-12 text-right font-mono text-sm font-semibold">
                   {e.performance}
                 </div>
-                {e.flags.length > 0 && (
+                {(e.flags ?? []).length > 0 && (
                   <span className="hidden sm:inline-flex items-center gap-1 text-xs text-destructive">
                     <AlertTriangle className="h-3 w-3" />
-                    {e.flags.length}
+                    {(e.flags ?? []).length}
                   </span>
                 )}
               </div>
