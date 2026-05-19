@@ -22,6 +22,7 @@ import attendanceEventsRoutes from "./routes/attendance-events.js";
 import pulseRoutes from "./routes/pulse.js";
 import flyRoutes from "./routes/fly.js";
 import migrateRoutes from "./routes/migrate.js";
+import workforceRoutes from "./routes/workforce.js";
 import { toHttpError } from "./lib/errors.js";
 
 const app = express();
@@ -83,6 +84,7 @@ app.use("/api/attendance-events", attendanceEventsRoutes);
 app.use("/api/pulse", pulseRoutes);
 app.use("/api/fly", flyRoutes);
 app.use("/api/migrate", migrateRoutes);
+app.use("/api/admin/workforce", workforceRoutes);
 
 // --- error handler ---
 app.use((err, req, res, _next) => {

@@ -34,6 +34,7 @@ import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminWorkforceRouteImport } from './routes/admin/workforce'
 
 const ZonesRoute = ZonesRouteImport.update({
   id: '/zones',
@@ -160,6 +161,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminWorkforceRoute = AdminWorkforceRouteImport.update({
+  id: '/admin/workforce',
+  path: '/admin/workforce',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof TeamRoute
   '/war-room': typeof WarRoomRoute
   '/zones': typeof ZonesRoute
+  '/admin/workforce': typeof AdminWorkforceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/team': typeof TeamRoute
   '/war-room': typeof WarRoomRoute
   '/zones': typeof ZonesRoute
+  '/admin/workforce': typeof AdminWorkforceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/team': typeof TeamRoute
   '/war-room': typeof WarRoomRoute
   '/zones': typeof ZonesRoute
+  '/admin/workforce': typeof AdminWorkforceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/war-room'
     | '/zones'
+    | '/admin/workforce'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/war-room'
     | '/zones'
+    | '/admin/workforce'
   id:
     | '__root__'
     | '/'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/war-room'
     | '/zones'
+    | '/admin/workforce'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -353,6 +365,7 @@ export interface RootRouteChildren {
   TeamRoute: typeof TeamRoute
   WarRoomRoute: typeof WarRoomRoute
   ZonesRoute: typeof ZonesRoute
+  AdminWorkforceRoute: typeof AdminWorkforceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -532,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/workforce': {
+      id: '/admin/workforce'
+      path: '/admin/workforce'
+      fullPath: '/admin/workforce'
+      preLoaderRoute: typeof AdminWorkforceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -561,6 +581,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeamRoute: TeamRoute,
   WarRoomRoute: WarRoomRoute,
   ZonesRoute: ZonesRoute,
+  AdminWorkforceRoute: AdminWorkforceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

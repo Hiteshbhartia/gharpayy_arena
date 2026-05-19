@@ -232,6 +232,13 @@ function HrmsPage() {
             show={can(activeRole, "view_own_score")}
           />
           <ActionCard
+            to="/admin/workforce"
+            title="Workforce access"
+            sub="Roles, hierarchy, approvals"
+            icon={UserCog}
+            show={can(activeRole, "manage_users")}
+          />
+          <ActionCard
             to="/war-room"
             title="War Room"
             sub="Daily snapshot"

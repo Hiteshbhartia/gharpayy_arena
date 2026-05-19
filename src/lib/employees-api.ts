@@ -42,9 +42,8 @@ function appRoleFromApiUser(role: ApiUser["role"]): AppRole {
 export function mapApiEmployee(record: ApiEmployeeRecord, user?: ApiUser | null): Employee {
   const role = mapRecordRole(record.role);
   const appRole =
-    user?.employeeId === record.id
-      ? appRoleFromApiUser(user.role)
-      : (record.profile?.appRole ?? "employee");
+    record.profile?.appRole ??
+    (user?.employeeId === record.id ? appRoleFromApiUser(user.role) : "employee");
 
   if (record.profile) {
     return {

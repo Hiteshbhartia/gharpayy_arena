@@ -14,6 +14,12 @@ const UserSchema = new Schema(
       default: "employee",
     },
     isApproved: { type: Boolean, default: false },
+    isSuspended: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["pending", "configured", "active", "suspended", "rejected"],
+      default: "pending",
+    },
   },
   { timestamps: true },
 );
