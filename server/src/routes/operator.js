@@ -186,6 +186,11 @@ function computeMemberMetrics(emp, tasks, leaves, attEvents, kudos) {
   };
 }
 
+// ─── GET /api/operator/ping ───────────────────────────────────────────────────
+router.get("/ping", (req, res) => {
+  res.json({ ok: true });
+});
+
 // ─── GET /api/operator/team-intelligence ────────────────────────────────────
 router.get(
   "/team-intelligence",

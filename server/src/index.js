@@ -167,9 +167,13 @@ function startHttpServer() {
 import { runWorkforceMigrations } from "./lib/migrations.js";
 import { seedKpis } from "./lib/seed-kpis.js";
 
-mongoose
-  .connect(MONGO)
-  .then(async () => {
+let isDbConnected = false;
+
+async function connectDb() {
+  if (isDbConnected) return;
+  try {
+    await mongoose.connect(MONGO);
+    isDbConnected = true;
     console.log("[api] mongo connected");
     await runWorkforceMigrations();
     try {
@@ -177,9 +181,25 @@ mongoose
     } catch (kpiErr) {
       console.error("[api] kpi seeding failed:", kpiErr);
     }
-    startHttpServer();
-  })
-  .catch((err) => {
+  } catch (err) {
     console.error("[api] mongo connection failed:", err.message);
-    process.exit(1);
+    if (process.env.NODE_ENV !== "production") {
+      process.exit(1);
+    }
+  }
+}
+
+// In Vercel, we need to ensure DB is connected before handling requests
+app.use(async (req, res, next) => {
+  await connectDb();
+  next();
+});
+
+// Start server if not running in Vercel serverless environment
+if (!process.env.VERCEL) {
+  connectDb().then(() => {
+    startHttpServer();
   });
+}
+
+export default app;
