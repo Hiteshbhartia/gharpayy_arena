@@ -3,8 +3,8 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install deps first for better cache
-COPY package.json ./
-RUN npm install --omit=dev
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
 # Copy app
 COPY . .
