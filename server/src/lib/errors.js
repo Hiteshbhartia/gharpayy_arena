@@ -33,6 +33,10 @@ export function toHttpError(err) {
     return e;
   }
 
+  if (err.status && err.status >= 400 && err.status < 600) {
+    return err;
+  }
+
   return err;
 }
 

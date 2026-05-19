@@ -91,14 +91,19 @@ router.post(
         employeeId,
         role: isFirst ? "admin" : "employee",
         isApproved: isFirst,
+        status: isFirst ? "active" : "pending",
+        name,
       });
 
       await maybeCreateEmployeeStub({ employeeId, name });
 
       if (!isFirst) {
         logAuth("signup.pending_approval", { email, userId: String(user._id) });
+        const token = signToken(user);
         return res.status(201).json({
           message: "Account created. Awaiting admin approval before you can sign in.",
+          token,
+          user: publicUser(user),
         });
       }
 
@@ -131,9 +136,18 @@ router.post(
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      if (!user.isApproved) {
-        logAuth("login.blocked", { email, reason: "pending_approval" });
-        return res.status(403).json({ error: "Account pending approval" });
+      const derivedStatus =
+        user.isApproved && (!user.status || user.status === "pending")
+          ? "active"
+          : user.status || "pending";
+      if (derivedStatus === "rejected") {
+        logAuth("login.blocked", { email, reason: "rejected" });
+        return res.status(403).json({ error: "Account request rejected" });
+      }
+
+      if (user.isSuspended || derivedStatus === "suspended") {
+        logAuth("login.blocked", { email, reason: "suspended" });
+        return res.status(403).json({ error: "Account suspended" });
       }
 
       const token = signToken(user);
@@ -189,12 +203,16 @@ router.post(
 );
 
 function publicUser(u) {
+  const status =
+    u.isApproved && (!u.status || u.status === "pending") ? "active" : u.status || "pending";
   return {
     id: String(u._id),
     email: u.email,
     employeeId: u.employeeId ?? undefined,
     role: u.role,
     isApproved: u.isApproved,
+    isSuspended: Boolean(u.isSuspended),
+    status,
   };
 }
 

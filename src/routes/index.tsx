@@ -265,7 +265,7 @@ function GoalsPillar({ actor }: { actor: Employee }) {
       <div className="flex items-end gap-1 h-14 mb-4">
         {days.map((d) => {
           const h = Math.max(8, (d.total / max) * 56);
-          const isToday = d.dayKey === days[days.length - 1].dayKey;
+          const isToday = d.dayKey === days[days.length - 1]?.dayKey;
           return (
             <Link
               key={d.dayKey}
@@ -636,7 +636,7 @@ function HRHome({ actor }: { actor: Employee }) {
   const lowAttendance = getRoster()
     .filter((e) => e.attendance < 80)
     .sort((a, b) => a.attendance - b.attendance);
-  const flagged = getRoster().filter((e) => e.flags.length > 0);
+  const flagged = getRoster().filter((e) => (e.flags ?? []).length > 0);
 
   return (
     <div className="px-4 md:px-8 py-6 md:py-8 max-w-[1300px] mx-auto">
@@ -811,7 +811,7 @@ function LeadershipHome({ actor }: { actor: Employee }) {
           </div>
           <div className="font-display text-xl font-semibold">{s.bottom?.name ?? "—"}</div>
           <div className="text-xs text-muted-foreground mb-3">
-            {s.bottom ? `${s.bottom.role} · ${s.bottom.flags.length} flags` : ""}
+            {s.bottom ? `${s.bottom.role} · ${(s.bottom.flags ?? []).length} flags` : ""}
           </div>
           {s.bottom && <Bar value={s.bottom.performance} color="bg-destructive" />}
         </div>

@@ -22,6 +22,9 @@ import attendanceEventsRoutes from "./routes/attendance-events.js";
 import pulseRoutes from "./routes/pulse.js";
 import flyRoutes from "./routes/fly.js";
 import migrateRoutes from "./routes/migrate.js";
+import workforceRoutes from "./routes/workforce.js";
+import operatorRoutes from "./routes/operator.js";
+import kpisRoutes from "./routes/kpis.js";
 import { toHttpError } from "./lib/errors.js";
 
 const app = express();
@@ -83,6 +86,9 @@ app.use("/api/attendance-events", attendanceEventsRoutes);
 app.use("/api/pulse", pulseRoutes);
 app.use("/api/fly", flyRoutes);
 app.use("/api/migrate", migrateRoutes);
+app.use("/api/admin/workforce", workforceRoutes);
+app.use("/api/operator", operatorRoutes);
+app.use("/api", kpisRoutes);
 
 // --- error handler ---
 app.use((err, req, res, _next) => {
@@ -158,13 +164,42 @@ function startHttpServer() {
   return server;
 }
 
-mongoose
-  .connect(MONGO)
-  .then(() => {
+import { runWorkforceMigrations } from "./lib/migrations.js";
+import { seedKpis } from "./lib/seed-kpis.js";
+
+let isDbConnected = false;
+
+async function connectDb() {
+  if (isDbConnected) return;
+  try {
+    await mongoose.connect(MONGO);
+    isDbConnected = true;
     console.log("[api] mongo connected");
-    startHttpServer();
-  })
-  .catch((err) => {
+    await runWorkforceMigrations();
+    try {
+      await seedKpis();
+    } catch (kpiErr) {
+      console.error("[api] kpi seeding failed:", kpiErr);
+    }
+  } catch (err) {
     console.error("[api] mongo connection failed:", err.message);
-    process.exit(1);
+    if (process.env.NODE_ENV !== "production") {
+      process.exit(1);
+    }
+  }
+}
+
+// In Vercel, we need to ensure DB is connected before handling requests
+app.use(async (req, res, next) => {
+  await connectDb();
+  next();
+});
+
+// Start server if not running in Vercel serverless environment
+if (!process.env.VERCEL) {
+  connectDb().then(() => {
+    startHttpServer();
   });
+}
+
+export default app;

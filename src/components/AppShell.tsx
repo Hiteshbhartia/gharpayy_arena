@@ -24,6 +24,7 @@ import {
   X,
   MessageSquareText,
   UserPlus,
+  UserCog,
   Zap,
   Shield,
   Map as MapIcon,
@@ -31,6 +32,7 @@ import {
   Wallet,
   Radio,
   LogOut,
+  Target,
 } from "lucide-react";
 import { playbookFor } from "@/data/playbooks";
 import { shieldNow } from "@/lib/console-store";
@@ -38,7 +40,7 @@ import { useAttendanceState } from "@/hooks/useAttendance";
 import { liveStatusFor } from "@/lib/attendance-store";
 import { unreadCount } from "@/lib/notification-store";
 import { bootArena } from "@/lib/seed-init";
-import { tierOf, TIER_LABEL, type Tier } from "@/lib/permissions";
+import { can, tierOf, TIER_LABEL, type Tier } from "@/lib/permissions";
 import { NotificationDropdown } from "./NotificationDropdown";
 import { CalendarPeek } from "./CalendarPeek";
 import { CommandPalette } from "./CommandPalette";
@@ -47,7 +49,14 @@ import { Avatar } from "./Avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
-type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; tiers: Tier[] };
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  tiers: Tier[];
+  /** Requires platform admin auth + manage_users capability */
+  adminOnly?: boolean;
+};
 
 const ALL: Tier[] = [
   "leadership",
@@ -119,6 +128,19 @@ const NAV: NavItem[] = [
     tiers: ["leadership", "hr", "recruiter"],
   },
   { to: "/hrms", label: "HRMS", icon: ShieldCheck, tiers: ["leadership", "hr"] },
+  {
+    to: "/admin/workforce",
+    label: "Workforce",
+    icon: UserCog,
+    tiers: ["leadership"],
+    adminOnly: true,
+  },
+  {
+    to: "/admin/kpis",
+    label: "KPI Governance",
+    icon: Target,
+    tiers: ["leadership", "zone_leader", "hr", "leader"],
+  },
 ];
 
 const MOBILE_NAV_BASE = [
@@ -144,7 +166,13 @@ export function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const unread = unreadCount(actor.id);
   const tier = tierOf(actor);
-  const visibleNav = NAV.filter((n) => n.tiers.includes(tier));
+  const visibleNav = NAV.filter((n) => {
+    if (!n.tiers.includes(tier)) return false;
+    if (n.adminOnly && (user?.role !== "admin" || !can(actor.appRole, "manage_users"))) {
+      return false;
+    }
+    return true;
+  });
   const mobileNav =
     tier === "partner"
       ? [

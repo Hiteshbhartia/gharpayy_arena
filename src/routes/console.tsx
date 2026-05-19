@@ -21,6 +21,7 @@ import {
   Activity,
 } from "lucide-react";
 import { useAttendanceState } from "@/hooks/useAttendance";
+import { tierOf, hasConsoleCapability } from "@/lib/permissions";
 import {
   PLAYBOOKS,
   playbookFor,
@@ -44,6 +45,16 @@ import {
   exportEodText,
 } from "@/lib/console-store";
 import { Avatar } from "@/components/Avatar";
+import type { Employee } from "@/types/hr";
+import { TeamIntelligencePanel } from "@/components/TeamIntelligencePanel";
+import { LeadershipActionsPanel } from "@/components/LeadershipActionsPanel";
+import { Badge } from "@/components/ui/badge";
+import {
+  fetchKpiDefinitions,
+  fetchKpiTargets,
+  type KpiDefinition,
+  type KpiTarget,
+} from "@/lib/kpi-governance-api";
 
 export const Route = createFileRoute("/console")({
   component: ConsolePage,
@@ -58,6 +69,127 @@ export const Route = createFileRoute("/console")({
   }),
 });
 
+function useDynamicPlaybook(pb: RolePlaybook | undefined, actor: Employee) {
+  const [definitions, setDefinitions] = useState<KpiDefinition[]>([]);
+  const [targets, setTargets] = useState<KpiTarget[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [kpiRes, targetRes] = await Promise.all([
+          fetchKpiDefinitions({ active: true }),
+          fetchKpiTargets(),
+        ]);
+        if (kpiRes?.definitions) setDefinitions(kpiRes.definitions);
+        if (targetRes?.targets) setTargets(targetRes.targets);
+      } catch (err) {
+        console.error("Failed to load dynamic playbook KPIs", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (pb && actor?.id && actor.id !== "loading") {
+      load();
+    } else {
+      setLoading(false);
+    }
+  }, [pb?.key, actor?.id]);
+
+  const dynamicPb = useMemo(() => {
+    if (!pb) return undefined;
+    if (loading || definitions.length === 0) return pb;
+
+    const dynamicKpis = pb.kpis.map((legacyKpi) => {
+      const expectedSlug = `${pb.key}_${legacyKpi.id}`;
+      const definition = definitions.find((d) => d.slug === expectedSlug);
+
+      if (!definition) {
+        return legacyKpi;
+      }
+
+      const kpiTargets = targets.filter((t) => t.kpiId === definition.id);
+
+      let resolvedTarget = legacyKpi.target;
+
+      const individualTarget = kpiTargets.find(
+        (t) => t.scopeType === "individual" && t.scopeId === actor.id,
+      );
+      const teamTarget = kpiTargets.find(
+        (t) =>
+          t.scopeType === "team" &&
+          actor.team &&
+          t.scopeId.toLowerCase() === actor.team.toLowerCase(),
+      );
+      const zoneTarget = kpiTargets.find(
+        (t) =>
+          t.scopeType === "zone" &&
+          actor.zone &&
+          t.scopeId.toLowerCase() === actor.zone.toLowerCase(),
+      );
+      const orgTarget = kpiTargets.find((t) => t.scopeType === "org");
+
+      if (individualTarget !== undefined) {
+        resolvedTarget = individualTarget.targetValue;
+      } else if (teamTarget !== undefined) {
+        resolvedTarget = teamTarget.targetValue;
+      } else if (zoneTarget !== undefined) {
+        resolvedTarget = zoneTarget.targetValue;
+      } else if (orgTarget !== undefined) {
+        resolvedTarget = orgTarget.targetValue;
+      }
+
+      return {
+        id: legacyKpi.id,
+        label: definition.name || legacyKpi.label,
+        why: definition.description || legacyKpi.why,
+        target: resolvedTarget,
+        unit:
+          definition.unit === "count"
+            ? undefined
+            : definition.unit === "percent"
+              ? "%"
+              : definition.unit,
+        kind:
+          definition.unit === "percent"
+            ? "percent"
+            : definition.unit === "boolean"
+              ? "boolean"
+              : legacyKpi.kind,
+      };
+    });
+
+    return {
+      ...pb,
+      kpis: dynamicKpis,
+    };
+  }, [pb, definitions, targets, actor, loading]);
+
+  return { pb: dynamicPb, loading };
+}
+
+function calculateDynamicHealth(
+  kpis: Array<{ id: string; kind: string; target: number }>,
+  dayKpis: Record<string, number>,
+) {
+  if (!kpis || kpis.length === 0) return { score: 0, label: "—" };
+  let hit = 0;
+  kpis.forEach((k) => {
+    const v = dayKpis[k.id] ?? 0;
+    if (k.kind === "boolean") {
+      if (v >= 1) hit++;
+    } else if (k.kind === "percent") {
+      if (v >= k.target) hit++;
+    } else {
+      if (v >= k.target) hit++;
+    }
+  });
+  const score = Math.round((hit / kpis.length) * 100);
+  const label =
+    score >= 90 ? "On fire" : score >= 70 ? "On track" : score >= 40 ? "Behind" : "Red zone";
+  return { score, label };
+}
+
 function ConsolePage() {
   const { actor } = useAttendanceState();
   const [tick, setTick] = useState(0);
@@ -68,63 +200,152 @@ function ConsolePage() {
   // tick referenced to avoid unused warnings; force re-render every 30s
   void tick;
 
-  const pb = playbookFor(actor.id);
-  if (!pb) {
+  const staticPb = playbookFor(actor.id);
+  const { pb, loading } = useDynamicPlaybook(staticPb, actor);
+
+  const hasMyOps = hasConsoleCapability(actor, "access_playbooks");
+  const hasTeamIntel = hasConsoleCapability(actor, "view_team_intelligence");
+  const hasLeadActions = hasConsoleCapability(actor, "manage_workforce_interventions");
+
+  if (actor.id === "loading" || (hasMyOps && loading)) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center text-muted-foreground gap-2">
+        <Activity className="h-5 w-5 animate-pulse text-primary" />
+        <span className="text-sm font-mono uppercase tracking-widest">Loading Console…</span>
+      </div>
+    );
+  }
+
+  if (!hasMyOps && !hasTeamIntel && !hasLeadActions) {
     return (
       <div className="px-4 md:px-8 py-8 max-w-5xl mx-auto">
-        <div className="rounded-xl border border-border bg-card p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
-              <Activity className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="font-display text-2xl font-semibold">Operator Console</h1>
-              <p className="text-sm text-muted-foreground">
-                Pick an operator role to see their day, sprint by sprint.
-              </p>
-            </div>
-          </div>
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <ShieldOff className="h-10 w-10 text-destructive mx-auto mb-3" />
+          <h1 className="font-display text-xl font-semibold mb-2">Access Denied</h1>
           <p className="text-sm text-muted-foreground">
-            {actor.name} doesn&apos;t have an operator playbook for this account. Contact an admin
-            if you need console access.
+            You do not have permissions to access the Operations Command Center.
           </p>
         </div>
       </div>
     );
   }
 
-  return <ConsoleFor pb={pb} actorId={actor.id} actorName={actor.name} />;
+  return (
+    <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto space-y-8">
+      {/* Page Title */}
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center border border-primary/20">
+          <Zap className="h-5 w-5" />
+        </div>
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            Operations Command Center
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            Real-time execution rhythm and intelligence
+          </p>
+        </div>
+      </div>
+
+      {/* MY OPERATIONS Section */}
+      {hasMyOps && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 border-b border-border pb-2">
+            <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+              01 / My Operations
+            </span>
+          </div>
+          {pb ? (
+            <MyOperationsSection pb={pb} actorId={actor.id} actorName={actor.name} actor={actor} />
+          ) : (
+            <div className="rounded-xl border border-border bg-card p-5 flex items-center justify-between bg-gradient-to-r from-card to-secondary/15">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
+                  <Activity className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-foreground">Operator Playbook</h2>
+                  <p className="text-xs text-muted-foreground">
+                    No operator playbook assigned for execution workflows.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TEAM INTELLIGENCE Section */}
+      {hasTeamIntel && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 border-b border-border pb-2">
+            <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+              02 / Team Intelligence
+            </span>
+          </div>
+          <TeamIntelligencePanel actor={actor} />
+        </div>
+      )}
+
+      {/* LEADERSHIP ACTIONS Section */}
+      {hasLeadActions && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 border-b border-border pb-2">
+            <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+              03 / Leadership Actions
+            </span>
+          </div>
+          <LeadershipActionsPanel actor={actor} />
+        </div>
+      )}
+    </div>
+  );
 }
 
-function ConsoleFor({
+function MyOperationsSection({
   pb,
   actorId,
   actorName,
+  actor,
 }: {
   pb: RolePlaybook;
   actorId: string;
   actorName: string;
+  actor: ReturnType<typeof useAttendanceState>["actor"];
 }) {
   const day = useConsoleDay(actorId);
   const shield = shieldNow(actorId);
   const sprint = currentSprint(actorId);
   const next = nextSprint(actorId);
-  const health = dayHealth(actorId);
+  const health = useMemo(() => {
+    return calculateDynamicHealth(pb.kpis, day.kpis);
+  }, [pb.kpis, day.kpis]);
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6">
       <Header pb={pb} actorName={actorName} health={health} shield={shield} />
       <NowStrip actorId={actorId} sprint={sprint} next={next} />
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <KpiGrid pb={pb} actorId={actorId} day={day} />
-          <SprintTimeline pb={pb} actorId={actorId} day={day} />
-          <CommWindows pb={pb} actorId={actorId} day={day} />
+          {hasConsoleCapability(actor, "update_kpis") && (
+            <>
+              <KpiGrid pb={pb} actorId={actorId} day={day} />
+              <KpiGovernanceReference actor={actor} />
+            </>
+          )}
+          {hasConsoleCapability(actor, "manage_personal_sprint") && (
+            <SprintTimeline pb={pb} actorId={actorId} day={day} />
+          )}
+          {hasConsoleCapability(actor, "manage_comm_windows") && (
+            <CommWindows pb={pb} actorId={actorId} day={day} />
+          )}
         </div>
         <div className="space-y-6">
           <CollapseRule pb={pb} />
           <DecisionsLog actorId={actorId} day={day} />
-          <EodGenerator pb={pb} actorId={actorId} day={day} />
+          {hasConsoleCapability(actor, "submit_eod") && (
+            <EodGenerator pb={pb} actorId={actorId} day={day} />
+          )}
         </div>
       </div>
     </div>
@@ -754,6 +975,106 @@ function SectionHead({
         {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
       </div>
     </div>
+  );
+}
+
+function KpiGovernanceReference({ actor }: { actor: Employee }) {
+  const [kpis, setKpis] = useState<KpiDefinition[]>([]);
+  const [targets, setTargets] = useState<KpiTarget[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [kpiRes, targetRes] = await Promise.all([
+          fetchKpiDefinitions({ active: true }),
+          fetchKpiTargets(),
+        ]);
+        if (kpiRes?.definitions) setKpis(kpiRes.definitions);
+        if (targetRes?.targets) setTargets(targetRes.targets);
+      } catch (err) {
+        console.error("Failed to load reference KPIs", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (actor?.id && actor.id !== "loading") {
+      load();
+    }
+  }, [actor?.id]);
+
+  const relevantTargets = useMemo(() => {
+    return targets.filter((t) => {
+      if (t.scopeType === "org") return true;
+      if (
+        t.scopeType === "zone" &&
+        actor.zone &&
+        t.scopeId.toLowerCase() === actor.zone.toLowerCase()
+      )
+        return true;
+      if (
+        t.scopeType === "team" &&
+        actor.team &&
+        t.scopeId.toLowerCase() === actor.team.toLowerCase()
+      )
+        return true;
+      if (t.scopeType === "individual" && t.scopeId === actor.id) return true;
+      return false;
+    });
+  }, [targets, actor]);
+
+  if (loading) return null;
+  if (kpis.length === 0) return null;
+
+  return (
+    <section className="space-y-3 pt-3">
+      <SectionHead
+        icon={Target}
+        title="KPI Targets & Governance Reference"
+        subtitle="Active organizational targets and visibility scopes for your role tier."
+      />
+      <div className="grid sm:grid-cols-2 gap-3">
+        {kpis.map((k) => {
+          const kpiTargets = relevantTargets.filter((t) => t.kpiId === k.id);
+          return (
+            <div key={k.id} className="rounded-lg border border-border bg-card p-3 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="text-xs font-semibold text-foreground">{k.name}</div>
+                  <code className="text-[9px] font-mono text-muted-foreground block">{k.slug}</code>
+                </div>
+                <Badge variant="outline" className="text-[9px] uppercase font-mono tracking-wider">
+                  {k.frequency}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-snug">
+                {k.description || "No definition details logged."}
+              </p>
+              {kpiTargets.length > 0 && (
+                <div className="space-y-1 pt-1.5 border-t border-border/40">
+                  <div className="text-[9px] uppercase font-mono text-muted-foreground tracking-wider">
+                    Target Thresholds:
+                  </div>
+                  {kpiTargets.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex justify-between items-center text-[10px] font-mono"
+                    >
+                      <span className="text-muted-foreground capitalize">{t.scopeType}:</span>
+                      <span className="font-semibold text-foreground">
+                        {k.targetType === "min" ? "≥" : "≤"}
+                        {t.targetValue}{" "}
+                        {k.unit === "percent" ? "%" : k.unit === "currency" ? " INR" : k.unit}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

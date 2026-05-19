@@ -12,6 +12,8 @@ export type ApiUser = {
   employeeId?: string;
   role: "admin" | "hr" | "manager" | "employee";
   isApproved: boolean;
+  isSuspended?: boolean;
+  status: "pending" | "configured" | "active" | "suspended" | "rejected";
 };
 
 export function getToken(): string | null {

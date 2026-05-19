@@ -14,6 +14,13 @@ const UserSchema = new Schema(
       default: "employee",
     },
     isApproved: { type: Boolean, default: false },
+    isSuspended: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["pending", "configured", "active", "suspended", "rejected"],
+      default: "pending",
+    },
+    name: { type: String },
   },
   { timestamps: true },
 );
@@ -344,6 +351,67 @@ const FlyFeedSchema = new Schema(
   { timestamps: true },
 );
 
+// --- KPI Governance ---
+const KpiDefinitionSchema = new Schema(
+  {
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+    slug: { type: String, required: true, unique: true, index: true },
+    description: String,
+    category: { type: String, default: "General" },
+    unit: { type: String, default: "count" }, // %, count, hours, etc.
+    frequency: { type: String, default: "daily" }, // daily, weekly, monthly
+    aggregationType: { type: String, default: "sum" }, // sum, average, max, min, last
+    visibilityScope: { type: String, default: "public" }, // public, team, leadership, hr
+    ownerRole: { type: String, default: "Operator" },
+    targetType: { type: String, default: "min" }, // min, max, exact
+    active: { type: Boolean, default: true },
+    archivedAt: Number,
+    deprecated: { type: Boolean, default: false },
+    replacedBy: String, // id of replacement KPI definition
+    version: { type: Number, default: 1 },
+    createdBy: String,
+    updatedBy: String,
+    history: [
+      {
+        version: Number,
+        updatedBy: String,
+        updatedAt: Number,
+        changes: Schema.Types.Mixed,
+      },
+    ],
+  },
+  { timestamps: true },
+);
+
+const KpiTargetSchema = new Schema(
+  {
+    id: { type: String, required: true, unique: true },
+    kpiId: { type: String, required: true, index: true },
+    scopeType: { type: String, enum: ["org", "zone", "team", "individual"], required: true },
+    scopeId: { type: String, required: true, index: true }, // "org", zone name, team/hubId, or employeeId
+    targetValue: { type: Number, required: true },
+    effectiveFrom: { type: String, required: true }, // YYYY-MM-DD
+    effectiveTo: { type: String, required: true }, // YYYY-MM-DD
+    ownerId: String, // employee ID who owns/manages this target or who is the target subject
+    notes: String,
+    version: { type: Number, default: 1 },
+    updatedBy: String,
+    history: [
+      {
+        version: Number,
+        targetValue: Number,
+        effectiveFrom: String,
+        effectiveTo: String,
+        updatedBy: String,
+        updatedAt: Number,
+        notes: String,
+      },
+    ],
+  },
+  { timestamps: true },
+);
+
 export const User = mongoose.model("User", UserSchema);
 export const Employee = mongoose.model("Employee", EmployeeSchema);
 export const Attendance = mongoose.model("Attendance", AttendanceSchema);
@@ -360,3 +428,5 @@ export const PulseEntry = mongoose.model("PulseEntry", PulseEntrySchema);
 export const FlyUpdate = mongoose.model("FlyUpdate", FlyUpdateSchema);
 export const FlyRetro = mongoose.model("FlyRetro", FlyRetroSchema);
 export const FlyFeed = mongoose.model("FlyFeed", FlyFeedSchema);
+export const KpiDefinition = mongoose.model("KpiDefinition", KpiDefinitionSchema);
+export const KpiTarget = mongoose.model("KpiTarget", KpiTargetSchema);
