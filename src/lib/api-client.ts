@@ -62,7 +62,13 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (!API_URL) throw new ApiError(0, "API is not configured (set VITE_API_URL)");
 
   const token = getToken();
-  const res = await fetch(`${API_URL}${path}`, {
+  const fullUrl = `${API_URL}${path}`;
+
+  if (import.meta.env.DEV) {
+    console.debug(`[api] ${method} ${fullUrl}`);
+  }
+
+  const res = await fetch(fullUrl, {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -86,6 +92,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       data && typeof data === "object" && "error" in data
         ? String((data as { error: unknown }).error)
         : `Request failed (${res.status})`;
+
+    if (import.meta.env.DEV) {
+      console.warn(`[api] ${method} ${fullUrl} → ${res.status}`, data);
+    }
+
     throw new ApiError(res.status, msg, data);
   }
 
