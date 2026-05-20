@@ -111,36 +111,36 @@ function CommandCenter() {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-3.5rem)] bg-background/50">
-      <header className="px-6 md:px-12 py-8 border-b border-border/40 bg-card/40 backdrop-blur-md sticky top-0 z-10">
-        <div className="flex items-center gap-4 max-w-4xl mx-auto">
-          <div className="h-12 w-12 rounded-xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center shrink-0">
-            <Flame className="h-6 w-6 text-primary-foreground" />
+      <header className="px-6 md:px-12 py-5 md:py-6 border-b border-border/40 bg-card/40 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-3 max-w-4xl mx-auto">
+          <div className="h-10 w-10 rounded-xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center shrink-0">
+            <Flame className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight">Command Center</h1>
-            <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mt-1">
+            <h1 className="font-display text-xl font-bold tracking-tight">Command Center</h1>
+            <p className="text-[11px] text-muted-foreground font-mono uppercase tracking-widest mt-0.5">
               Central operating intelligence · live snapshot loaded
             </p>
           </div>
         </div>
       </header>
 
-      <div className="flex-1 w-full px-4 md:px-8 py-8 md:py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="flex-1 w-full px-4 md:px-8 py-6 md:py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
           {messages.length === 0 && (
-            <div className="text-center py-16 md:py-24">
-              <div className="font-display text-3xl font-semibold mb-3 tracking-tight">
+            <div className="text-center py-10 md:py-16">
+              <div className="font-display text-2xl font-semibold mb-2 tracking-tight">
                 Ask the brain.
               </div>
-              <p className="text-muted-foreground text-base mb-12">
+              <p className="text-muted-foreground text-sm mb-8">
                 Direct. Measurable. Actionable. No fluff.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
                 {SUGGESTIONS.map((s) => (
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="text-left p-5 rounded-xl border border-border/60 bg-card/50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md transition-all group"
+                    className="text-left p-4 rounded-xl border border-border/60 bg-card/50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md transition-all group"
                   >
                     <span className="text-sm font-medium text-foreground/90 group-hover:text-primary transition-colors leading-relaxed">
                       {s}
@@ -154,13 +154,13 @@ function CommandCenter() {
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[90%] md:max-w-[85%] rounded-2xl px-6 py-5 text-[15px] leading-relaxed ${
+                className={`max-w-[95%] md:max-w-[88%] rounded-2xl px-5 py-4 text-sm leading-relaxed ${
                   m.role === "user"
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/10"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/10"
                     : "bg-card border border-border/50 shadow-sm"
                 }`}
               >
-                <div className="whitespace-pre-wrap font-sans">
+                <div className="whitespace-pre-wrap font-sans space-y-2 [&>p]:mb-2 [&>ul]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>li]:mb-1 [&>h3]:font-semibold [&>h3]:text-base [&>h3]:mt-4 [&>h3]:mb-2 [&>h4]:font-semibold [&>h4]:mt-3 [&>h4]:mb-1">
                   {m.content ||
                     (loading ? (
                       <div className="flex items-center gap-2 text-muted-foreground">
@@ -178,27 +178,27 @@ function CommandCenter() {
         </div>
       </div>
 
-      <div className="sticky bottom-0 z-20 w-full bg-gradient-to-t from-background via-background to-transparent pt-12 pb-6 md:pb-8 px-4 md:px-8">
+      <div className="sticky bottom-0 z-20 w-full bg-gradient-to-t from-background via-background to-transparent pt-8 pb-4 md:pb-6 px-4 md:px-8">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             send(input);
           }}
-          className="max-w-4xl mx-auto relative flex flex-col sm:flex-row gap-3 items-end sm:items-center rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl shadow-2xl p-2 md:p-3 transition-all focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10"
+          className="max-w-4xl mx-auto relative flex flex-col sm:flex-row gap-2 items-end sm:items-center rounded-2xl border border-border/50 bg-card/80 backdrop-blur-xl shadow-lg p-1.5 md:p-2 transition-all focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Executive query... (e.g. Diagnose team productivity)"
-            className="flex-1 w-full px-4 py-3 bg-transparent text-base md:text-lg focus:outline-none placeholder:text-muted-foreground/60"
+            className="flex-1 w-full px-4 py-2.5 bg-transparent text-sm md:text-base focus:outline-none placeholder:text-muted-foreground/60"
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold tracking-wide hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm transition-all"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm transition-all"
           >
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             Execute
           </button>
         </form>
