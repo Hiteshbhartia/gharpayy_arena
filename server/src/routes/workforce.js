@@ -191,8 +191,17 @@ router.post(
       await emp.save();
     }
 
-    const temporaryPassword = generateTempPassword();
-    const passwordHash = await hashPassword(temporaryPassword);
+    const isDev = process.env.NODE_ENV !== "production";
+    const temporaryPassword = isDev ? "Demo@123" : generateTempPassword();
+    const passwordHash = isDev 
+      ? await bcrypt.hash("Demo@123", 12) 
+      : await hashPassword(temporaryPassword);
+
+    if (isDev) {
+      console.log(`[DEV-AUTH] Invited user email: ${email}`);
+      console.log(`[DEV-AUTH] Password initialized successfully`);
+      console.log(`[DEV-AUTH] Hash generation step complete: ${passwordHash.substring(0, 15)}...`);
+    }
     const user = await User.create({
       email,
       passwordHash,
