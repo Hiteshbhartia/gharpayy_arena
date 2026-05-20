@@ -11,6 +11,10 @@ import {
   CheckCircle2,
   XCircle,
   RefreshCw,
+  Copy,
+  Check,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminGate } from "@/components/AdminGate";
@@ -93,7 +97,13 @@ function WorkforcePage() {
     action: () => Promise<void>;
   } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState<{
+    name: string;
+    email: string;
+    role: string;
+    temporaryPassword: string;
+  } | null>(null);
+  const [resetPasswordRow, setResetPasswordRow] = useState<WorkforceRow | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -307,7 +317,7 @@ function WorkforcePage() {
                     onApprove={(r) => setApproveRow(r)}
                     onConfirm={setConfirm}
                     runAction={runAction}
-                    onPassword={(pw) => setTempPassword(pw)}
+                    onResetPassword={(r) => setResetPasswordRow(r)}
                   />
                 </td>
               </tr>
@@ -382,7 +392,12 @@ function WorkforcePage() {
           try {
             const res = await inviteEmployee(data);
             setInviteOpen(false);
-            setTempPassword(res.temporaryPassword);
+            setInviteSuccess({
+              name: data.name,
+              email: data.email,
+              role: data.operationalRole,
+              temporaryPassword: res.temporaryPassword,
+            });
             toast.success(`Invited ${data.name}`);
             await afterMutation();
           } catch (e) {
@@ -414,22 +429,32 @@ function WorkforcePage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!tempPassword} onOpenChange={(o) => !o && setTempPassword(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Temporary password</DialogTitle>
-            <DialogDescription>
-              Share securely with the employee. They should change it after first login.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="rounded-lg border bg-muted/40 p-4 font-mono text-center text-lg select-all">
-            {tempPassword}
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setTempPassword(null)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <InviteSuccessDialog
+        invite={inviteSuccess}
+        open={!!inviteSuccess}
+        onOpenChange={(o) => !o && setInviteSuccess(null)}
+      />
+
+      <ResetPasswordDialog
+        row={resetPasswordRow}
+        open={!!resetPasswordRow}
+        onOpenChange={(o) => !o && setResetPasswordRow(null)}
+        busy={busy}
+        onReset={async (newPassword) => {
+          if (!resetPasswordRow?.user?.id) return;
+          setBusy(true);
+          try {
+            await resetUserPassword(resetPasswordRow.user.id, newPassword);
+            toast.success("Password reset successful!");
+            await afterMutation();
+          } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : "Password reset failed");
+            throw e;
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
     </div>
   );
 }
@@ -474,7 +499,7 @@ function RowActions({
   onApprove,
   onConfirm,
   runAction,
-  onPassword,
+  onResetPassword,
 }: {
   row: WorkforceRow;
   busy: boolean;
@@ -482,7 +507,7 @@ function RowActions({
   onApprove: (row: WorkforceRow) => void;
   onConfirm: (c: { title: string; description: string; action: () => Promise<void> }) => void;
   runAction: (fn: () => Promise<void>, msg: string) => Promise<void>;
-  onPassword: (pw: string) => void;
+  onResetPassword: (row: WorkforceRow) => void;
 }) {
   const uid = row.user?.id;
   return (
@@ -536,18 +561,7 @@ function RowActions({
                 <Ban className="h-4 w-4 mr-2" /> Suspend
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              onClick={() =>
-                onConfirm({
-                  title: "Reset password?",
-                  description: `Generate a new temporary password for ${row.user?.email}.`,
-                  action: async () => {
-                    const res = await resetUserPassword(uid);
-                    onPassword(res.temporaryPassword);
-                  },
-                })
-              }
-            >
+            <DropdownMenuItem onClick={() => onResetPassword(row)}>
               <KeyRound className="h-4 w-4 mr-2" /> Reset password
             </DropdownMenuItem>
           </>
@@ -921,5 +935,435 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label className="text-xs text-muted-foreground">{label}</Label>
       {children}
     </div>
+  );
+}
+
+function InviteSuccessDialog({
+  invite,
+  open,
+  onOpenChange,
+}: {
+  invite: {
+    name: string;
+    email: string;
+    role: string;
+    temporaryPassword: string;
+  } | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [copiedPassword, setCopiedPassword] = useState(false);
+  const [copiedDetails, setCopiedDetails] = useState(false);
+
+  if (!invite) return null;
+
+  const inviteDetails = `Gharpayy Arena Invitation
+-------------------------
+Name: ${invite.name}
+Email: ${invite.email}
+Role: ${invite.role}
+Temporary Password: ${invite.temporaryPassword}
+Login URL: ${window.location.origin}/login`;
+
+  const copyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(invite.temporaryPassword);
+      setCopiedPassword(true);
+      toast.success("Password copied to clipboard!");
+      setTimeout(() => setCopiedPassword(false), 2000);
+    } catch {
+      toast.error("Failed to copy password");
+    }
+  };
+
+  const copyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteDetails);
+      setCopiedDetails(true);
+      toast.success("All credentials copied!");
+      setTimeout(() => setCopiedDetails(false), 2000);
+    } catch {
+      toast.error("Failed to copy details");
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="max-w-md"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 mb-2">
+            <CheckCircle2 className="h-6 w-6" />
+          </div>
+          <DialogTitle className="text-center text-xl font-display">
+            Employee Invited Successfully
+          </DialogTitle>
+          <DialogDescription className="text-center">
+            {invite.name} has been added to the workforce. Share these credentials securely with
+            them.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="my-4 space-y-4 rounded-xl border bg-muted/30 p-4 text-sm font-sans">
+          <div className="grid grid-cols-3 gap-2 py-1.5 border-b border-border/50">
+            <span className="text-muted-foreground font-medium">Name:</span>
+            <span className="col-span-2 text-foreground font-semibold">{invite.name}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 py-1.5 border-b border-border/50">
+            <span className="text-muted-foreground font-medium">Email:</span>
+            <span className="col-span-2 text-foreground font-mono select-all break-all">
+              {invite.email}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 py-1.5 border-b border-border/50">
+            <span className="text-muted-foreground font-medium">Role:</span>
+            <span className="col-span-2 text-foreground font-semibold capitalize">
+              {invite.role}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 py-1.5">
+            <span className="text-muted-foreground font-medium flex items-center">Password:</span>
+            <div className="col-span-2 flex items-center gap-2">
+              <span className="font-mono text-emerald-500 font-bold text-lg select-all bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/20">
+                {invite.temporaryPassword}
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-muted"
+                onClick={copyPassword}
+                title="Copy temporary password"
+              >
+                {copiedPassword ? (
+                  <Check className="h-4 w-4 text-emerald-500" />
+                ) : (
+                  <Copy className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-3 text-xs text-amber-500/90 leading-relaxed flex items-start gap-2.5">
+          <KeyRound className="h-4 w-4 shrink-0 mt-0.5 font-bold" />
+          <span>
+            <strong>First Login Forced Action:</strong> The employee is required to change this
+            password immediately upon their first login to gain access.
+          </span>
+        </div>
+
+        <DialogFooter className="mt-2 flex sm:flex-row gap-2 sm:gap-0">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 flex items-center justify-center gap-1.5"
+            onClick={copyAll}
+          >
+            {copiedDetails ? (
+              <Check className="h-4 w-4 text-emerald-500" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+            Copy Onboarding Details
+          </Button>
+          <Button type="button" className="flex-1" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ResetPasswordDialog({
+  row,
+  open,
+  onOpenChange,
+  busy,
+  onReset,
+}: {
+  row: WorkforceRow | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  busy: boolean;
+  onReset: (newPassword: string) => Promise<void>;
+}) {
+  const [mode, setMode] = useState<"default" | "custom">("default");
+  const [customPassword, setCustomPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
+
+  // Reset internal states on open
+  useEffect(() => {
+    if (open) {
+      setMode("default");
+      setCustomPassword("");
+      setConfirmPassword("");
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setCopiedPassword(false);
+    }
+  }, [open]);
+
+  if (!row) return null;
+
+  // Validation checks for custom mode
+  const hasMinLength = customPassword.length >= 8;
+  const matches = customPassword === confirmPassword && confirmPassword.length > 0;
+  const isValid = mode === "default" || (hasMinLength && matches);
+
+  const handleGeneratePassword = () => {
+    const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercase = "abcdefghijklmnopqrstuvwxyz";
+    const numbers = "0123456789";
+    const symbols = "!@#$%^&*()_+-=[]{}|;:,./?";
+    const allChars = uppercase + lowercase + numbers + symbols;
+
+    let generated = "";
+    generated += uppercase[Math.floor(Math.random() * uppercase.length)];
+    generated += lowercase[Math.floor(Math.random() * lowercase.length)];
+    generated += numbers[Math.floor(Math.random() * numbers.length)];
+    generated += symbols[Math.floor(Math.random() * symbols.length)];
+
+    for (let i = 0; i < 10; i++) {
+      generated += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    generated = generated
+      .split("")
+      .sort(() => 0.5 - Math.random())
+      .join("");
+
+    setCustomPassword(generated);
+    setConfirmPassword(generated);
+    toast.success("Strong password generated!");
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(customPassword);
+      setCopiedPassword(true);
+      toast.success("Password copied to clipboard!");
+      setTimeout(() => setCopiedPassword(false), 2000);
+    } catch {
+      toast.error("Failed to copy password");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValid || busy) return;
+
+    const passwordToUse = mode === "default" ? "Demo@123" : customPassword;
+    try {
+      await onReset(passwordToUse);
+      onOpenChange(false);
+    } catch {
+      // API call error already handled/displayed by toast in parent
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="max-w-md"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-xl font-display">
+            <KeyRound className="h-5 w-5 text-primary" />
+            Reset Password
+          </DialogTitle>
+          <DialogDescription>
+            Choose a reset method for <strong>{row.name}</strong> ({row.user?.email || row.email}).
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Tab Selection */}
+        <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg text-xs font-medium my-2">
+          <button
+            type="button"
+            className={`py-2 px-3 rounded-md transition-all text-center ${
+              mode === "default"
+                ? "bg-card text-foreground shadow-sm font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => setMode("default")}
+          >
+            Reset to Default
+          </button>
+          <button
+            type="button"
+            className={`py-2 px-3 rounded-md transition-all text-center ${
+              mode === "custom"
+                ? "bg-card text-foreground shadow-sm font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            onClick={() => setMode("custom")}
+          >
+            Custom Password
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          {mode === "default" ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border bg-muted/20 p-4 text-center space-y-2">
+                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                  Default Onboarding Password
+                </div>
+                <div className="font-mono text-2xl font-extrabold text-primary select-all">
+                  Demo@123
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This standard password is easy to share for dev/demo purposes.
+                </p>
+              </div>
+
+              <div className="rounded-lg bg-amber-500/5 border border-amber-500/10 p-3.5 text-xs text-amber-500/90 leading-relaxed flex items-start gap-2.5">
+                <KeyRound className="h-4 w-4 shrink-0 mt-0.5 animate-pulse" />
+                <span>
+                  <strong>Forced Password Change:</strong> Using the default onboarding password
+                  will flag the user's account to require an immediate password change on next
+                  login.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Custom password inputs */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="dialog-custom-password">New Password</Label>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto p-0 text-xs text-primary"
+                    onClick={handleGeneratePassword}
+                  >
+                    Generate Password
+                  </Button>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="dialog-custom-password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={customPassword}
+                    onChange={(e) => setCustomPassword(e.target.value)}
+                    placeholder="Min. 8 characters"
+                    className="pr-10 font-mono"
+                  />
+                  <div className="absolute right-0 top-0 h-full flex items-center pr-3 gap-1.5">
+                    {customPassword && (
+                      <button
+                        type="button"
+                        onClick={handleCopy}
+                        className="text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors"
+                        title="Copy password"
+                      >
+                        {copiedPassword ? (
+                          <Check className="h-4 w-4 text-emerald-500" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dialog-confirm-password">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="dialog-confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Retype password"
+                    className="pr-10 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-0 h-full flex items-center text-muted-foreground hover:text-foreground"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Requirement Indicators */}
+              <div className="rounded-lg border border-border bg-muted/10 p-3 space-y-2 text-xs">
+                <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                  Validation
+                </div>
+                <div
+                  className={`flex items-center gap-2 ${hasMinLength ? "text-emerald-500 font-medium" : "text-muted-foreground"}`}
+                >
+                  {hasMinLength ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  ) : (
+                    <XCircle className="h-3.5 w-3.5 text-muted-foreground/60" />
+                  )}
+                  <span>At least 8 characters</span>
+                </div>
+                <div
+                  className={`flex items-center gap-2 ${matches ? "text-emerald-500 font-medium" : "text-muted-foreground"}`}
+                >
+                  {matches ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  ) : (
+                    <XCircle className="h-3.5 w-3.5 text-muted-foreground/60" />
+                  )}
+                  <span>Passwords match</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={busy}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!isValid || busy}>
+              {busy ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                  Resetting...
+                </>
+              ) : (
+                "Confirm Reset"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

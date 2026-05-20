@@ -193,8 +193,8 @@ router.post(
 
     const isDev = process.env.NODE_ENV !== "production";
     const temporaryPassword = isDev ? "Demo@123" : generateTempPassword();
-    const passwordHash = isDev 
-      ? await bcrypt.hash("Demo@123", 12) 
+    const passwordHash = isDev
+      ? await bcrypt.hash("Demo@123", 12)
       : await hashPassword(temporaryPassword);
 
     if (isDev) {
@@ -209,6 +209,7 @@ router.post(
       role: authRoleFromAppAccess(appRole, operationalRole),
       isApproved: true,
       isSuspended: false,
+      mustChangePassword: true,
     });
 
     const row = (await buildWorkforceRows()).find((r) => r.employeeId === employeeId);
@@ -391,16 +392,21 @@ router.patch(
 router.post(
   "/users/:userId/reset-password",
   asyncHandler(async (req, res) => {
+    const { newPassword } = req.body;
+    if (!newPassword || typeof newPassword !== "string" || newPassword.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+
     const u = await User.findById(req.params.userId);
     if (!u) return res.status(404).json({ error: "User not found" });
 
-    const temporaryPassword = generateTempPassword();
-    u.passwordHash = await hashPassword(temporaryPassword);
+    u.passwordHash = await hashPassword(newPassword);
+    u.mustChangePassword = newPassword === "Demo@123";
     await u.save();
 
     return res.json({
       user: publicAuthUser(u),
-      temporaryPassword,
+      newPassword,
     });
   }),
 );

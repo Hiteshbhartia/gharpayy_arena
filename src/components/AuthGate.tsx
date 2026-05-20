@@ -98,5 +98,17 @@ export function AuthGate() {
     );
   }
 
+  if (user?.mustChangePassword) {
+    if (location.pathname !== "/force-password-reset") {
+      navigate({ to: "/force-password-reset", replace: true });
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+    return <Outlet />;
+  }
+
   return <AppShell />;
 }

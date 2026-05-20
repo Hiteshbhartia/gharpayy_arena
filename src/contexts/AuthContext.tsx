@@ -20,6 +20,7 @@ import {
   me,
   setCachedUser,
   signup as apiSignup,
+  changePassword as apiChangePassword,
   type ApiUser,
 } from "@/lib/api-client";
 import { fallbackEmployeeForUser, fetchEmployeeRoster, resolveActor } from "@/lib/employees-api";
@@ -47,6 +48,7 @@ type AuthContextValue = {
     name: string;
     employeeId?: string;
   }) => Promise<"authenticated" | "pending_approval">;
+  changePassword: (newPassword: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   refreshSession: () => Promise<void>;
@@ -189,6 +191,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const changePassword = useCallback(async (newPassword: string) => {
+    setActionLoading(true);
+    setError(null);
+    try {
+      const res = await apiChangePassword(newPassword);
+      setUser(res.user);
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "Password reset failed";
+      setError(msg);
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, []);
+
   const logout = useCallback(() => {
     apiLogout();
     resetSyncArenaData();
@@ -224,6 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       apiEnabled,
       login,
       signup,
+      changePassword,
       logout,
       clearError: () => setError(null),
       refreshSession,
@@ -239,6 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       actionLoading,
       login,
       signup,
+      changePassword,
       logout,
       refreshSession,
       refreshOrgData,

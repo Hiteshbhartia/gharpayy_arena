@@ -202,6 +202,35 @@ router.post(
   }),
 );
 
+const ChangePasswordSchema = z.object({
+  newPassword: z.string().min(8).max(128),
+});
+
+router.post(
+  "/change-password",
+  requireAuth,
+  validate(ChangePasswordSchema),
+  asyncHandler(async (req, res) => {
+    const { newPassword } = req.body;
+    try {
+      const u = await User.findById(req.user.id);
+      if (!u) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      u.passwordHash = await hashPassword(newPassword);
+      u.mustChangePassword = false;
+      await u.save();
+
+      logAuth("change-password.success", { userId: String(u._id) });
+      return res.json({ user: publicUser(u) });
+    } catch (err) {
+      logAuth("change-password.error", { userId: req.user?.id }, err);
+      throw toHttpError(err);
+    }
+  }),
+);
+
 function publicUser(u) {
   const status =
     u.isApproved && (!u.status || u.status === "pending") ? "active" : u.status || "pending";
@@ -212,6 +241,7 @@ function publicUser(u) {
     role: u.role,
     isApproved: u.isApproved,
     isSuspended: Boolean(u.isSuspended),
+    mustChangePassword: Boolean(u.mustChangePassword),
     status,
   };
 }

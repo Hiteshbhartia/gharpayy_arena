@@ -36,6 +36,7 @@ export function publicAuthUser(u) {
     role: u.role,
     isApproved: u.isApproved,
     isSuspended: Boolean(u.isSuspended),
+    mustChangePassword: Boolean(u.mustChangePassword),
     status,
   };
 }

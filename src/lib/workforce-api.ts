@@ -114,8 +114,11 @@ export async function reactivateUser(userId: string) {
   );
 }
 
-export async function resetUserPassword(userId: string) {
-  return api.post<{ temporaryPassword: string }>(`/admin/workforce/users/${userId}/reset-password`);
+export async function resetUserPassword(userId: string, newPassword: string) {
+  return api.post<{ temporaryPassword: string; newPassword: string }>(
+    `/admin/workforce/users/${userId}/reset-password`,
+    { newPassword },
+  );
 }
 
 export async function patchUserAccess(userId: string, appRole: AppRole) {
