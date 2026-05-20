@@ -14,6 +14,7 @@ export type ApiUser = {
   isApproved: boolean;
   isSuspended?: boolean;
   status: "pending" | "configured" | "active" | "suspended" | "rejected";
+  mustChangePassword?: boolean;
 };
 
 export function getToken(): string | null {
@@ -141,4 +142,10 @@ export function logout() {
 
 export async function health() {
   return api.get<{ ok: boolean; db: string; ts: number }>("/health");
+}
+
+export async function changePassword(newPassword: string) {
+  const res = await api.post<{ user: ApiUser }>("/auth/change-password", { newPassword });
+  setCachedUser(res.user);
+  return res;
 }

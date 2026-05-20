@@ -27,6 +27,7 @@ import { Route as LeavesRouteImport } from './routes/leaves'
 import { Route as KudosRouteImport } from './routes/kudos'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as HrmsRouteImport } from './routes/hrms'
+import { Route as ForcePasswordResetRouteImport } from './routes/force-password-reset'
 import { Route as FlyRouteImport } from './routes/fly'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as CommandRouteImport } from './routes/command'
@@ -127,6 +128,11 @@ const HrmsRoute = HrmsRouteImport.update({
   path: '/hrms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForcePasswordResetRoute = ForcePasswordResetRouteImport.update({
+  id: '/force-password-reset',
+  path: '/force-password-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FlyRoute = FlyRouteImport.update({
   id: '/fly',
   path: '/fly',
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/command': typeof CommandRoute
   '/console': typeof ConsoleRoute
   '/fly': typeof FlyRoute
+  '/force-password-reset': typeof ForcePasswordResetRoute
   '/hrms': typeof HrmsRoute
   '/inbox': typeof InboxRoute
   '/kudos': typeof KudosRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/command': typeof CommandRoute
   '/console': typeof ConsoleRoute
   '/fly': typeof FlyRoute
+  '/force-password-reset': typeof ForcePasswordResetRoute
   '/hrms': typeof HrmsRoute
   '/inbox': typeof InboxRoute
   '/kudos': typeof KudosRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/command': typeof CommandRoute
   '/console': typeof ConsoleRoute
   '/fly': typeof FlyRoute
+  '/force-password-reset': typeof ForcePasswordResetRoute
   '/hrms': typeof HrmsRoute
   '/inbox': typeof InboxRoute
   '/kudos': typeof KudosRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/console'
     | '/fly'
+    | '/force-password-reset'
     | '/hrms'
     | '/inbox'
     | '/kudos'
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/console'
     | '/fly'
+    | '/force-password-reset'
     | '/hrms'
     | '/inbox'
     | '/kudos'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/console'
     | '/fly'
+    | '/force-password-reset'
     | '/hrms'
     | '/inbox'
     | '/kudos'
@@ -359,6 +371,7 @@ export interface RootRouteChildren {
   CommandRoute: typeof CommandRoute
   ConsoleRoute: typeof ConsoleRoute
   FlyRoute: typeof FlyRoute
+  ForcePasswordResetRoute: typeof ForcePasswordResetRoute
   HrmsRoute: typeof HrmsRoute
   InboxRoute: typeof InboxRoute
   KudosRoute: typeof KudosRoute
@@ -509,6 +522,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HrmsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/force-password-reset': {
+      id: '/force-password-reset'
+      path: '/force-password-reset'
+      fullPath: '/force-password-reset'
+      preLoaderRoute: typeof ForcePasswordResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/fly': {
       id: '/fly'
       path: '/fly'
@@ -583,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommandRoute: CommandRoute,
   ConsoleRoute: ConsoleRoute,
   FlyRoute: FlyRoute,
+  ForcePasswordResetRoute: ForcePasswordResetRoute,
   HrmsRoute: HrmsRoute,
   InboxRoute: InboxRoute,
   KudosRoute: KudosRoute,

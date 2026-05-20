@@ -21,6 +21,7 @@ const UserSchema = new Schema(
       default: "pending",
     },
     name: { type: String },
+    mustChangePassword: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
