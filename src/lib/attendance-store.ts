@@ -267,8 +267,8 @@ export function getGeo(): Promise<GeoFix> {
 export async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
-      { headers: { Accept: "application/json" } },
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1&accept-language=en`,
+      { headers: { Accept: "application/json", "Accept-Language": "en-US,en" } },
     );
     if (!res.ok) return null;
     const json = await res.json();
