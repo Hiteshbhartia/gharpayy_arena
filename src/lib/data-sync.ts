@@ -40,16 +40,20 @@ export async function syncArenaData(user?: ApiUser | null): Promise<SyncArenaRes
   const u = user ?? getCachedUser();
 
   syncPromise = (async () => {
-    try {
-      await api.post("/migrate/seed-demo-data", buildDemoPayload());
-    } catch (err) {
-      console.warn("[sync] demo seed failed (continuing with hydrate):", err);
-    }
+    if (import.meta.env.DEV) {
+      try {
+        await api.post("/migrate/seed-demo-data", buildDemoPayload());
+      } catch (err) {
+        console.warn("[sync] demo seed failed (continuing with hydrate):", err);
+      }
 
-    try {
-      await api.post("/migrate/seed-test-accounts");
-    } catch (err) {
-      console.warn("[sync] test accounts seed failed (continuing):", err);
+      try {
+        await api.post("/migrate/seed-test-accounts");
+      } catch (err) {
+        console.warn("[sync] test accounts seed failed (continuing):", err);
+      }
+    } else {
+      console.debug("[sync] Skipping auto-seed in production mode.");
     }
 
     let employees: Employee[] = [];

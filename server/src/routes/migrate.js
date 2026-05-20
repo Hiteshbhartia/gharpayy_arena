@@ -21,6 +21,17 @@ import {
 
 const router = Router();
 
+// COMPLETELY disable seed/migration endpoints in production to prevent 500 errors
+// and accidental data overwrites. These are local/demo only.
+router.use((req, res, next) => {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(403).json({
+      error: "Seed routes disabled in production",
+    });
+  }
+  next();
+});
+
 const MODULE_MODELS = {
   tasks: Task,
   leaves: Leave,
