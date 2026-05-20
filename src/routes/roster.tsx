@@ -8,13 +8,16 @@ import {
   todayKey,
   todaySummary,
 } from "@/lib/attendance-store";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Camera, AlertTriangle } from "lucide-react";
+import { MapPin, Camera, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { RoleGate } from "@/components/RoleGate";
 import { useRosterState } from "@/hooks/useRoster";
 import { Loader2 } from "lucide-react";
+import type { AttEvent } from "@/lib/attendance-store";
+import type { Employee } from "@/types/hr";
 
 export const Route = createFileRoute("/roster")({
   head: () => ({
@@ -81,78 +84,137 @@ function RosterPage() {
       </div>
 
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {rows.map(({ emp, summary, status, lastEv, events }) => (
-          <Card key={emp.id} className="p-4">
-            <div className="flex items-start gap-3">
-              <Avatar className="h-12 w-12 shrink-0 border border-border">
-                <AvatarFallback className="bg-muted text-foreground font-medium">
-                  {emp.name
-                    .split(" ")
-                    .map((s) => s[0])
-                    .slice(0, 2)
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-medium truncate">{emp.name}</div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {emp.team} · {emp.role} · {emp.appRole}
-                    </div>
-                  </div>
-                  <StatusBadge status={status} />
-                </div>
-
-                <div className="mt-3 grid grid-cols-3 gap-1 text-[11px] font-mono uppercase tracking-widest">
-                  <Mini label="Work" value={fmtDuration(summary.workMs)} />
-                  <Mini label="Break" value={fmtDuration(summary.breakMs)} />
-                  <Mini label="Field" value={fmtDuration(summary.fieldMs)} />
-                </div>
-
-                {lastEv ? (
-                  <div className="mt-3 pt-3 border-t border-border space-y-1.5">
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-                      Last event · {fmtTime(lastEv.ts)}
-                    </div>
-                    {lastEv.address && (
-                      <div className="text-xs text-muted-foreground flex items-start gap-1.5">
-                        <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                        <span className="truncate" title={lastEv.address}>
-                          {lastEv.address}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 mt-2">
-                      {lastEv.selfie ? (
-                        <a href={lastEv.selfie} target="_blank" rel="noreferrer">
-                          <img
-                            src={lastEv.selfie}
-                            alt="last selfie"
-                            className="h-12 w-12 rounded-md object-cover border border-border"
-                          />
-                        </a>
-                      ) : (
-                        <div className="h-12 w-12 rounded-md border border-dashed border-border flex items-center justify-center text-muted-foreground">
-                          <Camera className="h-4 w-4" />
-                        </div>
-                      )}
-                      <div className="text-[10px] text-muted-foreground font-mono">
-                        {events.length} event{events.length === 1 ? "" : "s"} today
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-3 pt-3 border-t border-border flex items-center gap-1.5 text-xs text-warning">
-                    <AlertTriangle className="h-3.5 w-3.5" /> No punch yet today
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
+        {rows.map((row) => (
+          <RosterCard key={row.emp.id} {...row} />
         ))}
       </div>
     </div>
+  );
+}
+
+function formatEventKind(kind: string) {
+  return kind
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function RosterCard({
+  emp,
+  summary,
+  status,
+  events,
+}: {
+  emp: Employee;
+  summary: any;
+  status: string;
+  events: AttEvent[];
+  lastEv: AttEvent | null;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const sortedEvents = [...events].sort((a: AttEvent, b: AttEvent) => b.ts - a.ts);
+
+  return (
+    <Card className="p-4 flex flex-col h-full">
+      <div className="flex items-start gap-3">
+        <Avatar className="h-12 w-12 shrink-0 border border-border">
+          <AvatarFallback className="bg-muted text-foreground font-medium">
+            {emp.name
+              .split(" ")
+              .map((s: string) => s[0])
+              .slice(0, 2)
+              .join("")}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="font-medium truncate">{emp.name}</div>
+              <div className="text-xs text-muted-foreground truncate">
+                {emp.team} · {emp.role} · {emp.appRole}
+              </div>
+            </div>
+            <StatusBadge status={status} />
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-1 text-[11px] font-mono uppercase tracking-widest">
+            <Mini label="Work" value={fmtDuration(summary.workMs)} />
+            <Mini label="Break" value={fmtDuration(summary.breakMs)} />
+            <Mini label="Field" value={fmtDuration(summary.fieldMs)} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-border flex flex-col flex-1">
+        {sortedEvents.length > 0 ? (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
+                {events.length} event{events.length === 1 ? "" : "s"} today
+              </div>
+              {events.length > 1 && (
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="text-[10px] text-primary hover:text-primary/80 transition-colors flex items-center gap-1 font-medium uppercase tracking-widest font-mono"
+                >
+                  {expanded ? "Collapse" : "Timeline"}
+                  {expanded ? (
+                    <ChevronUp className="h-3 w-3" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3" />
+                  )}
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {sortedEvents.slice(0, expanded ? undefined : 1).map((ev: AttEvent, i: number) => (
+                <div key={ev.id} className={`flex gap-3 ${i === 0 ? "" : "opacity-75"}`}>
+                  {ev.selfie ? (
+                    <a href={ev.selfie} target="_blank" rel="noreferrer" className="shrink-0">
+                      <img
+                        src={ev.selfie}
+                        alt="selfie"
+                        className="h-10 w-10 md:h-12 md:w-12 rounded-md object-cover border border-border shadow-sm bg-muted"
+                        loading="lazy"
+                      />
+                    </a>
+                  ) : (
+                    <div className="h-10 w-10 md:h-12 md:w-12 shrink-0 rounded-md border border-dashed border-border flex items-center justify-center text-muted-foreground bg-muted/30">
+                      <Camera className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`text-[10px] md:text-[11px] font-medium uppercase tracking-widest font-mono ${i === 0 ? "text-foreground" : "text-muted-foreground"}`}
+                      >
+                        {formatEventKind(ev.kind)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {fmtTime(ev.ts)}
+                      </span>
+                    </div>
+                    {ev.address && (
+                      <div className="text-[11px] md:text-xs text-muted-foreground flex items-start gap-1.5 mt-1 leading-snug">
+                        <MapPin className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground/70" />
+                        <span className="truncate" title={ev.address}>
+                          {ev.address}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs text-warning flex-1 py-1">
+            <AlertTriangle className="h-3.5 w-3.5" /> No punch yet today
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }
 
