@@ -88,6 +88,7 @@ app.use("/api/fly", flyRoutes);
 app.use("/api/migrate", migrateRoutes);
 app.use("/api/admin/workforce", workforceRoutes);
 app.use("/api/operator", operatorRoutes);
+console.log("[routes] operator mounted");
 app.use("/api", kpisRoutes);
 
 // --- error handler ---
