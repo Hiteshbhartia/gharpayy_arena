@@ -1,34 +1,21 @@
 import { api } from "@/lib/api-client";
 
-export interface KpiHistoryEntry {
-  version: number;
-  updatedBy: string;
-  updatedAt: number;
-  changes: Record<string, { from: any; to: any }>;
-}
+import type {
+  KpiDefinition,
+  KpiTarget,
+  KpiListResponse,
+  TargetListResponse,
+  KpiHistoryEntry,
+  KpiTargetHistoryEntry,
+} from "@/types/kpi";
 
-export interface KpiDefinition {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  category: string;
-  unit: string;
-  frequency: string;
-  aggregationType: string;
-  visibilityScope: string;
-  ownerRole: string;
-  targetType: string;
-  active: boolean;
-  archivedAt?: number;
-  deprecated: boolean;
-  replacedBy?: string;
-  version: number;
-  createdBy: string;
-  updatedBy: string;
-  createdAt: string;
-  updatedAt: string;
-  history?: KpiHistoryEntry[];
+/** Runtime guard for KPI definitions array */
+export function isKpiDefinitionArray(value: unknown): value is KpiDefinition[] {
+  return Array.isArray(value);
+}
+/** Runtime guard for KPI targets array */
+export function isKpiTargetArray(value: unknown): value is KpiTarget[] {
+  return Array.isArray(value);
 }
 
 export interface KpiTargetHistoryEntry {

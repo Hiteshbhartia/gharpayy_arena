@@ -8,104 +8,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api-client";
-import type { KpiDefinition, KpiTarget } from "./kpi-governance-api";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface MemberMetrics {
-  employeeId: string;
-  name: string;
-  role: string;
-  team: string;
-  zone: string;
-  managerId: string | null;
-  appRole: string;
-  presence: number;
-  performance: number;
-  flags: string[];
-  tasks: {
-    total: number;
-    done: number;
-    overdue: number;
-    completionRate: number;
-  };
-  leaves: { approved: number; pending: number };
-  attendance: {
-    clockInCount: number;
-    lateArrivals: number;
-    punctualityPct: number | null;
-    streakDays: number;
-  };
-  kudos: { total: number; recent: number };
-  burnoutRisk: "none" | "low" | "medium" | "high";
-  engagementScore: number;
-  insights: string[];
-  riskFlags: string[];
-  needsIntervention: boolean;
-}
-
-export interface TeamHealth {
-  total: number;
-  present: number;
-  late: number;
-  absent: number;
-  leaveRisk: number;
-  burnoutHigh: number;
-  avgEngagement: number;
-  avgCompletion: number;
-  avgPresence: number;
-}
-
-export interface TeamComparison {
-  team: string;
-  count: number;
-  avgPerformance: number;
-  avgPresence: number;
-  avgCompletion: number;
-  burnoutCount: number;
-}
-
-export interface TeamIntelligenceData {
-  ok: boolean;
-  generatedAt: number;
-  period: { from: string; daysBack: number };
-  health: TeamHealth;
-  members: MemberMetrics[];
-  topPerformers: {
-    employeeId: string;
-    name: string;
-    role: string;
-    performance: number;
-    completionRate: number;
-    engagementScore: number;
-  }[];
-  interventionNeeded: {
-    employeeId: string;
-    name: string;
-    burnoutRisk: string;
-    needsIntervention: boolean;
-    flags: string[];
-    insights: string[];
-  }[];
-  teamComparison: TeamComparison[];
-  orgInsights: string[];
-  kpiDefinitions?: KpiDefinition[];
-  kpiTargets?: KpiTarget[];
-}
-
-export interface MemberIntelligence {
-  ok: boolean;
-  generatedAt: number;
-  period: { from: string; daysBack: number };
-  metrics: MemberMetrics;
-  trends: {
-    weeklyPresence: { week: string; count: number }[];
-    tasksByStatus: { todo: number; doing: number; done: number; blocked: number };
-    kudoHistory: { ts: number; tag: string }[];
-  };
-  kpiDefinitions?: KpiDefinition[];
-  kpiTargets?: KpiTarget[];
-}
+import type {
+  MemberMetrics,
+  TeamHealth,
+  TeamComparison,
+  TeamIntelligenceData,
+  MemberIntelligence
+} from '@/types/team';
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 

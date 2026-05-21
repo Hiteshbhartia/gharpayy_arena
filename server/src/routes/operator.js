@@ -659,5 +659,5 @@ Return ONLY the JSON, no prose.`;
     }
   })
 );
-
+console.log('[operatorRoutes] daily-brief route loaded');
 export default router;
