@@ -21,6 +21,9 @@ import {
   FlyUpdate,
   FlyRetro,
   FlyFeed,
+  PulseEntry,
+  Notification,
+  OneOnOne,
 } from "../models/index.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { asyncHandler } from "../lib/async-handler.js";
@@ -433,13 +436,396 @@ function validateAndCleanSummary(parsed, fallbackValues) {
   return clean;
 }
 
+async function safeFetchJson(url, options) {
+  if (typeof globalThis.fetch !== "function") return null;
+  const response = await globalThis.fetch(url, options);
+  if (!response.ok) return null;
+  return response.json();
+}
+
+function zoneIdForEmployee(emp) {
+  return emp?.profile?.zone || emp?.hubId || "HQ";
+}
+
+function safeNumber(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function buildDailyBriefSummary(metrics) {
+  const overallConversion = metrics.overall.visitsScheduled
+    ? metrics.overall.visitsCompleted / metrics.overall.visitsScheduled
+    : 0;
+  const attendanceRate = metrics.overall.attendanceEvents
+    ? 1 - metrics.overall.lateArrivals / metrics.overall.attendanceEvents
+    : 0.7;
+  const completionRate = metrics.overall.tasksTotal
+    ? metrics.overall.tasksDone / metrics.overall.tasksTotal
+    : 0.6;
+
+  const bestZone = metrics.bestZone || "HQ";
+  const weakZone = metrics.weakZone || "HQ";
+
+  const topPerformer = metrics.topPerformerName || "No active performer";
+
+  let topBlocker;
+  if (metrics.overall.overdueTasks >= Math.max(5, Math.round(metrics.overall.tasksTotal * 0.08))) {
+    topBlocker = "Delayed follow-ups are creating a backlog of overdue tasks.";
+  } else if (overallConversion < 0.45) {
+    topBlocker = "Poor visit conversion is weakening pipeline velocity.";
+  } else if (attendanceRate < 0.65) {
+    topBlocker = "Absenteeism and late starts are reducing frontline capacity.";
+  } else if (metrics.hotLeadRiskCount > 0) {
+    topBlocker = "Inactive leads are creating conversion risk.";
+  } else if (metrics.overall.blockedTasks > 3) {
+    topBlocker = "Blocked tasks are slowing day-to-day execution.";
+  } else {
+    topBlocker = "Task blockers and pipeline follow-ups remain the main operational risk.";
+  }
+
+  const hotLeadRisk = metrics.hotLeadRiskCount > 0
+    ? `${metrics.hotLeadRiskCount} stale leads pending follow-up`
+    : metrics.overall.hotLeads > 0
+    ? `${metrics.overall.hotLeads} hot leads need next-step action`
+    : "No stale leads currently — maintain active pipeline follow-up.";
+
+  const priorities = [];
+  if (overallConversion < 0.55) priorities.push(`Improve site visit conversion in ${weakZone}.`);
+  if (metrics.overall.overdueTasks > 4)
+    priorities.push("Resolve delayed follow-ups and overdue tasks.");
+  if (attendanceRate < 0.75)
+    priorities.push(`Increase attendance consistency in ${weakZone}.`);
+  if (metrics.hotLeadRiskCount > 0)
+    priorities.push("Push callbacks for stale leads and hot prospects.");
+  if (metrics.overall.blockedTasks > 2)
+    priorities.push("Clear task blockers to restore operational momentum.");
+  if (metrics.overall.pendingLeaves > 0)
+    priorities.push("Review pending leave requests to stabilize staffing.");
+
+  const chosenPriorities = priorities.slice(0, 3);
+  while (chosenPriorities.length < 3) {
+    if (!chosenPriorities.includes("Improve site visit conversion in " + weakZone + ".")) {
+      chosenPriorities.push(`Focus ${weakZone} on conversion and execution quality.`);
+    } else if (!chosenPriorities.includes("Resolve delayed follow-ups and overdue tasks.")) {
+      chosenPriorities.push("Resolve delayed follow-ups and overdue tasks.");
+    } else {
+      chosenPriorities.push("Maintain current momentum while addressing weak conversion signals.");
+    }
+  }
+
+  let oneLineForLeadership;
+  if (overallConversion >= 0.55 && completionRate >= 0.7 && attendanceRate >= 0.75) {
+    oneLineForLeadership = "Execution stable with moderate conversion risk.";
+  } else if (overallConversion < 0.45 && attendanceRate >= 0.75) {
+    oneLineForLeadership = "High activity but weak closing efficiency.";
+  } else if (overallConversion < 0.5 && attendanceRate >= 0.8) {
+    oneLineForLeadership = "Strong attendance with declining visit quality.";
+  } else if (attendanceRate < 0.65) {
+    oneLineForLeadership = "Operational stability is under pressure from attendance and follow-up gaps.";
+  } else {
+    oneLineForLeadership = "Operational momentum is steady with targeted conversion and follow-up risks.";
+  }
+
+  return {
+    bestZone,
+    weakZone,
+    topPerformer,
+    topBlocker,
+    hotLeadRisk,
+    priorities: chosenPriorities,
+    oneLineForLeadership,
+  };
+}
+
+async function enhanceSummaryWithAi(summary, metrics) {
+  const apiKey = process.env.LOVABLE_API_KEY;
+  if (!apiKey) return summary;
+  try {
+    const payload = {
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a concise executive analytics assistant. Return only a JSON object with keys bestZone, weakZone, topPerformer, topBlocker, hotLeadRisk, priorities, oneLineForLeadership.",
+        },
+        {
+          role: "user",
+          content: `Generate an executive daily brief from the following operational metrics. Use exact JSON with keys and string values only. Metrics: ${JSON.stringify(metrics)}`,
+        },
+      ],
+      max_tokens: 200,
+      temperature: 0.3,
+    };
+
+    const result = await safeFetchJson("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const aiContent = result?.choices?.[0]?.message?.content || result?.output?.[0]?.content?.[0]?.text;
+    const extracted = extractJson(aiContent);
+    const cleaned = validateAndCleanSummary(extracted, summary);
+
+    if (result && process.env.NODE_ENV !== "production") {
+      console.log("[daily-brief] AI enhancement success");
+    }
+    return cleaned;
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[daily-brief] AI enhancement failed", error);
+    }
+    return summary;
+  }
+}
+
 router.post(
   "/daily-brief",
   requireAuth,
   asyncHandler(async (req, res) => {
     console.log("[daily-brief] endpoint hit");
-    
+
     try {
+      const { from } = dateRange(30);
+      const fromTs = new Date(from).getTime();
+
+      const [allEmployees, tasks, leaves, attEvents, kudos, pulseEntries, flyUpdates, notifications, oneOnOnes, allTargets] =
+        await Promise.all([
+          Employee.find({}).lean(),
+          Task.find({
+            $or: [
+              { createdAt: { $gte: fromTs } },
+              { dueAt: { $gte: fromTs } },
+            ],
+          }).lean(),
+          Leave.find({ startDate: { $gte: from } }).lean(),
+          AttendanceEvent.find({ ts: { $gte: fromTs } }).lean(),
+          Kudo.find({ ts: { $gte: fromTs } }).lean(),
+          PulseEntry.find({ date: { $gte: from } }).lean(),
+          FlyUpdate.find({ date: { $gte: from } }).lean(),
+          Notification.find({ ts: { $gte: fromTs } }).lean(),
+          OneOnOne.find({ scheduledAt: { $gte: fromTs } }).lean(),
+          KpiTarget.find({
+            effectiveFrom: { $lte: new Date().toISOString().slice(0, 10) },
+            effectiveTo: { $gte: from },
+          }).lean(),
+        ]);
+
+      const visibleIds = await resolveVisibleIds(req.user, allEmployees);
+      const teamEmployees = allEmployees.filter((emp) => visibleIds.has(emp.id));
+      const employeeById = new Map(allEmployees.map((emp) => [emp.id, emp]));
+
+      const members = teamEmployees.map((emp) =>
+        computeMemberMetrics(emp, tasks, leaves, attEvents, kudos),
+      );
+
+      const zoneStats = {};
+      const ensureZone = (zone) => {
+        const key = zone || "HQ";
+        if (!zoneStats[key]) {
+          zoneStats[key] = {
+            zone: key,
+            employeeCount: 0,
+            bookings: 0,
+            visitsScheduled: 0,
+            visitsCompleted: 0,
+            calls: 0,
+            tours: 0,
+            closures: 0,
+            pulseCount: 0,
+            pulseBlockers: 0,
+            staleLeads: 0,
+            flyCount: 0,
+            flyBlockers: 0,
+            taskTotal: 0,
+            taskDone: 0,
+            blockedTasks: 0,
+            overdueTasks: 0,
+            attendanceEvents: 0,
+            lateArrivals: 0,
+            unreadNotifications: 0,
+            kpiTargetCount: 0,
+            highRiskOneOnOnes: 0,
+          };
+        }
+        return zoneStats[key];
+      };
+
+      for (const emp of teamEmployees) {
+        const zone = zoneIdForEmployee(emp);
+        ensureZone(zone).employeeCount += 1;
+      }
+
+      for (const task of safeArr(tasks)) {
+        const emp = employeeById.get(task.assigneeId);
+        const zone = zoneIdForEmployee(emp);
+        const stats = ensureZone(zone);
+        stats.taskTotal += 1;
+        if (task.status === "done") stats.taskDone += 1;
+        if (task.status === "blocked") stats.blockedTasks += 1;
+        if (task.status !== "done" && task.dueAt && task.dueAt < Date.now()) stats.overdueTasks += 1;
+      }
+
+      for (const pulse of safeArr(pulseEntries)) {
+        const zone = pulse.zone || zoneIdForEmployee(employeeById.get(pulse.employeeId));
+        const stats = ensureZone(zone);
+        stats.pulseCount += 1;
+        stats.calls += safeNumber(pulse.calls);
+        stats.tours += safeNumber(pulse.tours);
+        stats.closures += safeNumber(pulse.closures);
+        if (pulse.blockers) {
+          stats.pulseBlockers += 1;
+          if (/stale|follow[- ]?up|callback|inactive|no next/i.test(pulse.blockers)) {
+            stats.staleLeads += 1;
+          }
+        }
+      }
+
+      for (const update of safeArr(flyUpdates)) {
+        const zone = update.zone || "HQ";
+        const stats = ensureZone(zone);
+        stats.flyCount += 1;
+        stats.bookings += safeNumber(update.bookings);
+        stats.visitsScheduled += safeNumber(update.visitsScheduled);
+        stats.visitsCompleted += safeNumber(update.visitsCompleted);
+        stats.closures += safeNumber(update.connectedCalls || 0);
+        if (update.hotLeads) stats.staleLeads += safeNumber(update.hotLeads);
+        if (update.blocker) stats.flyBlockers += 1;
+      }
+
+      for (const notification of safeArr(notifications)) {
+        if (!notification.read && ["approval", "task", "attendance", "coach"].includes(notification.kind)) {
+          const emp = employeeById.get(notification.toId);
+          const zone = zoneIdForEmployee(emp);
+          ensureZone(zone).unreadNotifications += 1;
+        }
+      }
+
+      for (const entry of safeArr(attEvents)) {
+        const emp = employeeById.get(entry.employeeId);
+        const zone = zoneIdForEmployee(emp);
+        const stats = ensureZone(zone);
+        stats.attendanceEvents += 1;
+        if (entry.kind === "clock_in") {
+          const d = new Date(entry.ts);
+          const min = d.getHours() * 60 + d.getMinutes();
+          const profile = readProfile(emp);
+          const shiftStart = profile.shift ? (profile.shift.split(" - ")[0] ?? "10:00") : "10:00";
+          const [shH, shM] = shiftStart.split(":").map(Number);
+          const shiftStartMin = (shH || 10) * 60 + (shM || 0) + 15;
+          if (min > shiftStartMin) stats.lateArrivals += 1;
+        }
+      }
+
+      for (const oneOnOne of safeArr(oneOnOnes)) {
+        const manager = employeeById.get(oneOnOne.managerId);
+        const zone = zoneIdForEmployee(manager);
+        if (oneOnOne.sentiment === "red") ensureZone(zone).highRiskOneOnOnes += 1;
+      }
+
+      for (const target of safeArr(allTargets)) {
+        if (target.scopeType === "zone") {
+          ensureZone(target.scopeId).kpiTargetCount += 1;
+        } else if (target.scopeType === "org") {
+          ensureZone("HQ").kpiTargetCount += 1;
+        }
+      }
+
+      const zoneSummaries = Object.values(zoneStats).map((stats) => {
+        const conversion = stats.visitsScheduled
+          ? stats.visitsCompleted / stats.visitsScheduled
+          : 0;
+        const attendanceScore = stats.attendanceEvents
+          ? 1 - stats.lateArrivals / stats.attendanceEvents
+          : 0.7;
+        const taskCompletion = stats.taskTotal
+          ? stats.taskDone / stats.taskTotal
+          : 0.6;
+        const pulseHealth = stats.employeeCount > 0 ? Math.min(1, stats.pulseCount / (stats.employeeCount * 3)) : 0.5;
+        const blockerPenalty = stats.flyCount > 0 ? Math.max(0, 1 - stats.flyBlockers / Math.max(1, stats.flyCount)) : 0.9;
+        const score =
+          conversion * 0.35 +
+          attendanceScore * 0.25 +
+          taskCompletion * 0.2 +
+          pulseHealth * 0.15 +
+          blockerPenalty * 0.05;
+        return {
+          ...stats,
+          conversion,
+          attendanceScore,
+          taskCompletion,
+          pulseHealth,
+          score,
+        };
+      });
+
+      const validZones = zoneSummaries.filter((zone) => zone.employeeCount > 0);
+      const bestZoneEntry = validZones.sort((a, b) => b.score - a.score)[0] || { zone: "HQ" };
+      const weakZoneEntry = validZones.sort((a, b) => a.score - b.score)[0] || { zone: "HQ" };
+
+      const overall = {
+        visitsScheduled: zoneSummaries.reduce((sum, zone) => sum + zone.visitsScheduled, 0),
+        visitsCompleted: zoneSummaries.reduce((sum, zone) => sum + zone.visitsCompleted, 0),
+        attendanceEvents: zoneSummaries.reduce((sum, zone) => sum + zone.attendanceEvents, 0),
+        lateArrivals: zoneSummaries.reduce((sum, zone) => sum + zone.lateArrivals, 0),
+        tasksTotal: zoneSummaries.reduce((sum, zone) => sum + zone.taskTotal, 0),
+        tasksDone: zoneSummaries.reduce((sum, zone) => sum + zone.taskDone, 0),
+        overdueTasks: zoneSummaries.reduce((sum, zone) => sum + zone.overdueTasks, 0),
+        blockedTasks: zoneSummaries.reduce((sum, zone) => sum + zone.blockedTasks, 0),
+        hotLeads: zoneSummaries.reduce((sum, zone) => sum + zone.staleLeads, 0),
+        pendingLeaves: safeArr(leaves).filter((l) => l.status === "pending").length,
+        unreadNotifications: zoneSummaries.reduce((sum, zone) => sum + zone.unreadNotifications, 0),
+      };
+
+      const topPerformerMetrics = members
+        .map((m) => ({
+          name: m.name,
+          score:
+            safeNumber(m.performance) * 0.18 +
+            safeNumber(m.engagementScore) * 0.18 +
+            safeNumber(m.tasks.completionRate) * 0.22 +
+            safeNumber(m.attendance.punctualityPct || 70) * 0.14 +
+            Math.min(100, safeNumber(m.attendance.streakDays) * 8) * 0.08 +
+            Math.min(100, safeNumber(m.kudos.recent) * 10) * 0.2,
+        }))
+        .sort((a, b) => b.score - a.score)[0];
+
+      const summaryMetrics = {
+        bestZone: bestZoneEntry.zone,
+        weakZone: weakZoneEntry.zone,
+        topPerformerName: topPerformerMetrics?.name,
+        overall,
+        hotLeadRiskCount: overall.hotLeads,
+        zoneSummaries: zoneSummaries.map((zone) => ({
+          zone: zone.zone,
+          score: Math.round(zone.score * 100),
+          conversion: Number(zone.conversion.toFixed(2)),
+          attendanceRate: Number(zone.attendanceScore.toFixed(2)),
+          taskCompletion: Number(zone.taskCompletion.toFixed(2)),
+          staleLeads: zone.staleLeads,
+          blockers: zone.flyBlockers + zone.pulseBlockers,
+          pendingKpiTargets: zone.kpiTargetCount,
+        })),
+      };
+
+      const localSummary = buildDailyBriefSummary(summaryMetrics);
+      const finalSummary = await enhanceSummaryWithAi(localSummary, summaryMetrics);
+
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[daily-brief] metrics computed");
+        console.log("[daily-brief] built summary", JSON.stringify(finalSummary));
+      }
+
+      return res.json({ summary: finalSummary });
+    } catch (error) {
+      console.error("[daily-brief] route error", error?.message || error);
+      if (process.env.NODE_ENV !== "production") {
+        console.error(error);
+      }
+
       return res.json({
         summary: {
           bestZone: "North Zone",
@@ -450,21 +836,13 @@ router.post(
           priorities: [
             "Improve follow-up speed",
             "Increase site visits",
-            "Review blocked bookings"
+            "Review blocked bookings",
           ],
-          oneLineForLeadership:
-            "Execution stable with moderate conversion risk."
-        }
-      });
-    } catch (error) {
-      console.error("[daily-brief]", error);
-
-      return res.status(500).json({
-        summary: null,
-        error: "AI service unreachable"
+          oneLineForLeadership: "Execution stable with moderate conversion risk.",
+        },
       });
     }
-  })
+  }),
 );
 console.log('[operatorRoutes] daily-brief route loaded');
 export default router;
