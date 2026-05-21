@@ -18,6 +18,9 @@ import {
   Kudo,
   KpiDefinition,
   KpiTarget,
+  FlyUpdate,
+  FlyRetro,
+  FlyFeed,
 } from "../models/index.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { asyncHandler } from "../lib/async-handler.js";
@@ -386,4 +389,275 @@ router.get(
   }),
 );
 
+// ─── POST /api/operator/daily-brief ──────────────────────────────────────
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let dailyBriefCache = {
+  key: null,
+  timestamp: 0,
+  data: null,
+};
+
+function extractJson(content) {
+  if (typeof content !== "string") return null;
+  const start = content.indexOf("{");
+  const end = content.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    const rawJson = content.slice(start, end + 1);
+    try {
+      return JSON.parse(rawJson);
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+}
+
+function validateAndCleanSummary(parsed, fallbackValues) {
+  const requiredKeys = [
+    "bestZone",
+    "weakZone",
+    "topPerformer",
+    "topBlocker",
+    "hotLeadRisk",
+    "priorities",
+    "oneLineForLeadership",
+  ];
+  const clean = {};
+  for (const key of requiredKeys) {
+    if (key === "priorities") {
+      clean[key] = Array.isArray(parsed?.[key]) ? parsed[key] : (fallbackValues?.[key] || []);
+    } else {
+      clean[key] = typeof parsed?.[key] === "string" ? parsed[key] : (fallbackValues?.[key] || "—");
+    }
+  }
+  return clean;
+}
+
+router.post(
+  "/daily-brief",
+  asyncHandler(async (req, res) => {
+    const requestBody = typeof req.body === "object" && req.body !== null ? req.body : {};
+    const todayStr = typeof requestBody.date === "string" ? requestBody.date : new Date().toISOString().slice(0, 10);
+    const isDev = process.env.NODE_ENV !== "production";
+
+    // 1. Caching check
+    if (dailyBriefCache.key === todayStr && Date.now() - dailyBriefCache.timestamp < CACHE_TTL) {
+      if (isDev) {
+        console.log(`[daily-brief] Cache hit for ${todayStr}`);
+      }
+      return res.json(dailyBriefCache.data);
+    }
+
+    if (isDev) {
+      console.log("[daily-brief] generating...");
+    }
+
+    // 2. Query MongoDB Collections Directly
+    const [updates, employees, retroList, feedList] = await Promise.all([
+      FlyUpdate.find({ date: todayStr }).lean(),
+      Employee.find({}).lean(),
+      FlyRetro.find({}).lean(),
+      FlyFeed.find({}).sort({ ts: -1 }).limit(15).lean(),
+    ]);
+
+    const empMap = new Map(employees.map((e) => [e.id, e]));
+
+    // 3. Compute Operational metrics and KPIs (Backend Rollup)
+    const totals = updates.reduce(
+      (acc, u) => ({
+        calls: acc.calls + (u.connectedCalls || 0),
+        visitsScheduled: acc.visitsScheduled + (u.visitsScheduled || 0),
+        visitsCompleted: acc.visitsCompleted + (u.visitsCompleted || 0),
+        hotLeads: acc.hotLeads + (u.hotLeads || 0),
+        bookings: acc.bookings + (u.bookings || 0),
+        blockers: acc.blockers + (typeof u.blocker === "string" && u.blocker.trim() ? 1 : 0),
+      }),
+      { calls: 0, visitsScheduled: 0, visitsCompleted: 0, hotLeads: 0, bookings: 0, blockers: 0 },
+    );
+
+    const byZone = new Map();
+    for (const u of updates) {
+      const z = u.zone || "Unzoned";
+      const cur = byZone.get(z) ?? {
+        zone: z,
+        calls: 0,
+        visitsScheduled: 0,
+        visitsCompleted: 0,
+        hotLeads: 0,
+        bookings: 0,
+        blockers: 0,
+        contributors: 0,
+      };
+      cur.calls += (u.connectedCalls || 0);
+      cur.visitsScheduled += (u.visitsScheduled || 0);
+      cur.visitsCompleted += (u.visitsCompleted || 0);
+      cur.hotLeads += (u.hotLeads || 0);
+      cur.bookings += (u.bookings || 0);
+      cur.blockers += (typeof u.blocker === "string" && u.blocker.trim()) ? 1 : 0;
+      cur.contributors += 1;
+      byZone.set(z, cur);
+    }
+    const zones = [...byZone.values()].sort(
+      (a, b) => b.bookings - a.bookings || b.visitsCompleted - a.visitsCompleted,
+    );
+
+    const scored = updates.map((u) => ({
+      id: u.authorId,
+      score: (u.bookings || 0) * 50 + (u.hotLeads || 0) * 15 + (u.visitsCompleted || 0) * 10 + (u.connectedCalls || 0),
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    const topPerformerId = scored[0]?.id;
+    const topPerformer = topPerformerId
+      ? { id: topPerformerId, name: empMap.get(topPerformerId)?.name || "Someone" }
+      : null;
+
+    const submissions = updates.length;
+    const teamSize = employees.filter((e) => e.profile?.appRole !== "admin" && e.role !== "admin").length;
+
+    const blockers = updates
+      .filter((u) => typeof u.blocker === "string" && u.blocker.trim())
+      .map((u) => ({
+        author: empMap.get(u.authorId)?.name || "Someone",
+        zone: u.zone || "All",
+        text: u.blocker,
+      }));
+
+    const retro = retroList.map((r) => ({
+      kind: r.kind,
+      body: r.body || "",
+      upvotes: Array.isArray(r.upvotes) ? r.upvotes.length : 0,
+    }));
+
+    const feed = feedList.map((f) => ({
+      kind: f.kind,
+      author: empMap.get(f.authorId)?.name || "Someone",
+      body: f.body || "",
+    }));
+
+    const rollupData = {
+      totals,
+      zones,
+      topPerformer,
+      submissions,
+      teamSize: teamSize > 0 ? teamSize : 15,
+      blockers,
+      retro,
+      feed,
+    };
+
+    // 4. Construct AI System & User Prompt Context
+    const systemPrompt = `You are the operations chief-of-staff for Gharpayy Fly, a PG (paying-guest housing) field-ops team. You produce a one-page daily summary for leadership: terse, specific, action-oriented, no fluff, no emojis. Always return strict JSON matching the requested schema.`;
+    const userPrompt = `Today's roll-up:
+${JSON.stringify(rollupData, null, 2)}
+
+Produce JSON with EXACTLY these fields:
+{
+  "bestZone": "<zone name + one-line why>",
+  "weakZone": "<zone name + one-line why>",
+  "topPerformer": "<person name + one-line why>",
+  "topBlocker": "<the single most repeated/severe blocker>",
+  "hotLeadRisk": "<one-line risk on hot-lead inactivity or pending tokens>",
+  "priorities": ["<priority 1 for tomorrow>", "<priority 2>", "<priority 3>"],
+  "oneLineForLeadership": "<a single sentence summarising the day>"
+}
+Return ONLY the JSON, no prose.`;
+
+    const fallbackSummary = {
+      bestZone: zones[0]?.zone
+        ? `${zones[0].zone} remains strongest with steady bookings and momentum.`
+        : "Top zone data unavailable.",
+      weakZone: zones[zones.length - 1]?.zone
+        ? `${zones[zones.length - 1].zone} needs focus on bookings and follow-ups.`
+        : "No weak zone identified.",
+      topPerformer: topPerformer?.name
+        ? `${topPerformer.name} for closing the most bookings today.`
+        : "Top performer data unavailable.",
+      topBlocker: blockers[0]?.text || "No major blocker reported.",
+      hotLeadRisk: `Monitor hot leads from top zones to avoid losing momentum.`,
+      priorities: [
+        `Follow up on leads in ${zones[0]?.zone || "the leading zone"}.`,
+        `Resolve the top blocker: ${blockers[0]?.text || "none reported"}.`,
+        `Maintain bookings momentum across all zones.`,
+      ],
+      oneLineForLeadership: `Execution stable with ${totals.bookings || 0} bookings across ${zones.length || 0} zones today.`,
+    };
+
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) {
+      if (isDev) {
+        console.warn("[daily-brief] failure: LOVABLE_API_KEY is missing on server");
+      }
+      const result = { summary: null, error: "AI service unreachable" };
+      return res.status(503).json(result);
+    }
+
+    if (isDev) {
+      console.log("[daily-brief] ai provider: google/gemini-2.5-flash");
+      console.log("[daily-brief] ai request URL: https://ai.gateway.lovable.dev/v1/chat/completions");
+    }
+
+    // 6. Call AI Provider with AbortController Timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      if (isDev) {
+        console.warn("[daily-brief] AI request timed out");
+      }
+      controller.abort();
+    }, 12000); // 12-second timeout
+
+    try {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          response_format: { type: "json_object" },
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const text = await response.text();
+        if (isDev) {
+          console.error(`[daily-brief] failure: AI gateway returned ${response.status}: ${text}`);
+        }
+        const result = { summary: null, error: "AI service unreachable" };
+        return res.status(503).json(result);
+      }
+
+      const json = await response.json();
+      const rawContent = json.choices?.[0]?.message?.content ?? "{}";
+
+      // 7. Sanitize response and parse JSON safely
+      const parsedJson = extractJson(rawContent);
+      const cleanSummary = validateAndCleanSummary(parsedJson, fallbackSummary);
+
+      if (isDev) {
+        console.log("[daily-brief] success");
+      }
+
+      const result = { summary: cleanSummary, raw: rawContent };
+      // Cache the successful summary
+      dailyBriefCache = { key: todayStr, timestamp: Date.now(), data: result };
+      return res.json(result);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (isDev) {
+        console.error("[daily-brief] failure: fetch failed or was aborted:", err?.message || err);
+      }
+      const result = { summary: null, error: "AI service unreachable" };
+      return res.status(503).json(result);
+    }
+  })
+);
+console.log('[operatorRoutes] daily-brief route loaded');
 export default router;

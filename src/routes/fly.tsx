@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import {
   PlaneTakeoff,
   ArrowUp,
@@ -46,7 +45,7 @@ import {
   type FeedEvent,
 } from "@/lib/fly-store";
 import { useTasks, createTask, setStatus as setTaskStatus } from "@/lib/task-store";
-import { generateDailySummary } from "@/lib/fly-ai.functions";
+import { fetchDailyBrief, type SummaryOut } from "@/lib/daily-brief-api";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/fly")({
@@ -167,10 +166,11 @@ function DailyTab({ actor }: { actor: Employee }) {
         <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-muted-foreground mb-2">
           <Icon className="h-3.5 w-3.5" /> {label}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full min-w-0">
           <button
             onClick={() => num(key, -1)}
-            className="h-8 w-8 rounded-md border border-border hover:bg-secondary text-lg leading-none"
+            className="h-10 w-10 flex-shrink-0 rounded-xl border border-border hover:bg-secondary text-lg leading-none"
+            aria-label={`decrease ${label}`}
           >
             −
           </button>
@@ -180,11 +180,12 @@ function DailyTab({ actor }: { actor: Employee }) {
             onChange={(e) =>
               setForm((f) => ({ ...f, [key]: Math.max(0, parseInt(e.target.value || "0", 10)) }))
             }
-            className="h-8 flex-1 text-center text-lg font-semibold bg-background border border-border rounded-md"
+            className="h-10 flex-1 min-w-0 text-center text-lg font-semibold bg-background border border-border rounded-xl px-2"
           />
           <button
             onClick={() => num(key, 1)}
-            className="h-8 w-8 rounded-md border border-border hover:bg-secondary text-lg leading-none"
+            className="h-10 w-10 flex-shrink-0 rounded-xl border border-border hover:bg-secondary text-lg leading-none"
+            aria-label={`increase ${label}`}
           >
             +
           </button>
@@ -204,7 +205,7 @@ function DailyTab({ actor }: { actor: Employee }) {
             </span>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 mb-3">
           {numField("Connected calls", "connectedCalls", Phone)}
           {numField("Visits scheduled", "visitsScheduled", CalIcon)}
           {numField("Visits completed", "visitsCompleted", MapPin)}
@@ -742,53 +743,26 @@ function ActionItemsTab({ actor }: { actor: Employee }) {
 
 // =================== AI SUMMARY TAB ===================
 function SummaryTab() {
-  const generate = useServerFn(generateDailySummary);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<Awaited<ReturnType<typeof generate>>["summary"] | null>(
-    null,
-  );
+  const [result, setResult] = useState<SummaryOut | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isFallback, setIsFallback] = useState(false);
 
   async function run() {
     setLoading(true);
     setError(null);
+    setIsFallback(false);
     try {
-      const roll = todayRollup();
-      const raw = getRawStores();
-      const topPerformer = roll.topPerformerId
-        ? { id: roll.topPerformerId, name: empName(roll.topPerformerId) }
-        : null;
-      const res = await generate({
-        data: {
-          totals: roll.totals,
-          zones: roll.zones.map((z) => ({
-            zone: z.zone,
-            calls: z.calls,
-            visitsScheduled: z.visitsScheduled,
-            visitsCompleted: z.visitsCompleted,
-            hotLeads: z.hotLeads,
-            bookings: z.bookings,
-            blockers: z.blockers,
-            contributors: z.contributors,
-          })),
-          topPerformer,
-          submissions: roll.submissions,
-          teamSize: roll.teamSize,
-          blockers: raw.updates
-            .filter((u) => u.blocker.trim())
-            .map((u) => ({ author: empName(u.authorId), zone: u.zone, text: u.blocker })),
-          retro: raw.retro.map((r) => ({ kind: r.kind, body: r.body, upvotes: r.upvotes.length })),
-          feed: raw.feed
-            .slice(0, 15)
-            .map((f) => ({ kind: f.kind, author: empName(f.authorId), body: f.body })),
-        },
-      });
+      const res = await fetchDailyBrief();
       setResult(res.summary);
+      if (res.fallback) {
+        setIsFallback(true);
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed";
       if (msg.includes("429")) setError("Rate limited — try again in a minute.");
       else if (msg.includes("402")) setError("AI credits exhausted. Add credits in Lovable Cloud.");
-      else setError(msg);
+      else setError("Summary temporarily unavailable");
     } finally {
       setLoading(false);
     }
@@ -826,6 +800,12 @@ function SummaryTab() {
 
       {result && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-5 space-y-4">
+          {isFallback && (
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-warning bg-warning/10 border border-warning/20 rounded-md p-2.5 mb-2">
+              <AlertTriangle className="h-3.5 w-3.5" /> Note: Displaying active operational rollup
+              (AI fallback mode).
+            </div>
+          )}
           <p className="font-display text-lg leading-snug">{result.oneLineForLeadership}</p>
           <div className="grid md:grid-cols-2 gap-3">
             <SummaryCell label="Best zone" value={result.bestZone} tone="success" />

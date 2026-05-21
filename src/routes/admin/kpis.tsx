@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/select";
 import { ZONES } from "@/data/zones";
 import { fetchWorkforce, type WorkforceRow } from "@/lib/workforce-api";
+import { Employee } from "@/types/hr";
 import {
   fetchKpiDefinitions,
   createKpiDefinition,
@@ -53,6 +54,7 @@ import {
   updateKpiTarget,
   type KpiDefinition,
   type KpiTarget,
+  type KpiScopeType,
 } from "@/lib/kpi-governance-api";
 
 export const Route = createFileRoute("/admin/kpis")({
@@ -144,7 +146,7 @@ function KpiGovernancePage() {
 // 1. KPI DEFINITIONS TAB
 // ==========================================
 
-function KpiDefinitionsTab({ actor }: { actor: any }) {
+function KpiDefinitionsTab({ actor }: { actor: Employee }) {
   const [kpis, setKpis] = useState<KpiDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -770,7 +772,7 @@ function KpiDefinitionsTab({ actor }: { actor: any }) {
 // 2. KPI TARGETS TAB
 // ==========================================
 
-function KpiTargetsTab({ actor }: { actor: any }) {
+function KpiTargetsTab({ actor }: { actor: Employee }) {
   const [kpis, setKpis] = useState<KpiDefinition[]>([]);
   const [targets, setTargets] = useState<KpiTarget[]>([]);
   const [workforce, setWorkforce] = useState<WorkforceRow[]>([]);
@@ -781,7 +783,7 @@ function KpiTargetsTab({ actor }: { actor: any }) {
 
   // Form states
   const [kpiId, setKpiId] = useState("");
-  const [scopeType, setScopeType] = useState<"org" | "zone" | "team" | "individual">("org");
+  const [scopeType, setScopeType] = useState<KpiScopeType>("org");
   const [scopeId, setScopeId] = useState("org");
   const [targetValue, setTargetValue] = useState("");
   const [effectiveFrom, setEffectiveFrom] = useState(new Date().toISOString().split("T")[0]);
@@ -1018,7 +1020,7 @@ function KpiTargetsTab({ actor }: { actor: any }) {
                 <Label>Target Scope</Label>
                 <Select
                   value={scopeType}
-                  onValueChange={(val: any) => {
+                  onValueChange={(val: string) => {
                     setScopeType(val);
                     if (val === "org") setScopeId("org");
                     else if (val === "zone" && ZONES.length > 0) setScopeId(ZONES[0].name);
