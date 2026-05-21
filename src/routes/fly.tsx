@@ -762,7 +762,7 @@ function SummaryTab() {
       const msg = e instanceof Error ? e.message : "Failed";
       if (msg.includes("429")) setError("Rate limited — try again in a minute.");
       else if (msg.includes("402")) setError("AI credits exhausted. Add credits in Lovable Cloud.");
-      else setError(msg);
+      else setError("Summary temporarily unavailable");
     } finally {
       setLoading(false);
     }

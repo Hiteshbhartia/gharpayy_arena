@@ -436,11 +436,12 @@ function validateAndCleanSummary(parsed, fallbackValues) {
 router.post(
   "/daily-brief",
   asyncHandler(async (req, res) => {
-    const todayStr = req.body.date || new Date().toISOString().slice(0, 10);
+    const requestBody = typeof req.body === "object" && req.body !== null ? req.body : {};
+    const todayStr = typeof requestBody.date === "string" ? requestBody.date : new Date().toISOString().slice(0, 10);
     const isDev = process.env.NODE_ENV !== "production";
 
     // 1. Caching check
-    if (dailyBriefCache.key === todayStr && (Date.now() - dailyBriefCache.timestamp) < CACHE_TTL) {
+    if (dailyBriefCache.key === todayStr && Date.now() - dailyBriefCache.timestamp < CACHE_TTL) {
       if (isDev) {
         console.log(`[daily-brief] Cache hit for ${todayStr}`);
       }
@@ -586,13 +587,13 @@ Return ONLY the JSON, no prose.`;
       if (isDev) {
         console.warn("[daily-brief] failure: LOVABLE_API_KEY is missing on server");
       }
-      const result = { summary: fallbackSummary, fallback: true, raw: "{}" };
-      dailyBriefCache = { key: todayStr, timestamp: Date.now(), data: result };
-      return res.json(result);
+      const result = { summary: null, error: "AI service unreachable" };
+      return res.status(503).json(result);
     }
 
     if (isDev) {
       console.log("[daily-brief] ai provider: google/gemini-2.5-flash");
+      console.log("[daily-brief] ai request URL: https://ai.gateway.lovable.dev/v1/chat/completions");
     }
 
     // 6. Call AI Provider with AbortController Timeout
@@ -629,10 +630,8 @@ Return ONLY the JSON, no prose.`;
         if (isDev) {
           console.error(`[daily-brief] failure: AI gateway returned ${response.status}: ${text}`);
         }
-        // Graceful error fallback
-        const result = { summary: fallbackSummary, fallback: true, raw: "{}" };
-        dailyBriefCache = { key: todayStr, timestamp: Date.now(), data: result };
-        return res.json(result);
+        const result = { summary: null, error: "AI service unreachable" };
+        return res.status(503).json(result);
       }
 
       const json = await response.json();
@@ -655,10 +654,8 @@ Return ONLY the JSON, no prose.`;
       if (isDev) {
         console.error("[daily-brief] failure: fetch failed or was aborted:", err?.message || err);
       }
-      // Return graceful fallback
-      const result = { ...fallbackResponse, fallback: true, raw: "{}" };
-      dailyBriefCache = { key: todayStr, timestamp: Date.now(), data: result };
-      return res.json(result);
+      const result = { summary: null, error: "AI service unreachable" };
+      return res.status(503).json(result);
     }
   })
 );
