@@ -7,7 +7,7 @@ import { RoleGate } from "@/components/RoleGate";
 
 export const Route = createFileRoute("/command")({
   component: () => (
-    <RoleGate allow={["leadership", "hr", "leader"]}>
+    <RoleGate allow={["leadership", "zone_leader", "hr", "leader"]}>
       <CommandCenter />
     </RoleGate>
   ),

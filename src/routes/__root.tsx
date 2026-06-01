@@ -1,9 +1,12 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGate } from "@/components/AuthGate";
 
 import appCss from "../styles.css?url";
+
+const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
   head: () => ({
@@ -70,9 +73,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <AuthProvider>
-      <AuthGate />
-      <Toaster richColors position="top-right" />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AuthGate />
+        <Toaster richColors position="top-right" />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

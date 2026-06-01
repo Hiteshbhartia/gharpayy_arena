@@ -36,6 +36,7 @@ import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as AchievementsRouteImport } from './routes/achievements'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminWorkforceRouteImport } from './routes/admin/workforce'
+import { Route as AdminPermissionsRouteImport } from './routes/admin/permissions'
 import { Route as AdminKpisRouteImport } from './routes/admin/kpis'
 
 const ZonesRoute = ZonesRouteImport.update({
@@ -173,6 +174,11 @@ const AdminWorkforceRoute = AdminWorkforceRouteImport.update({
   path: '/admin/workforce',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPermissionsRoute = AdminPermissionsRouteImport.update({
+  id: '/admin/permissions',
+  path: '/admin/permissions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminKpisRoute = AdminKpisRouteImport.update({
   id: '/admin/kpis',
   path: '/admin/kpis',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/war-room': typeof WarRoomRoute
   '/zones': typeof ZonesRoute
   '/admin/kpis': typeof AdminKpisRoute
+  '/admin/permissions': typeof AdminPermissionsRoute
   '/admin/workforce': typeof AdminWorkforceRoute
 }
 export interface FileRoutesByTo {
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/war-room': typeof WarRoomRoute
   '/zones': typeof ZonesRoute
   '/admin/kpis': typeof AdminKpisRoute
+  '/admin/permissions': typeof AdminPermissionsRoute
   '/admin/workforce': typeof AdminWorkforceRoute
 }
 export interface FileRoutesById {
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/war-room': typeof WarRoomRoute
   '/zones': typeof ZonesRoute
   '/admin/kpis': typeof AdminKpisRoute
+  '/admin/permissions': typeof AdminPermissionsRoute
   '/admin/workforce': typeof AdminWorkforceRoute
 }
 export interface FileRouteTypes {
@@ -300,6 +309,7 @@ export interface FileRouteTypes {
     | '/war-room'
     | '/zones'
     | '/admin/kpis'
+    | '/admin/permissions'
     | '/admin/workforce'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/war-room'
     | '/zones'
     | '/admin/kpis'
+    | '/admin/permissions'
     | '/admin/workforce'
   id:
     | '__root__'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/war-room'
     | '/zones'
     | '/admin/kpis'
+    | '/admin/permissions'
     | '/admin/workforce'
   fileRoutesById: FileRoutesById
 }
@@ -391,6 +403,7 @@ export interface RootRouteChildren {
   WarRoomRoute: typeof WarRoomRoute
   ZonesRoute: typeof ZonesRoute
   AdminKpisRoute: typeof AdminKpisRoute
+  AdminPermissionsRoute: typeof AdminPermissionsRoute
   AdminWorkforceRoute: typeof AdminWorkforceRoute
 }
 
@@ -585,6 +598,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWorkforceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/permissions': {
+      id: '/admin/permissions'
+      path: '/admin/permissions'
+      fullPath: '/admin/permissions'
+      preLoaderRoute: typeof AdminPermissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/kpis': {
       id: '/admin/kpis'
       path: '/admin/kpis'
@@ -623,6 +643,7 @@ const rootRouteChildren: RootRouteChildren = {
   WarRoomRoute: WarRoomRoute,
   ZonesRoute: ZonesRoute,
   AdminKpisRoute: AdminKpisRoute,
+  AdminPermissionsRoute: AdminPermissionsRoute,
   AdminWorkforceRoute: AdminWorkforceRoute,
 }
 export const routeTree = rootRouteImport

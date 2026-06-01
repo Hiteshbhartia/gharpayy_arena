@@ -1,10 +1,19 @@
-import "dotenv/config";
+import path from "path";
+import { fileURLToPath } from "url";
+import { config } from "dotenv";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import mongoose from "mongoose";
+
+// __dirname polyfill for ESM — must be before config()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+config({ path: path.resolve(__dirname, "../.env") });
+
+console.log("[boot] JWT_SECRET loaded:", process.env.JWT_SECRET ? "YES" : "MISSING");
 
 import authRoutes from "./routes/auth.js";
 import employeesRoutes from "./routes/employees.js";
@@ -25,6 +34,7 @@ import migrateRoutes from "./routes/migrate.js";
 import workforceRoutes from "./routes/workforce.js";
 import operatorRoutes from "./routes/operator.js";
 import kpisRoutes from "./routes/kpis.js";
+import permissionsRoutes from "./routes/permissions.js";
 import { toHttpError } from "./lib/errors.js";
 
 const app = express();
@@ -42,11 +52,19 @@ app.use(
   cors({
     origin: (origin, cb) => {
       if (!origin) return cb(null, true); // mobile / curl / server-to-server
-      if (origins.length === 0 || origins.includes(origin)) return cb(null, true);
-      return cb(null, false); // deny without throwing (throws crash the process)
+      if (origins.length === 0) return cb(null, true); // allow all if no list
+      if (origins.includes(origin)) return cb(null, true);
+      try {
+        const url = new URL(origin);
+        // Allow any origin on the dev frontend port (8080)
+        if (url.port === "8080") return cb(null, true);
+      } catch (e) {
+        // ignore malformed URLs
+      }
+      return cb(null, false); // deny
     },
     credentials: true,
-  }),
+  })
 );
 
 app.use(
@@ -90,6 +108,7 @@ app.use("/api/admin/workforce", workforceRoutes);
 app.use("/api/operator", operatorRoutes);
 console.log("[routes] operator mounted");
 app.use("/api", kpisRoutes);
+app.use("/api/permissions", permissionsRoutes);
 
 // --- error handler ---
 app.use((err, req, res, _next) => {
@@ -168,7 +187,12 @@ function startHttpServer() {
 import { runWorkforceMigrations } from "./lib/migrations.js";
 import { seedKpis } from "./lib/seed-kpis.js";
 
+// Added import for in‑memory DB
+import { MongoMemoryServer } from "mongodb-memory-server";
+
+// ... existing code unchanged until connectDb definition ...
 let isDbConnected = false;
+let memoryServer = null; // hold reference for cleanup
 
 async function connectDb() {
   if (isDbConnected) return;
@@ -184,11 +208,39 @@ async function connectDb() {
     }
   } catch (err) {
     console.error("[api] mongo connection failed:", err.message);
-    if (process.env.NODE_ENV !== "production") {
+    // Development fallback to in‑memory MongoDB
+    const allowFallback =
+      process.env.NODE_ENV !== "production" &&
+      process.env.DISABLE_MONGODB_MEMORY_FALLBACK !== "true";
+    if (allowFallback) {
+      console.warn("[api] Starting in‑memory MongoDB for development fallback");
+      try {
+        memoryServer = await MongoMemoryServer.create();
+        const uri = memoryServer.getUri();
+        process.env.MONGODB_URI = uri;
+        await mongoose.connect(uri);
+        isDbConnected = true;
+        console.log("[api] in‑memory MongoDB connected");
+        await runWorkforceMigrations();
+        try {
+          await seedKpis();
+        } catch (kpiErr) {
+          console.error("[api] kpi seeding failed (in‑memory):", kpiErr);
+        }
+      } catch (memErr) {
+        console.error("[api] Failed to start in‑memory MongoDB:", memErr);
+        // Do not exit – allow server to continue (will fail on DB ops)
+      }
+    } else {
+      // Production or fallback disabled – abort
+      console.warn("[api] In‑memory MongoDB fallback disabled or production mode");
       process.exit(1);
     }
   }
-}
+  }
+
+
+
 
 // In Vercel, we need to ensure DB is connected before handling requests
 app.use(async (req, res, next) => {

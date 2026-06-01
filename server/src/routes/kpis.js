@@ -99,6 +99,11 @@ router.get(
   requireAuth,
   asyncHandler(async (req, res) => {
     const tier = await getActorTier(req.user.id, req.user.employeeId);
+    
+    // Explicitly block employees (teammate/partner) per requirements
+    if (req.user.role === "employee" || tier === "teammate") {
+       return res.status(403).json({ error: "Forbidden: employees cannot access KPI Governance" });
+    }
 
     // Build query
     const query = {};
@@ -112,7 +117,7 @@ router.get(
       query.name = { $regex: req.query.search, $options: "i" };
     }
 
-    // Visibility filtering for standard teammates
+    // Visibility filtering for standard teammates (redundant now but keeping just in case)
     if (tier === "teammate" || tier === "partner") {
       query.visibilityScope = { $in: ["public", "team"] };
     }
@@ -293,6 +298,12 @@ router.get(
   "/kpi-targets",
   requireAuth,
   asyncHandler(async (req, res) => {
+    // Explicitly block employees
+    const tier = await getActorTier(req.user.id, req.user.employeeId);
+    if (req.user.role === "employee" || tier === "teammate") {
+       return res.status(403).json({ error: "Forbidden: employees cannot access KPI Governance targets" });
+    }
+
     const query = {};
     if (req.query.kpiId) {
       query.kpiId = req.query.kpiId;
@@ -302,6 +313,25 @@ router.get(
     }
     if (req.query.scopeId) {
       query.scopeId = req.query.scopeId;
+    }
+
+    // Role restrictions: standard employee or partner cannot search query global scopes of other people
+    const appRole = req.user.role;
+    if (appRole === "employee" && req.user.employeeId) {
+      const emp = await Employee.findOne({ id: req.user.employeeId }).lean();
+      const zone = emp?.profile?.zone || emp?.hubId || "HQ";
+      const team = emp?.profile?.team || emp?.hubId || "HQ";
+
+      // If they specify a scopeId, ensure it's their own or their team's/zone's/org's
+      if (query.scopeId) {
+        const allowedIds = ["org", req.user.employeeId, zone, team];
+        if (!allowedIds.includes(query.scopeId)) {
+          return res.status(200).json({ targets: [] });
+        }
+      } else {
+        // Limit query to their allowed scopes
+        query.scopeId = { $in: ["org", req.user.employeeId, zone, team] };
+      }
     }
 
     // Pagination

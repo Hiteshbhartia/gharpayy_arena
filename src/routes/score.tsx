@@ -17,6 +17,7 @@ import {
   ArrowDown,
   Minus,
 } from "lucide-react";
+import { useRoleFeature } from "@/hooks/useRoleFeature";
 
 export const Route = createFileRoute("/score")({
   component: ScorePage,
@@ -78,6 +79,7 @@ function ScorePage() {
   const { actor } = useAttendanceState();
   const [selectedId, setSelectedId] = useState(actor.id);
   const emp = getRoster().find((e) => e.id === selectedId) ?? actor;
+  const hasFeature = useRoleFeature();
 
   const score = computeScore(emp);
   const rank = rankInSquad(emp);
@@ -358,11 +360,13 @@ function ScorePage() {
             );
           })}
         </div>
-        <div className="px-4 md:px-5 py-3 border-t border-border">
-          <Link to="/achievements" className="text-xs text-primary hover:underline">
-            Unlock badges from this score →
-          </Link>
-        </div>
+        {hasFeature("/achievements") && (
+          <div className="px-4 md:px-5 py-3 border-t border-border">
+            <Link to="/achievements" className="text-xs text-primary hover:underline">
+              Unlock badges from this score →
+            </Link>
+          </div>
+        )}
       </section>
     </div>
   );

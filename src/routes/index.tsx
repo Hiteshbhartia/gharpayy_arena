@@ -16,6 +16,7 @@ import { Avatar } from "@/components/Avatar";
 import { AttendancePanel } from "@/components/AttendancePanel";
 import { MissionBrief } from "@/components/MissionBrief";
 import { Progress } from "@/components/ui/progress";
+import { useRoleFeature } from "@/hooks/useRoleFeature";
 import {
   ArrowDown,
   ArrowUp,
@@ -80,6 +81,7 @@ function PillarHeader({
   href: string;
   icon: React.ElementType;
 }) {
+  const hasFeature = useRoleFeature();
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
@@ -91,9 +93,11 @@ function PillarHeader({
           <h2 className="font-display text-lg font-semibold leading-tight">{title}</h2>
         </div>
       </div>
-      <Link to={href} className="text-[11px] text-primary font-mono uppercase tracking-widest">
-        Open →
-      </Link>
+      {hasFeature(href) && (
+        <Link to={href} className="text-[11px] text-primary font-mono uppercase tracking-widest">
+          Open →
+        </Link>
+      )}
     </div>
   );
 }
@@ -247,6 +251,7 @@ function GoalsPillar({ actor }: { actor: Employee }) {
   const tier = tierFor(score.total);
   const days = useMemo(() => lastNDays(actor, 7), [actor]);
   const max = Math.max(100, ...days.map((d) => d.total));
+  const hasFeature = useRoleFeature();
 
   return (
     <section className="rounded-xl bg-card border border-border p-4 md:p-5">
@@ -266,18 +271,24 @@ function GoalsPillar({ actor }: { actor: Employee }) {
         {days.map((d) => {
           const h = Math.max(8, (d.total / max) * 56);
           const isToday = d.dayKey === days[days.length - 1]?.dayKey;
-          return (
+          const barClass = `w-full rounded-sm transition ${isToday ? "bg-primary" : "bg-muted-foreground/40 group-hover:bg-muted-foreground/70"}`;
+          return hasFeature("/score") ? (
             <Link
               key={d.dayKey}
               to="/score"
               className="flex-1 flex flex-col items-center gap-1 group"
               title={`${d.label} · ${d.total}`}
             >
-              <div
-                className={`w-full rounded-sm transition ${isToday ? "bg-primary" : "bg-muted-foreground/40 group-hover:bg-muted-foreground/70"}`}
-                style={{ height: `${h}px` }}
-              />
+              <div className={barClass} style={{ height: `${h}px` }} />
             </Link>
+          ) : (
+            <div
+              key={d.dayKey}
+              className="flex-1 flex flex-col items-center gap-1 group cursor-default"
+              title={`${d.label} · ${d.total}`}
+            >
+              <div className={barClass} style={{ height: `${h}px` }} />
+            </div>
           );
         })}
       </div>
@@ -525,6 +536,7 @@ function TeammateHome({ actor }: { actor: Employee }) {
 }
 
 function LeaderHome({ actor }: { actor: Employee }) {
+  const hasFeature = useRoleFeature();
   const pod = useMemo(
     () =>
       getRoster()
@@ -554,9 +566,11 @@ function LeaderHome({ actor }: { actor: Employee }) {
       <section className="rounded-xl bg-card border border-border overflow-hidden">
         <div className="px-4 md:px-5 py-3 md:py-4 border-b border-border flex items-center justify-between">
           <h2 className="font-display text-lg font-semibold">Pod leaderboard</h2>
-          <Link to="/war-room" className="text-xs text-primary font-mono uppercase tracking-widest">
-            War Room →
-          </Link>
+          {hasFeature("/war-room") && (
+            <Link to="/war-room" className="text-xs text-primary font-mono uppercase tracking-widest">
+              War Room →
+            </Link>
+          )}
         </div>
         <div className="divide-y divide-border">
           {sorted.map((e, i) => {
@@ -607,9 +621,11 @@ function LeaderHome({ actor }: { actor: Employee }) {
         <section className="mt-6 rounded-xl bg-card border border-border p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-display text-lg font-semibold">Approvals waiting on you</h2>
-            <Link to="/leaves" className="text-xs text-primary font-mono uppercase tracking-widest">
-              Open queue →
-            </Link>
+            {hasFeature("/leaves") && (
+              <Link to="/leaves" className="text-xs text-primary font-mono uppercase tracking-widest">
+                Open queue →
+              </Link>
+            )}
           </div>
           {leaves.slice(0, 4).map((l) => {
             const emp = getRoster().find((e) => e.id === l.employeeId);
@@ -737,6 +753,7 @@ function HRHome({ actor }: { actor: Employee }) {
 }
 
 function LeadershipHome({ actor }: { actor: Employee }) {
+  const hasFeature = useRoleFeature();
   const s = teamSummary(getRoster());
   const sorted = [...getRoster()].sort((a, b) => b.performance - a.performance);
   return (
@@ -825,21 +842,25 @@ function LeadershipHome({ actor }: { actor: Employee }) {
             <span className="text-primary font-semibold">{Math.max(0, 200 - s.totalCalls)}</span>{" "}
             more calls to hit shift target. Reassign Devansh's pool to Karan.
           </p>
-          <Link
-            to="/war-room"
-            className="mt-4 inline-block text-xs font-mono uppercase tracking-widest text-primary"
-          >
-            Open War Room →
-          </Link>
+          {hasFeature("/war-room") && (
+            <Link
+              to="/war-room"
+              className="mt-4 inline-block text-xs font-mono uppercase tracking-widest text-primary"
+            >
+              Open War Room →
+            </Link>
+          )}
         </div>
       </section>
 
       <section className="rounded-xl bg-card border border-border overflow-hidden">
         <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <h2 className="font-display text-lg font-semibold">Live leaderboard</h2>
-          <Link to="/people" className="text-xs text-primary font-mono uppercase tracking-widest">
-            All people →
-          </Link>
+          {hasFeature("/people") && (
+            <Link to="/people" className="text-xs text-primary font-mono uppercase tracking-widest">
+              All people →
+            </Link>
+          )}
         </div>
         <div className="divide-y divide-border">
           {sorted.slice(0, 6).map((e, i) => {
@@ -869,6 +890,92 @@ function LeadershipHome({ actor }: { actor: Employee }) {
   );
 }
 
+function ZoneLeaderHome({ actor }: { actor: Employee }) {
+  const hasFeature = useRoleFeature();
+  // Zone leaders see the full org roster scoped to their zone
+  const zone = actor.zone ?? actor.team ?? "All";
+  const zoneRoster = useMemo(
+    () =>
+      getRoster().filter(
+        (e) =>
+          e.id !== actor.id &&
+          (zone === "All" || e.zone === zone || e.team === zone),
+      ),
+    [zone, actor.id],
+  );
+  const sorted = [...zoneRoster].sort((a, b) => computeScore(b).total - computeScore(a).total);
+
+  return (
+    <div className="px-4 md:px-8 py-6 md:py-8 max-w-[1300px] mx-auto">
+      <HomeHeader
+        actor={actor}
+        sub={`Zone-wide Time, Tasks, Goals. ${TIER_TAGLINE.zone_leader}`}
+      />
+      <MissionBrief actor={actor} />
+
+      {/* Personal pillars — zone leaders punch in too */}
+      <HeroPillars actor={actor} />
+
+      {/* Zone-wide rollup */}
+      <PodPillars pod={zoneRoster} label="Zone" />
+
+      <section className="rounded-xl bg-card border border-border overflow-hidden">
+        <div className="px-4 md:px-5 py-3 md:py-4 border-b border-border flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold">Zone leaderboard</h2>
+          {hasFeature("/roster") && (
+            <Link
+              to="/roster"
+              className="text-xs text-primary font-mono uppercase tracking-widest"
+            >
+              Live Roster →
+            </Link>
+          )}
+        </div>
+        <div className="divide-y divide-border">
+          {sorted.slice(0, 8).map((e, i) => {
+            const sc = computeScore(e);
+            const t = tierFor(sc.total);
+            return (
+              <div key={e.id} className="px-4 md:px-5 py-3 flex items-center gap-3">
+                <div className="font-mono text-xs text-muted-foreground w-6">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <Avatar id={e.id} size={32} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{e.name}</div>
+                  <div className="text-[11px] text-muted-foreground">{e.role}</div>
+                </div>
+                <span
+                  className={`hidden sm:inline-flex items-center justify-center h-7 w-7 rounded-md border font-mono font-semibold text-xs ${tierColor[t]}`}
+                >
+                  {t}
+                </span>
+                <div className="font-mono text-sm w-10 text-right">{sc.total}</div>
+              </div>
+            );
+          })}
+          {sorted.length === 0 && (
+            <div className="px-5 py-6 text-sm text-muted-foreground">
+              No teammates in your zone yet.
+            </div>
+          )}
+        </div>
+      </section>
+
+      {hasFeature("/fly") && (
+        <div className="mt-4 text-right">
+          <Link
+            to="/fly"
+            className="text-xs text-primary font-mono uppercase tracking-widest"
+          >
+            Open Fly Board →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ArenaHome() {
   const { actor } = useAttendanceState();
   const tier = tierOf(actor);
@@ -876,10 +983,8 @@ function ArenaHome() {
     if (typeof window !== "undefined") window.location.replace("/partner");
     return null;
   }
-  if (tier === "zone_leader") {
-    if (typeof window !== "undefined") window.location.replace("/zones");
-    return null;
-  }
+  // zone_leader: render home dashboard directly — /zones is not launch-ready
+  if (tier === "zone_leader") return <ZoneLeaderHome actor={actor} />;
   if (tier === "leadership") return <LeadershipHome actor={actor} />;
   if (tier === "hr") return <HRHome actor={actor} />;
   if (tier === "leader") return <LeaderHome actor={actor} />;

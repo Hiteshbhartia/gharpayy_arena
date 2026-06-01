@@ -61,7 +61,7 @@ function timeAgo(ts: number) {
 
 function OneOnOnesPage() {
   return (
-    <RoleGate allow={["leadership", "hr", "leader", "recruiter"]}>
+    <RoleGate allow={["leadership", "zone_leader", "hr", "leader", "recruiter"]}>
       <Body />
     </RoleGate>
   );

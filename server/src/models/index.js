@@ -431,3 +431,31 @@ export const FlyRetro = mongoose.model("FlyRetro", FlyRetroSchema);
 export const FlyFeed = mongoose.model("FlyFeed", FlyFeedSchema);
 export const KpiDefinition = mongoose.model("KpiDefinition", KpiDefinitionSchema);
 export const KpiTarget = mongoose.model("KpiTarget", KpiTargetSchema);
+
+// --- Permissions ---
+const RolePermissionSchema = new Schema(
+  {
+    role: { type: String, required: true, index: true },
+    feature: { type: String, required: true },
+    enabled: { type: Boolean, default: true },
+    updatedBy: String,
+  },
+  { timestamps: true }
+);
+RolePermissionSchema.index({ role: 1, feature: 1 }, { unique: true });
+
+// --- Audit Logs ---
+const AuditLogSchema = new Schema(
+  {
+    action: { type: String, required: true },
+    role: String,
+    feature: String,
+    performedBy: String,
+    details: Schema.Types.Mixed,
+    ts: { type: Number, default: () => Date.now() },
+  },
+  { timestamps: true }
+);
+
+export const RolePermission = mongoose.model("RolePermission", RolePermissionSchema);
+export const AuditLog = mongoose.model("AuditLog", AuditLogSchema);

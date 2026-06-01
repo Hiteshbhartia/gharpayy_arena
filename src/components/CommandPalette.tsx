@@ -3,29 +3,41 @@ import { useNavigate } from "@tanstack/react-router";
 import { useRoster } from "@/hooks/useRoster";
 import { Avatar } from "./Avatar";
 import { Search } from "lucide-react";
+import { LAUNCH_MODE, LAUNCH_ROUTES } from "@/config/launch-config";
 
-const STATIC_PAGES = [
-  {
-    kind: "page" as const,
-    id: "p1",
-    label: "War Room",
-    sub: "Live ops command bridge",
-    to: "/war-room",
-  },
-  {
-    kind: "page" as const,
-    id: "p2",
-    label: "Calendar",
-    sub: "All shifts, tours, tasks",
-    to: "/calendar",
-  },
-  { kind: "page" as const, id: "p3", label: "Tasks", sub: "Personal Kanban", to: "/tasks" },
-  { kind: "page" as const, id: "p4", label: "Kudos feed", sub: "Recognition wall", to: "/kudos" },
-  { kind: "page" as const, id: "p5", label: "Score card", sub: "Your performance", to: "/score" },
-  { kind: "page" as const, id: "p6", label: "Coach", sub: "AI command center", to: "/command" },
-  { kind: "page" as const, id: "p7", label: "Inbox", sub: "All notifications", to: "/inbox" },
-  { kind: "page" as const, id: "p8", label: "Roster", sub: "Live attendance map", to: "/roster" },
+// All navigable pages. Only the approved ones show up in launch mode.
+const ALL_PAGES = [
+  { kind: "page" as const, id: "p-home",       label: "Home",            sub: "Dashboard overview",        to: "/" },
+  { kind: "page" as const, id: "p-attendance",  label: "Attendance",      sub: "Selfie clock-in & out",     to: "/attendance" },
+  { kind: "page" as const, id: "p-pulse",       label: "Daily Pulse",     sub: "Check-in & team mood",      to: "/pulse" },
+  { kind: "page" as const, id: "p-fly",         label: "Fly Board",       sub: "Real-time operations",      to: "/fly" },
+  { kind: "page" as const, id: "p-tasks",       label: "Tasks",           sub: "Personal Kanban",           to: "/tasks" },
+  { kind: "page" as const, id: "p-console",     label: "Operator Console",sub: "AI command center",         to: "/console" },
+  { kind: "page" as const, id: "p-roster",      label: "Live Roster",     sub: "Live attendance map",       to: "/roster" },
+  { kind: "page" as const, id: "p-kpis",        label: "KPI Governance",  sub: "Define & track metrics",    to: "/admin/kpis" },
+  { kind: "page" as const, id: "p-kudos",       label: "Kudos",           sub: "Recognition wall",          to: "/kudos" },
+  { kind: "page" as const, id: "p-1on1",        label: "1:1 Notes",       sub: "Manager meeting notes",     to: "/one-on-ones" },
+  { kind: "page" as const, id: "p-workforce",   label: "Workforce",       sub: "Roles, hierarchy, access",  to: "/admin/workforce" },
+  // Permissions module – admin only, controlled by launch mode
+  { kind: "page" as const, id: "p-permissions", label: "Permissions", sub: "Role‑based access control", to: "/admin/permissions" },
+  // ── Hidden until future release ──────────────────────────────────────────
+  { kind: "page" as const, id: "p-war-room",    label: "War Room",        sub: "Live ops command bridge",   to: "/war-room" },
+  { kind: "page" as const, id: "p-calendar",    label: "Calendar",        sub: "All shifts, tours, tasks",  to: "/calendar" },
+  { kind: "page" as const, id: "p-score",       label: "Score card",      sub: "Your performance",          to: "/score" },
+  { kind: "page" as const, id: "p-coach",       label: "Coach",           sub: "AI coaching center",        to: "/command" },
+  { kind: "page" as const, id: "p-inbox",       label: "Inbox",           sub: "All notifications",         to: "/inbox" },
+  { kind: "page" as const, id: "p-leaves",      label: "Leaves",          sub: "Leave management",          to: "/leaves" },
+  { kind: "page" as const, id: "p-people",      label: "People",          sub: "Employee directory",        to: "/people" },
+  { kind: "page" as const, id: "p-recruiting",  label: "Recruiting",      sub: "Hiring pipeline",           to: "/recruiting" },
+  { kind: "page" as const, id: "p-hrms",        label: "HRMS",            sub: "HR management system",      to: "/hrms" },
+  { kind: "page" as const, id: "p-zones",       label: "Zones",           sub: "Zone management",           to: "/zones" },
+  { kind: "page" as const, id: "p-achievements",label: "Achievements",    sub: "Recognition badges",        to: "/achievements" },
 ];
+
+// In launch mode only show approved routes; outside launch mode show all.
+const STATIC_PAGES = LAUNCH_MODE
+  ? ALL_PAGES.filter((p) => LAUNCH_ROUTES.has(p.to))
+  : ALL_PAGES;
 
 interface Props {
   open: boolean;
@@ -37,18 +49,24 @@ export function CommandPalette({ open, onClose }: Props) {
   const navigate = useNavigate();
   const roster = useRoster();
 
-  const results = useMemo(
-    () => [
-      ...roster.map((e) => ({
-        kind: "person" as const,
-        id: e.id,
-        label: e.name,
-        sub: `${e.role} · ${e.team}`,
-        to: "/people",
-      })),
-      ...STATIC_PAGES,
-    ],
+  // In launch mode don't expose the people search (navigates to /people)
+  const peopleResults = useMemo(
+    () =>
+      LAUNCH_MODE
+        ? []
+        : roster.map((e) => ({
+            kind: "person" as const,
+            id: e.id,
+            label: e.name,
+            sub: `${e.role} · ${e.team}`,
+            to: "/people",
+          })),
     [roster],
+  );
+
+  const results = useMemo(
+    () => [...peopleResults, ...STATIC_PAGES],
+    [peopleResults],
   );
 
   useEffect(() => {
@@ -88,7 +106,7 @@ export function CommandPalette({ open, onClose }: Props) {
             autoFocus
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search people, pages, anything…"
+            placeholder="Search pages, anything…"
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           <kbd className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded border border-border text-muted-foreground">

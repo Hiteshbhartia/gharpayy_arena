@@ -48,6 +48,8 @@ import { GiveKudoModal } from "./GiveKudoModal";
 import { Avatar } from "./Avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRoleFeature } from "../hooks/useRoleFeature";
+import ComingSoon from "./ComingSoon";
 
 type NavItem = {
   to: string;
@@ -81,7 +83,7 @@ const NAV: NavItem[] = [
     to: "/console",
     label: "Operator Console",
     icon: Zap,
-    tiers: ["leadership", "zone_leader", "hr", "leader", "recruiter"],
+    tiers: ["leadership", "zone_leader", "hr", "leader", "recruiter", "teammate"],
   },
   { to: "/score", label: "My Score", icon: Trophy, tiers: INTERNAL },
   { to: "/tasks", label: "Tasks", icon: CheckSquare, tiers: INTERNAL },
@@ -141,6 +143,13 @@ const NAV: NavItem[] = [
     icon: Target,
     tiers: ["leadership", "zone_leader", "hr", "leader"],
   },
+  {
+    to: "/admin/permissions",
+    label: "Permissions",
+    icon: Shield,
+    tiers: ["leadership"],
+    adminOnly: true,
+  },
 ];
 
 const MOBILE_NAV_BASE = [
@@ -166,14 +175,17 @@ export function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const unread = unreadCount(actor.id);
   const tier = tierOf(actor);
-  const visibleNav = NAV.filter((n) => {
-    if (!n.tiers.includes(tier)) return false;
-    if (n.adminOnly && (user?.role !== "admin" || !can(actor.appRole, "manage_users"))) {
-      return false;
-    }
-    return true;
-  });
-  const mobileNav =
+
+  const isFeatureEnabled = useRoleFeature();
+
+  const visibleNav = NAV.filter(
+    (item) =>
+      item.tiers.includes(tier) &&
+      (!item.adminOnly || (user?.role === "admin" && can(user.role as never, "manage_users"))) &&
+      isFeatureEnabled(item.to),
+  );
+
+  const mobileNav = (
     tier === "partner"
       ? [
           MOBILE_NAV_BASE[0],
@@ -185,8 +197,8 @@ export function AppShell() {
       : tier === "zone_leader"
         ? [
             MOBILE_NAV_BASE[0],
-            { to: "/zones", label: "Zone", icon: MapIcon },
             { to: "/fly", label: "Fly", icon: PlaneTakeoff },
+            { to: "/roster", label: "Roster", icon: ClipboardList },
             MOBILE_NAV_BASE[3],
             MOBILE_NAV_BASE[4],
           ]
@@ -214,7 +226,8 @@ export function AppShell() {
                   MOBILE_NAV_BASE[3],
                   MOBILE_NAV_BASE[4],
                 ]
-              : MOBILE_NAV_BASE;
+              : MOBILE_NAV_BASE
+  ).filter((item) => isFeatureEnabled(item.to));
 
   useEffect(() => {
     bootArena();
@@ -243,6 +256,8 @@ export function AppShell() {
           ? "bg-primary"
           : "bg-muted-foreground/40";
 
+  // Render main content – if current route is hidden, show ComingSoon
+  const showContent = isFeatureEnabled(location.pathname);
   const Sidebar = (
     <aside className="w-60 shrink-0 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col h-full">
       <div className="px-5 py-4 border-b border-sidebar-border flex items-center gap-2">
@@ -422,31 +437,47 @@ export function AppShell() {
               </button>
               <NotificationDropdown open={bellOpen} onClose={() => setBellOpen(false)} />
             </div>
-            <Link
-              to="/settings"
-              className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-secondary transition-colors"
-              title="Settings"
-            >
-              <Settings className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/score"
-              className="ml-1 inline-flex items-center gap-2 px-1 sm:px-2 py-1 rounded-md hover:bg-secondary transition-colors"
-            >
-              <Avatar id={actor.id} size={28} />
-              <div className="hidden lg:block">
-                <div className="text-xs font-semibold leading-tight">
-                  {actor.name.split(" ")[0]}
+            {isFeatureEnabled("/settings") && (
+              <Link
+                to="/settings"
+                className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-secondary transition-colors"
+                title="Settings"
+              >
+                <Settings className="h-4 w-4" />
+              </Link>
+            )}
+            {isFeatureEnabled("/score") ? (
+              <Link
+                to="/score"
+                className="ml-1 inline-flex items-center gap-2 px-1 sm:px-2 py-1 rounded-md hover:bg-secondary transition-colors"
+              >
+                <Avatar id={actor.id} size={28} />
+                <div className="hidden lg:block">
+                  <div className="text-xs font-semibold leading-tight">
+                    {actor.name.split(" ")[0]}
+                  </div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    {actor.role}
+                  </div>
                 </div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  {actor.role}
+              </Link>
+            ) : (
+              <div className="ml-1 inline-flex items-center gap-2 px-1 sm:px-2 py-1 rounded-md cursor-default">
+                <Avatar id={actor.id} size={28} />
+                <div className="hidden lg:block">
+                  <div className="text-xs font-semibold leading-tight">
+                    {actor.name.split(" ")[0]}
+                  </div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    {actor.role}
+                  </div>
                 </div>
               </div>
-            </Link>
+            )}
           </div>
         </header>
         <div className="flex-1 min-w-0">
-          <Outlet />
+          {showContent ? <Outlet /> : <ComingSoon />}
         </div>
       </main>
 
