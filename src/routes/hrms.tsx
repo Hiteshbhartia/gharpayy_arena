@@ -8,6 +8,7 @@ import { liveStatusFor } from "@/lib/attendance-store";
 import { Avatar } from "@/components/Avatar";
 import { useAttendanceState } from "@/hooks/useAttendance";
 import { ShieldCheck, Users, UserCog, User, Check, X, ChevronRight, Loader2 } from "lucide-react";
+import { useRoleFeature } from "@/hooks/useRoleFeature";
 
 import { RoleGate } from "@/components/RoleGate";
 
@@ -39,6 +40,7 @@ function HrmsPage() {
   const { actor } = useAttendanceState();
   const { roster, loading } = useRosterState();
   const [activeRole, setActiveRole] = useState<AppRole>(actor.appRole);
+  const hasFeature = useRoleFeature();
 
   const grouped = useMemo(
     () => ({
@@ -116,9 +118,11 @@ function HrmsPage() {
                 {grouped[activeRole].length} people · live presence
               </p>
             </div>
-            <Link to="/people" className="text-xs text-primary hover:underline hidden sm:inline">
-              All people →
-            </Link>
+            {hasFeature("/people") && (
+              <Link to="/people" className="text-xs text-primary hover:underline hidden sm:inline">
+                All people →
+              </Link>
+            )}
           </div>
           <div className="divide-y divide-border">
             {grouped[activeRole].map((e) => {
@@ -208,49 +212,49 @@ function HrmsPage() {
             title="Live roster"
             sub="Who's where, right now"
             icon={Users}
-            show={can(activeRole, "view_all_attendance")}
+            show={can(activeRole, "view_all_attendance") && hasFeature("/roster")}
           />
           <ActionCard
             to="/leaves"
             title="Approve leaves"
             sub="Clear the queue"
             icon={ShieldCheck}
-            show={can(activeRole, "approve_leaves")}
+            show={can(activeRole, "approve_leaves") && hasFeature("/leaves")}
           />
           <ActionCard
             to="/tasks"
             title="Assign tasks"
             sub="Move the team forward"
             icon={UserCog}
-            show={can(activeRole, "assign_tasks_team")}
+            show={can(activeRole, "assign_tasks_team") && hasFeature("/tasks")}
           />
           <ActionCard
             to="/score"
             title="Your score"
             sub="See where you stand"
             icon={User}
-            show={can(activeRole, "view_own_score")}
+            show={can(activeRole, "view_own_score") && hasFeature("/score")}
           />
           <ActionCard
             to="/admin/workforce"
             title="Workforce access"
             sub="Roles, hierarchy, approvals"
             icon={UserCog}
-            show={can(activeRole, "manage_users")}
+            show={can(activeRole, "manage_users") && hasFeature("/admin/workforce")}
           />
           <ActionCard
             to="/war-room"
             title="War Room"
             sub="Daily snapshot"
             icon={ShieldCheck}
-            show={can(activeRole, "view_war_room")}
+            show={can(activeRole, "view_war_room") && hasFeature("/war-room")}
           />
           <ActionCard
             to="/achievements"
             title="Achievements"
             sub="Recognition wall"
             icon={ShieldCheck}
-            show
+            show={hasFeature("/achievements")}
           />
         </div>
       </section>

@@ -13,6 +13,7 @@ import { hydratePulse } from "./pulse-store";
 import { hydrateNotifications } from "./notification-store";
 import { hydrateOneOnOnes } from "./oneonone-store";
 import { hydrateRecruiting } from "./recruiting-store";
+import { tierOf } from "./permissions";
 import type { Employee } from "@/types/hr";
 import type { ApiUser } from "./api-client";
 
@@ -61,6 +62,11 @@ export async function syncArenaData(user?: ApiUser | null): Promise<SyncArenaRes
       employees = await fetchEmployeeRoster(u);
     }
 
+    // Determine if the current user has recruiting access (leadership, hr, or recruiter tier)
+    const me = u?.employeeId ? employees.find((e) => e.id === u.employeeId) : null;
+    const tier = me ? tierOf(me) : (u?.role === "admin" ? "leadership" : "teammate");
+    const hasRecruiting = ["leadership", "hr", "recruiter"].includes(tier);
+
     await Promise.all([
       hydrateTasks(),
       hydrateLeaves(),
@@ -72,7 +78,7 @@ export async function syncArenaData(user?: ApiUser | null): Promise<SyncArenaRes
       hydratePulse(),
       hydrateNotifications(),
       hydrateOneOnOnes(),
-      hydrateRecruiting(),
+      hasRecruiting ? hydrateRecruiting() : Promise.resolve(false),
     ]);
 
     return employees;

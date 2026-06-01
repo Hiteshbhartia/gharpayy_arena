@@ -3,6 +3,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { asyncHandler } from "../lib/async-handler.js";
 import { seedTestAccounts } from "../lib/seed-test-accounts.js";
 import {
+  User,
   Employee,
   AttendanceEvent,
   Task,
@@ -24,11 +25,30 @@ const router = Router();
 // COMPLETELY disable seed/migration endpoints in production to prevent 500 errors
 // and accidental data overwrites. These are local/demo only.
 router.use((req, res, next) => {
-  if (process.env.NODE_ENV === "production") {
+  const isProduction = process.env.NODE_ENV === "production";
+  const enableSeeding = process.env.ENABLE_DEV_SEEDING === "true";
+
+  if (isProduction || !enableSeeding) {
+    import("../lib/auth-helpers.js").then(({ logSecurityAudit }) => {
+      logSecurityAudit(req, "MIGRATE_ROUTE_BLOCKED", {
+        reason: "Endpoint disabled in production or seeding not enabled",
+      });
+    });
     return res.status(403).json({
-      error: "Seed routes disabled in production",
+      error: "Seed routes disabled in production or restricted",
     });
   }
+
+  // Force Admin role on all endpoints inside this migration route
+  if (req.user?.role !== "admin") {
+    import("../lib/auth-helpers.js").then(({ logSecurityAudit }) => {
+      logSecurityAudit(req, "MIGRATE_ROUTE_FORBIDDEN", {
+        reason: "Non-admin user attempted to call migration route",
+      });
+    });
+    return res.status(403).json({ error: "Admin only" });
+  }
+
   next();
 });
 

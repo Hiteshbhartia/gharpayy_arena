@@ -1,6 +1,19 @@
 // HTTP client for the self-hosted Arena API (VITE_API_URL, e.g. http://localhost:4000/api).
 
-const API_URL = import.meta.env.VITE_API_URL as string | undefined;
+let API_URL: string | undefined;
+const isBrowser = typeof window !== "undefined";
+if (isBrowser) {
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+  if (envUrl && envUrl.includes('localhost')) {
+    // Replace localhost with the current hostname to support LAN access
+    API_URL = envUrl.replace('localhost', window.location.hostname);
+  } else {
+    API_URL = envUrl ?? `${window.location.protocol}//${window.location.hostname}:4000/api`;
+  }
+} else {
+  // Server‑side rendering: use only the env variable (no window access)
+  API_URL = import.meta.env.VITE_API_URL as string | undefined;
+}
 const TOKEN_KEY = "arena_token";
 const USER_KEY = "arena_user";
 

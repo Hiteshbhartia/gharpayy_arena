@@ -89,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }
     setDataReady(true);
+    console.log('[AuthContext] dataReady set true');
   }, []);
 
   const bootstrap = useCallback(async () => {
@@ -161,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setActionLoading(false);
     }
-  }, []);
+  }, [runOrgSync]);
 
   const signup = useCallback(
     async (input: { email: string; password: string; name: string; employeeId?: string }) => {
@@ -188,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setActionLoading(false);
       }
     },
-    [],
+    [runOrgSync],
   );
 
   const changePassword = useCallback(async (newPassword: string) => {

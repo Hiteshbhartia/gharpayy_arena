@@ -20,6 +20,7 @@ import {
   Sparkles,
   Activity,
 } from "lucide-react";
+import { useRoleFeature } from "@/hooks/useRoleFeature";
 import { useAttendanceState } from "@/hooks/useAttendance";
 import { tierOf, hasConsoleCapability } from "@/lib/permissions";
 import {
@@ -200,14 +201,16 @@ function ConsolePage() {
   // tick referenced to avoid unused warnings; force re-render every 30s
   void tick;
 
-  const staticPb = playbookFor(actor.id);
-  const { pb, loading } = useDynamicPlaybook(staticPb, actor);
-
   const hasMyOps = hasConsoleCapability(actor, "access_playbooks");
   const hasTeamIntel = hasConsoleCapability(actor, "view_team_intelligence");
   const hasLeadActions = hasConsoleCapability(actor, "manage_workforce_interventions");
 
-  if (actor.id === "loading" || (hasMyOps && loading)) {
+  // Resolve playbook BEFORE any early returns so hook call count is stable
+  const staticPb = playbookFor(actor.id);
+  const { pb, loading } = useDynamicPlaybook(staticPb, actor);
+
+  // Initial loading while actor data is being fetched
+  if (actor.id === "loading") {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-muted-foreground gap-2">
         <Activity className="h-5 w-5 animate-pulse text-primary" />
@@ -216,20 +219,30 @@ function ConsolePage() {
     );
   }
 
+  // While the dynamic playbook is loading, show the same loading UI
+  if (hasMyOps && loading) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center text-muted-foreground gap-2">
+        <Activity className="h-5 w-5 animate-pulse text-primary" />
+        <span className="text-sm font-mono uppercase tracking-widest">Loading Console…</span>
+      </div>
+    );
+  }
+
+  // Permission check after data is ready
   if (!hasMyOps && !hasTeamIntel && !hasLeadActions) {
     return (
       <div className="px-4 md:px-8 py-8 max-w-5xl mx-auto">
         <div className="rounded-xl border border-border bg-card p-8 text-center">
           <ShieldOff className="h-10 w-10 text-destructive mx-auto mb-3" />
           <h1 className="font-display text-xl font-semibold mb-2">Access Denied</h1>
-          <p className="text-sm text-muted-foreground">
-            You do not have permissions to access the Operations Command Center.
-          </p>
+          <p className="text-sm text-muted-foreground">You do not have permissions to access the Operations Command Center.</p>
         </div>
       </div>
     );
   }
 
+  // Render the main console UI
   return (
     <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto space-y-8">
       {/* Page Title */}
@@ -238,17 +251,11 @@ function ConsolePage() {
           <Zap className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">
-            Operations Command Center
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Real-time execution rhythm and intelligence
-          </p>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Operations Command Center</h1>
+          <p className="text-xs text-muted-foreground">Real-time execution rhythm and intelligence</p>
         </div>
       </div>
-
-      {/* MY OPERATIONS Section */}
-      {hasMyOps && (
+          {hasMyOps && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 border-b border-border pb-2">
             <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
@@ -274,8 +281,6 @@ function ConsolePage() {
           )}
         </div>
       )}
-
-      {/* TEAM INTELLIGENCE Section */}
       {hasTeamIntel && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 border-b border-border pb-2">
@@ -286,8 +291,6 @@ function ConsolePage() {
           <TeamIntelligencePanel actor={actor} />
         </div>
       )}
-
-      {/* LEADERSHIP ACTIONS Section */}
       {hasLeadActions && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 border-b border-border pb-2">
@@ -877,6 +880,7 @@ function EodGenerator({
   day: ReturnType<typeof useConsoleDay>;
 }) {
   const [showPreview, setShowPreview] = useState(false);
+  const hasFeature = useRoleFeature();
   return (
     <section className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2 mb-3">
@@ -948,12 +952,14 @@ function EodGenerator({
           {exportEodText(actorId, pb.key as PlaybookKey)}
         </pre>
       )}
-      <div className="mt-3 text-[11px] text-muted-foreground">
-        <Link to="/inbox" className="text-primary hover:underline">
-          View inbox
-        </Link>{" "}
-        to send the digest.
-      </div>
+      {hasFeature("/inbox") && (
+        <div className="mt-3 text-[11px] text-muted-foreground">
+          <Link to="/inbox" className="text-primary hover:underline">
+            View inbox
+          </Link>{" "}
+          to send the digest.
+        </div>
+      )}
     </section>
   );
 }

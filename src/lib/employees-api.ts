@@ -141,14 +141,21 @@ export function fallbackEmployeeForUser(user: ApiUser): Employee {
 }
 
 export async function fetchEmployeeRoster(user: ApiUser): Promise<Employee[]> {
+  console.log('[employees-api] fetchEmployeeRoster start');
+// Removed erroneous router handling; fetchEmployeeRoster now directly calls API
+
   const res = await api.get<{ items: ApiEmployeeRecord[] }>("/employees");
+  console.log('[employees-api] fetchEmployeeRoster received', res.items?.length, 'items');
   const roster = (res.items ?? []).map((row) => mapApiEmployee(row, user));
   if (roster.length > 0) {
     setRoster(roster);
+    console.log('[employees-api] roster set with', roster.length, 'employees');
+    console.log('[employees-api] fetchEmployeeRoster end');
     return roster;
   }
   const self = fallbackEmployeeForUser(user);
   setRoster([self]);
+  console.log('[employees-api] fallback roster for user', user.id);
   return [self];
 }
 

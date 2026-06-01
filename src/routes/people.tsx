@@ -11,7 +11,7 @@ import { RoleGate } from "@/components/RoleGate";
 
 export const Route = createFileRoute("/people")({
   component: () => (
-    <RoleGate allow={["leadership", "hr", "leader"]}>
+    <RoleGate allow={["leadership", "zone_leader", "hr", "leader"]}>
       <PeoplePage />
     </RoleGate>
   ),

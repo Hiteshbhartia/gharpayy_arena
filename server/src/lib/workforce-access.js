@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { User } from "../models/index.js";
 
+// Operational roles (business titles) – remain capitalized for display and reporting
 export const OPERATIONAL_ROLES = [
   "Admin",
   "Zone Leader",
@@ -15,15 +16,22 @@ export const OPERATIONAL_ROLES = [
   "Property Partner",
 ];
 
+// Auth roles – source of truth for permission checks (must be lower‑case)
+export const AUTH_ROLES = ["admin", "hr", "manager", "employee"];
+
+// App roles used during signup/invite flow – align with AUTH_ROLES
 export const APP_ROLES = ["admin", "manager", "employee"];
 
 /** Map app access role + operational job to JWT User.role enum. */
 export function authRoleFromAppAccess(appRole, operationalRole = "") {
+  // Map business (operational) role + requested app role to a normalized auth role (lower‑case)
   if (appRole === "admin") return "admin";
-  if (String(operationalRole).trim() === "HR") return "hr";
+  if (operationalRole && operationalRole.toLowerCase() === "hr") return "hr";
   if (appRole === "manager") return "manager";
   return "employee";
 }
+
+// Temporary compatibility shim – accepts legacy upper‑case role strings during migration
 
 export function publicAuthUser(u) {
   if (!u) return null;
@@ -33,7 +41,8 @@ export function publicAuthUser(u) {
     id: String(u._id),
     email: u.email,
     employeeId: u.employeeId ?? undefined,
-    role: u.role,
+    // Ensure role is lower‑case for callers
+    role: typeof u.role === "string" ? u.role.toLowerCase() : u.role,
     isApproved: u.isApproved,
     isSuspended: Boolean(u.isSuspended),
     mustChangePassword: Boolean(u.mustChangePassword),

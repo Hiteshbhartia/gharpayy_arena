@@ -1,0 +1,143 @@
+{
+  "generatedAt": "2026-06-01T00:00:00.000Z",
+  "legacyCluster": "cluster0.iibqlyr.mongodb.net",
+  "readOnly": true,
+  "status": "AWAITING_APPROVAL",
+  "accessNote": "gharpayy-attendance database (53 employees) timed out from this network. Accessible via Atlas UI or unrestricted network.",
+
+  "databases": [
+    {
+      "name": "gharpayy",
+      "collections": [
+        { "name": "users",       "documentCount": 10, "isPeople": true,  "sampleKeys": ["_id","email","fullName","role","createdAt","updatedAt","__v"] },
+        { "name": "gpattusers",  "documentCount": 5,  "isPeople": true,  "sampleKeys": ["_id","fullName","email","role","createdAt","__v"] },
+        { "name": "zones",       "documentCount": 5,  "isPeople": true,  "sampleKeys": ["_id","zoneName","zoneManager","areas","status","autoAssign","__v","createdAt","updatedAt"] },
+        { "name": "agents",      "documentCount": 1,  "isPeople": false, "sampleKeys": ["_id","name","email","phone","isActive","createdAt","updatedAt","__v"] },
+        { "name": "leads",       "documentCount": 22, "isPeople": false, "sampleKeys": ["_id","leadName","phone","email","moveInDate","budget","locationPreference","peopleCount","accommodationType","occupation"] },
+        { "name": "properties",  "documentCount": 5,  "isPeople": false, "sampleKeys": ["_id","propertyId","propertyName","zoneId","address","location","latitude","longitude","totalBeds","availableBeds"] },
+        { "name": "leadownerships","documentCount": 10,"isPeople": false, "sampleKeys": ["_id","leadId","zoneId","assignedToUser","ownershipStatus","assignedAt","createdAt","updatedAt","__v"] },
+        { "name": "leadactivities","documentCount": 10,"isPeople": false, "sampleKeys": ["_id","leadId","userId","actionType","notes","createdAt","updatedAt","__v"] },
+        { "name": "gpattendances","documentCount": 4, "isPeople": false, "sampleKeys": ["_id","employeeId","date","dayStatus","sessions","totalWorkMins","isCheckedIn","createdAt","updatedAt","__v"] },
+        { "name": "attendances", "documentCount": 1,  "isPeople": false, "sampleKeys": ["_id","employeeId","date","sessions","breaks","totalWorkMins","dayStatus","isWithinGeofence","createdAt","updatedAt"] },
+        { "name": "teamqueues",  "documentCount": 0,  "isPeople": true,  "sampleKeys": [] },
+        { "name": "activitylogs","documentCount": 0,  "isPeople": false, "sampleKeys": [] }
+      ]
+    },
+    {
+      "name": "gharpayy-attendance",
+      "accessStatus": "TIMEOUT — requires unrestricted network access",
+      "collections": [
+        { "name": "gpattusers",         "documentCount": 53,   "isPeople": true,  "sampleKeys": ["_id","fullName","email","role","dateOfBirth","jobRole","profilePhoto","officeZoneId","isApproved","createdAt"] },
+        { "name": "gp_teams",           "documentCount": 3,    "isPeople": true,  "sampleKeys": ["_id","name","slug","description","managerId","parentTeamId","department","color","isActive","createdAt"] },
+        { "name": "gp_hierarchy_roles", "documentCount": 5,    "isPeople": true,  "sampleKeys": ["_id","name","slug","systemRole","level","color","isActive","canManageTeam","canBeReportedTo","createdAt"] },
+        { "name": "gpofficezones",      "documentCount": 6,    "isPeople": true,  "sampleKeys": ["_id","name","weekOffDay","shiftStart","shiftEnd","graceMinutes","earlyGraceMinutes","createdAt","__v"] },
+        { "name": "gpattendances",      "documentCount": 1098, "isPeople": false, "sampleKeys": ["_id","employeeId","date","dayStatus","sessions","totalWorkMins","isCheckedIn","createdAt","updatedAt","__v"] },
+        { "name": "gptrackers",         "documentCount": 1016, "isPeople": false, "sampleKeys": ["_id","employeeId","date","role","initial","onIt","impact","notes","issues","submittedAt"] },
+        { "name": "gpleaves",           "documentCount": 26,   "isPeople": false, "sampleKeys": ["_id","employeeId","employeeName","type","startDate","endDate","days","status","reason","approvedAt"] },
+        { "name": "gpleavebalances",    "documentCount": 66,   "isPeople": false, "sampleKeys": ["_id","employeeId","paid","sick","casual","compOff","lop","encashable","encashed","ratePerDay"] },
+        { "name": "gpnotices",          "documentCount": 3514, "isPeople": false, "sampleKeys": ["_id","title","message","type","targetId","targetName","createdBy","createdByName","readBy","createdAt"] },
+        { "name": "notifications",      "documentCount": 580,  "isPeople": false, "sampleKeys": ["_id","userId","type","title","message","isRead","link","metadata","createdAt","updatedAt"] },
+        { "name": "arenadailystates",   "documentCount": 47,   "isPeople": false, "sampleKeys": ["_id","userId","date","kpis","sprints","decisions","shieldMode","__v","eodReport","comms"] },
+        { "name": "arenakpidefinitions","documentCount": 15,   "isPeople": false, "sampleKeys": ["_id","role","kpiName","__v","label","orderIndex","target","type"] },
+        { "name": "arenasprintplans",   "documentCount": 8,    "isPeople": false, "sampleKeys": ["_id","sprintName","role","__v","endTime","orderIndex","startTime"] },
+        { "name": "arenacommwindows",   "documentCount": 3,    "isPeople": false, "sampleKeys": ["_id","role","windowName","scheduledTime","orderIndex","__v"] },
+        { "name": "playbookroles",      "documentCount": 7,    "isPeople": true,  "sampleKeys": ["_id","slug","__v","color","createdAt","isActive","name","orderIndex","updatedAt"] },
+        { "name": "gpcoachingsessions", "documentCount": 9,    "isPeople": false, "sampleKeys": ["_id","employeeId","employeeName","employeeRole","conductedBy","conductedByName","scheduledAt","duration","meetingType","meetingLink"] },
+        { "name": "kudos",              "documentCount": 5,    "isPeople": false, "sampleKeys": ["_id","fromId","fromName","toId","toName","tag","message","createdAt","__v"] },
+        { "name": "attendanceaudits",   "documentCount": 737,  "isPeople": false, "sampleKeys": ["_id","employeeId","attendanceId","action","date","timestamp","actorId","metadata","__v"] },
+        { "name": "attendancepolicies", "documentCount": 48,   "isPeople": false, "sampleKeys": ["_id","orgId","lateGraceMinutes","lateMarkAfterMinutes","halfDayThresholdMinutes","absentThresholdMinutes","lateDeductionEnabled","lateDeductionPerIncident","standardWorkingHoursPerDay","weeklyOffDays"] },
+        { "name": "gp_growth_profiles", "documentCount": 3,    "isPeople": false, "sampleKeys": ["_id","userId","xp","level","coins","streakDays","lastActiveDate","createdAt","updatedAt","__v"] },
+        { "name": "users",              "documentCount": 2,    "isPeople": true,  "sampleKeys": ["_id","username","email","phone","fullName","role","status","zones","managerIds","adminIds"] }
+      ]
+    },
+    {
+      "name": "test",
+      "collections": [
+        { "name": "users",      "documentCount": 31, "isPeople": true,  "sampleKeys": ["_id","username","employeeName","role","zoneId","status","createdAt","updatedAt","__v"] },
+        { "name": "zones",      "documentCount": 6,  "isPeople": true,  "sampleKeys": ["_id","zoneName","zoneManager","areas","status","autoAssign","__v","createdAt","updatedAt"] },
+        { "name": "teammates",  "documentCount": 1,  "isPeople": true,  "sampleKeys": ["_id","name","phone","email","role","pinHash","upiId","zoneId","isActive","createdAt"] },
+        { "name": "leads",      "documentCount": 6,  "isPeople": false, "sampleKeys": ["_id","leadName","phone","email","moveInDate","budget","locationPreference","peopleCount","accommodationType","occupation"] },
+        { "name": "properties", "documentCount": 5,  "isPeople": false, "sampleKeys": ["_id","propertyName","zoneId","address","location","totalBeds","availableBeds","rentPrice","propertyRating","amenities"] },
+        { "name": "bookings",   "documentCount": 4,  "isPeople": false, "sampleKeys": ["_id","tenantName","tenantPhone","tenantEmail","tenantMessage","propertyName","roomNumber","actualRent","discountedRent","deposit"] }
+      ]
+    }
+  ],
+
+  "peopleSummary": {
+    "accessibleEmployeeCount": 15,
+    "timedOutEmployeeCount": 53,
+    "totalEstimatedEmployees": 68,
+    "accessibleUserCount": 47,
+    "roleBreakdown": {
+      "gharpayy.users": { "employee": 10 },
+      "gharpayy.gpattusers": { "employee": 5 },
+      "test.users": { "gamma": 5, "super_admin": 1, "fire": 5, "zone_admin": 5, "alpha": 5, "water": 5, "beta": 5 },
+      "test.teammates": { "superadmin": 1 }
+    },
+    "zoneBreakdown": {
+      "Indiranagar": { "areas": ["Indiranagar","HAL Airport Road"], "manager": "Ravi Kumar" },
+      "Domlur":      { "areas": ["Domlur","Ejipura","CV Raman Nagar"], "manager": "Sneha Iyer" },
+      "Murugeshpalya":{ "areas": ["Murugeshpalya","Old Airport Road"], "manager": "Amit Shah" },
+      "EGL":         { "areas": ["EGL","Bellandur","Sarjapur Road"], "manager": "Priya Nair" },
+      "Electronic City":{ "areas": ["Electronic City","Bommasandra","Hosur Road"], "manager": "Kiran Rao" }
+    },
+    "hierarchyModel": "Zone-based. Each zone has a named zoneManager. test.users are role-typed per zone (zone_admin, alpha, beta, gamma, fire, water). Hierarchy stored via zoneId reference on user documents.",
+    "managerHierarchy": [
+      { "zone": "Indiranagar",    "zoneManager": "Ravi Kumar",  "roles": ["zone_admin","alpha","beta","gamma","fire","water"] },
+      { "zone": "Domlur",         "zoneManager": "Sneha Iyer",  "roles": ["zone_admin","alpha","beta","gamma","fire","water"] },
+      { "zone": "Murugeshpalya",  "zoneManager": "Amit Shah",   "roles": ["zone_admin","alpha","beta","gamma","fire","water"] },
+      { "zone": "EGL",            "zoneManager": "Priya Nair",  "roles": ["zone_admin","alpha","beta","gamma","fire","water"] },
+      { "zone": "Electronic City","zoneManager": "Kiran Rao",   "roles": ["zone_admin","alpha","beta","gamma","fire","water"] }
+    ]
+  },
+
+  "migrationInventory": [
+    { "source": "gharpayy.users", "id": "69ba7311370296b49a7be27f", "name": "Satvik Sharma",  "email": "satvik.gharpayy@gmail.com",   "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba7312370296b49a7be282", "name": "Pulkit Gupta",   "email": "pulkit.gharpayy@gmail.com",   "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba7313370296b49a7be285", "name": "Sidhant Verma",  "email": "siddhant.gharpayy@gmail.com", "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba7313370296b49a7be288", "name": "Nayana Pillai",  "email": "nayana.gharpayy@gmail.com",   "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba82285872dbd303032520", "name": "Rahul Mehta",    "email": "rahul.gharpayy@gmail.com",    "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba82285872dbd303032523", "name": "Priya Singh",    "email": "priya.gharpayy@gmail.com",    "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba82295872dbd303032526", "name": "Amit Kumar",     "email": "amit.gharpayy@gmail.com",     "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba822a5872dbd303032529", "name": "Sneha Joshi",    "email": "sneha.gharpayy@gmail.com",    "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba822b5872dbd30303252c", "name": "Karan Patel",    "email": "karan.gharpayy@gmail.com",    "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.users", "id": "69ba822c5872dbd30303252f", "name": "Divya Nair",     "email": "divya.gharpayy@gmail.com",    "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.gpattusers", "id": "69bbb9ce600fbdf20f070c18", "name": "Satvik Sharma",  "email": "satvik.gharpayy@gmail.com",   "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.gpattusers", "id": "69bbb9ce600fbdf20f070c1b", "name": "Pulkit Gupta",   "email": "pulkit.gharpayy@gmail.com",   "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.gpattusers", "id": "69bbb9ce600fbdf20f070c1e", "name": "Sidhant Verma",  "email": "siddhant.gharpayy@gmail.com", "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.gpattusers", "id": "69bbb9ce600fbdf20f070c21", "name": "Nayana Pillai",  "email": "nayana.gharpayy@gmail.com",   "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "gharpayy.gpattusers", "id": "69bbc264828dc00e887c89e4", "name": "Employee Name",  "email": "email@gharpayy.com",          "role": "employee", "appRole": null, "managerId": null, "zone": null, "team": null, "status": null },
+    { "source": "test.users", "id": "69b4c349f391edabb9942532", "name": "gamma (Indiranagar)",       "email": null, "role": "gamma",       "appRole": null, "managerId": "69b4c347f391edabb994251e", "zone": "Indiranagar", "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c349f391edabb9942539", "name": "Super Admin",               "email": null, "role": "super_admin", "appRole": null, "managerId": null,                        "zone": null,          "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c349f391edabb994253b", "name": "fire (Indiranagar)",        "email": null, "role": "fire",        "appRole": null, "managerId": "69b4c347f391edabb994251e", "zone": "Indiranagar", "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c349f391edabb994253d", "name": "zone_admin (Indiranagar)",  "email": null, "role": "zone_admin",  "appRole": null, "managerId": "69b4c349f391edabb9942533", "zone": "Indiranagar", "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34af391edabb9942540", "name": "alpha (Indiranagar)",       "email": null, "role": "alpha",       "appRole": null, "managerId": "69b4c349f391edabb9942533", "zone": "Indiranagar", "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34af391edabb9942541", "name": "water (Indiranagar)",       "email": null, "role": "water",       "appRole": null, "managerId": "69b4c347f391edabb994251e", "zone": "Indiranagar", "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34bf391edabb9942543", "name": "beta (Indiranagar)",        "email": null, "role": "beta",        "appRole": null, "managerId": "69b4c349f391edabb9942533", "zone": "Indiranagar", "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34bf391edabb9942545", "name": "zone_admin (Domlur)",       "email": null, "role": "zone_admin",  "appRole": null, "managerId": "69b4c347f391edabb994251f", "zone": "Domlur",      "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34cf391edabb9942549", "name": "alpha (Domlur)",            "email": null, "role": "alpha",       "appRole": null, "managerId": "69b4c347f391edabb994251f", "zone": "Domlur",      "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34cf391edabb994254c", "name": "beta (Domlur)",             "email": null, "role": "beta",        "appRole": null, "managerId": "69b4c347f391edabb994251f", "zone": "Domlur",      "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34df391edabb994254e", "name": "gamma (Domlur)",            "email": null, "role": "gamma",       "appRole": null, "managerId": "69b4c347f391edabb994251f", "zone": "Domlur",      "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34df391edabb9942550", "name": "fire (Domlur)",             "email": null, "role": "fire",        "appRole": null, "managerId": "69b4c347f391edabb994251f", "zone": "Domlur",      "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34ef391edabb9942552", "name": "water (Domlur)",            "email": null, "role": "water",       "appRole": null, "managerId": "69b4c347f391edabb994251f", "zone": "Domlur",      "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34ef391edabb9942554", "name": "zone_admin (Murugeshpalya)","email": null, "role": "zone_admin",  "appRole": null, "managerId": "69b4c347f391edabb9942520", "zone": "Murugeshpalya","team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34ef391edabb9942556", "name": "alpha (Murugeshpalya)",     "email": null, "role": "alpha",       "appRole": null, "managerId": "69b4c347f391edabb9942520", "zone": "Murugeshpalya","team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c34ff391edabb9942558", "name": "beta (Murugeshpalya)",      "email": null, "role": "beta",        "appRole": null, "managerId": "69b4c347f391edabb9942520", "zone": "Murugeshpalya","team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c350f391edabb994255a", "name": "gamma (Murugeshpalya)",     "email": null, "role": "gamma",       "appRole": null, "managerId": "69b4c347f391edabb9942520", "zone": "Murugeshpalya","team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c350f391edabb994255c", "name": "fire (Murugeshpalya)",      "email": null, "role": "fire",        "appRole": null, "managerId": "69b4c347f391edabb9942520", "zone": "Murugeshpalya","team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c350f391edabb994255e", "name": "water (Murugeshpalya)",     "email": null, "role": "water",       "appRole": null, "managerId": "69b4c347f391edabb9942520", "zone": "Murugeshpalya","team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c351f391edabb9942560", "name": "zone_admin (EGL)",          "email": null, "role": "zone_admin",  "appRole": null, "managerId": "69b4c347f391edabb9942521", "zone": "EGL",         "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c351f391edabb9942562", "name": "alpha (EGL)",               "email": null, "role": "alpha",       "appRole": null, "managerId": "69b4c347f391edabb9942521", "zone": "EGL",         "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c352f391edabb9942564", "name": "beta (EGL)",                "email": null, "role": "beta",        "appRole": null, "managerId": "69b4c347f391edabb9942521", "zone": "EGL",         "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c352f391edabb9942566", "name": "gamma (EGL)",               "email": null, "role": "gamma",       "appRole": null, "managerId": "69b4c347f391edabb9942521", "zone": "EGL",         "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c352f391edabb9942568", "name": "fire (EGL)",                "email": null, "role": "fire",        "appRole": null, "managerId": "69b4c347f391edabb9942521", "zone": "EGL",         "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c353f391edabb994256a", "name": "water (EGL)",               "email": null, "role": "water",       "appRole": null, "managerId": "69b4c347f391edabb9942521", "zone": "EGL",         "team": null, "status": "active" },
+    { "source": "test.users", "id": "69b4c354f391edabb994256c", "name": "zone_admin (Electronic City)","email": null,"role": "zone_admin", "appRole": null, "managerId": "69b4c347f391edabb9942522", "zone": "Electronic City","team": null,"status": "active" },
+    { "source": "test.users", "id": "69b4c354f391edabb994256e", "name": "alpha (Electronic City)",   "email": null, "role": "alpha",       "appRole": null, "managerId": "69b4c347f391edabb9942522", "zone": "Electronic City","team": null,"status": "active" },
+    { "source": "test.users", "id": "69b4c355f391edabb9942570", "name": "beta (Electronic City)",    "email": null, "role": "beta",        "appRole": null, "managerId": "69b4c347f391edabb9942522", "zone": "Electronic City","team": null,"status": "active" },
+    { "source": "test.users", "id": "69b4c355f391edabb9942572", "name": "gamma (Electronic City)",   "email": null, "role": "gamma",       "appRole": null, "managerId": "69b4c347f391edabb9942522", "zone": "Electronic City","team": null,"status": "active" },
+    { "source": "test.users", "id": "69b4c356f391edabb9942574", "name": "fire (Electronic City)",    "email": null, "role": "fire",        "appRole": null, "managerId": "69b4c347f391edabb9942522", "zone": "Electronic City","team": null,"status": "active" },
+    { "source": "test.users", "id": "69b4c356f391edabb9942576", "name": "water (Electronic City)",   "email": null, "role": "water",       "appRole": null, "managerId": "69b4c347f391edabb9942522", "zone": "Electronic City","team": null,"status": "active" },
+    { "source": "test.teammates", "id": "69d63ada7eabcd0ada3bbf30", "name": "Ammar Logade", "email": null, "role": "superadmin", "appRole": null, "managerId": null, "zone": null, "team": null, "status": "active" }
+  ]
+}
