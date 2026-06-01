@@ -187,8 +187,7 @@ function startHttpServer() {
 import { runWorkforceMigrations } from "./lib/migrations.js";
 import { seedKpis } from "./lib/seed-kpis.js";
 
-// Added import for in‑memory DB
-import { MongoMemoryServer } from "mongodb-memory-server";
+// ... dynamic import used in fallback ...
 
 // ... existing code unchanged until connectDb definition ...
 let isDbConnected = false;
@@ -215,6 +214,7 @@ async function connectDb() {
     if (allowFallback) {
       console.warn("[api] Starting in‑memory MongoDB for development fallback");
       try {
+        const { MongoMemoryServer } = await import("mongodb-memory-server");
         memoryServer = await MongoMemoryServer.create();
         const uri = memoryServer.getUri();
         process.env.MONGODB_URI = uri;
