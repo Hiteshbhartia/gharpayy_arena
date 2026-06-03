@@ -66,9 +66,9 @@ export function EventTimeline({ events }: { events: AttEvent[] }) {
                 </div>
               </div>
               {e.address && (
-                <div className="mt-1 text-xs text-muted-foreground flex items-start gap-1">
+                <div className="mt-1 text-xs text-muted-foreground flex items-start gap-1 min-w-0">
                   <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                  <span className="truncate" title={e.address}>
+                  <span className="truncate flex-1 min-w-0" title={e.address}>
                     {e.address}
                   </span>
                 </div>
