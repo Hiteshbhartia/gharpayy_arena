@@ -26,7 +26,7 @@ function AttendancePage() {
   const summary = todaySummary(actor.id);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 overflow-x-hidden">
       <header className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
@@ -46,15 +46,15 @@ function AttendancePage() {
         </div>
       </header>
 
-      <div className="grid lg:grid-cols-[420px_1fr] gap-6">
+      <div className="grid lg:grid-cols-[420px_1fr] gap-6 min-w-0 w-full">
         <div className="space-y-4">
           <AttendancePanel />
 
-          <Card className="p-5">
+          <Card className="p-5 max-w-full min-w-0">
             <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-mono text-muted-foreground mb-3">
               <Clock className="h-3.5 w-3.5" /> Today at a glance
             </div>
-            <dl className="grid grid-cols-2 gap-y-2 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-y-2 gap-x-4 text-sm">
               <dt className="text-muted-foreground">Events</dt>
               <dd className="text-right tabular-nums font-medium">{today.length}</dd>
               <dt className="text-muted-foreground">Work</dt>
@@ -67,11 +67,11 @@ function AttendancePage() {
               <dd className="text-right tabular-nums font-medium">
                 {fmtDuration(summary.fieldMs)}
               </dd>
-            </dl>
+            </div>
           </Card>
         </div>
 
-        <Card className="p-5">
+        <Card className="p-5 max-w-full min-w-0">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
@@ -95,7 +95,7 @@ function Pill({
   children: React.ReactNode;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded border border-border bg-card">
+    <span className="flex-1 min-w-0 rounded-md bg-card border border-border p-3 overflow-hidden inline-flex items-center gap-1.5 px-2 py-1 rounded border border-border bg-card">
       <Icon className="h-3 w-3" />
       {children}
     </span>

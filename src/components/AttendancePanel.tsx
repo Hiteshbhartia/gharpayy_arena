@@ -93,17 +93,8 @@ export function AttendancePanel() {
 
   return (
     <>
-      <Card className="p-5 bg-card border-border">
+      <Card className="p-5 bg-card border-border max-w-full min-w-0">
         <div className="flex items-start justify-between gap-3 mb-5">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-              You are acting as
-            </div>
-            <div className="font-display text-lg font-semibold mt-0.5">{actor.name}</div>
-            <div className="text-xs text-muted-foreground">
-              {actor.team} · Shift {actor.shift} · {actor.appRole.toUpperCase()}
-            </div>
-          </div>
           <Badge
             variant="outline"
             className={`${statusColor} border font-mono text-[10px] uppercase tracking-widest`}
@@ -113,14 +104,14 @@ export function AttendancePanel() {
         </div>
 
         {/* Live counters */}
-        <div className="grid grid-cols-3 gap-2 mb-5">
+        <div className="flex flex-wrap gap-2 mb-5 min-w-0">
           <Stat label="Work" value={fmtDuration(summary.workMs)} live={status === "Clocked In"} />
           <Stat label="Break" value={fmtDuration(summary.breakMs)} live={status === "On Break"} />
           <Stat label="Field" value={fmtDuration(summary.fieldMs)} live={status === "In Field"} />
         </div>
 
         {/* Primary actions */}
-        <div className="grid grid-cols-2 gap-2 mb-2">
+        <div className="grid grid-cols-2 gap-2 mb-2 min-w-0">
           <Button
             size="lg"
             onClick={() => trigger("clock_in")}
@@ -140,7 +131,7 @@ export function AttendancePanel() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 min-w-0">
           <Button
             variant="outline"
             onClick={() => trigger(can.break_end ? "break_end" : "break_start")}
@@ -196,7 +187,7 @@ export function AttendancePanel() {
 
 function Stat({ label, value, live }: { label: string; value: string; live?: boolean }) {
   return (
-    <div className="rounded-md bg-muted/40 border border-border p-3">
+    <div className="flex-1 min-w-0 rounded-md bg-card border border-border p-3 overflow-hidden">
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono flex items-center gap-1">
         {label}
         {live && <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />}
