@@ -83,7 +83,7 @@ export function SelfieCapture({ open, title, subtitle, onClose, onCapture }: Pro
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 box-border">
       <div className="w-full max-w-md bg-card border border-border rounded-xl overflow-hidden shadow-2xl">
         <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-3">
           <div>
