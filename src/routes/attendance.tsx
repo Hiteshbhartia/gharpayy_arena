@@ -30,15 +30,13 @@ function AttendancePage() {
       <header className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-            Attendance · Demo Mode
+            Attendance
           </div>
           <h1 className="font-display text-3xl font-semibold tracking-tight mt-1">
             Selfie + Geo Punch
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Every clock event captures a live front-camera selfie and high-accuracy GPS, then
-            resolves the address. Switch the "Acting as" user in the sidebar to punch in for any
-            teammate.
+            Every clock event captures a front-camera selfie and high-accuracy GPS, then resolves the address for attendance verification.
           </p>
         </div>
         <div className="flex gap-2 text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
